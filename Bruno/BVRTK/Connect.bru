@@ -1,0 +1,19 @@
+meta {
+  name: Connect
+  type: ws
+  seq: 1
+}
+
+ws {
+  url: ws://127.0.0.1:7708
+  body: ws
+  auth: inherit
+}
+
+body:ws {
+  name: message 1
+  type: json
+  content: '''
+    {}
+  '''
+}

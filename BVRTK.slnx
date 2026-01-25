@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BVRTK/BVRTK.csproj" />
+  <Project Path="EasyOpenVR/EasyOpenVR.csproj" />
+</Solution>
