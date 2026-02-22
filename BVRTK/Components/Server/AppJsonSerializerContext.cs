@@ -3,7 +3,7 @@ using BVRTK.Data;
 
 namespace BVRTK.Components.Server;
 
-[JsonSerializable(typeof(ApplicationSettings))]
+[JsonSerializable(typeof(Settings))]
 [JsonSourceGenerationOptions(
     IncludeFields = true,
     GenerationMode = JsonSourceGenerationMode.Default,

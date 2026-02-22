@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SuperSocket.Connection;
@@ -18,8 +13,31 @@ namespace BVRTK.Components.Server;
 /**
  * Derived from: https://github.com/BOLL7708/EasyFramework/blob/main/SuperServer.cs
  */
-public class SuperServer
+public sealed class SuperServer
 {
+    #region Events
+    public delegate void ServerStatusHandler(ServerStatus status, int count);
+    public event ServerStatusHandler? StatusChanged;
+    private void OnStatusChanged(ServerStatus status, int count)
+    {
+        StatusChanged?.Invoke(status, count);
+    }
+    
+    public delegate void MessageReceivedHandler(WebSocketSession? session, string message);
+    public event MessageReceivedHandler? MessageReceived;
+    private void OnMessageReceived(WebSocketSession? session, string message)
+    {
+        MessageReceived?.Invoke(session, message);
+    }
+    
+    public delegate void StatusMessageHandler(WebSocketSession? session, bool newSession, string message);
+    public event StatusMessageHandler? StatusMessage;
+    private void OnStatusMessage(WebSocketSession? session, bool newSession, string message)
+    {
+        StatusMessage?.Invoke(session, newSession, message);
+    }    
+    #endregion
+    
     public enum ServerStatus
     {
         Connected,
@@ -41,14 +59,6 @@ public class SuperServer
     private int _deliveredCount;
     private int _receivedCount;
 
-    #region Actions
-
-    public Action<ServerStatus, int> statusAction = (_, _) => { Console.WriteLine("statusAction not set in server"); };
-    public Action<WebSocketSession?, string> messageReceivedAction = (_, _) => { Console.WriteLine("messageReceivedAction not set in server"); };
-    public Action<WebSocketSession?, bool, string> statusMessageAction = (_, _, _) => { Console.WriteLine("statusMessageAction not set in server"); };
-
-    #endregion
-
     #region Manage
 
     public async Task Start(int port = DefaultPort, string ip = DefaultIp)
@@ -60,7 +70,7 @@ public class SuperServer
         _server = Build(port, ip);
         _server.Options.MaxPackageLength = 100 * 1024 * 1024;
         await _server.StartAsync();
-        statusAction.Invoke(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0);
+        OnStatusChanged(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0);
     }
 
     public async Task Stop()
@@ -77,7 +87,7 @@ public class SuperServer
             _server = null;
         }
 
-        statusAction.Invoke(ServerStatus.Disconnected, 0);
+        OnStatusChanged(ServerStatus.Disconnected, 0);
     }
 
     #endregion
@@ -88,15 +98,15 @@ public class SuperServer
     {
         if (session == null) return;
         _sessions[session.SessionID] = session;
-        statusMessageAction.Invoke(session, true, $"New session connected: {session.SessionID}");
-        statusAction(ServerStatus.SessionCount, _sessions.Count);
+        OnStatusMessage(session, true, $"New session connected: {session.SessionID}");
+        OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
     }
 
     private void Server_NewMessageReceived(WebSocketSession? session, string value)
     {
-        messageReceivedAction.Invoke(session, value);
+        OnMessageReceived(session, value);
         Interlocked.Increment(ref _receivedCount);
-        statusAction(ServerStatus.ReceivedCount, _receivedCount);
+        OnStatusChanged(ServerStatus.ReceivedCount, _receivedCount);
     }
 
     private void Server_SessionClosed(WebSocketSession? session, CloseReason reason)
@@ -104,8 +114,8 @@ public class SuperServer
         if (session == null) return;
         _sessions.TryRemove(session.SessionID, out var _);
         var reasonName = Enum.GetName(typeof(CloseReason), reason);
-        statusMessageAction.Invoke(null, false, $"Session closed: {session.SessionID}, because: {reasonName}");
-        statusAction(ServerStatus.SessionCount, _sessions.Count);
+        OnStatusMessage(null, false, $"Session closed: {session.SessionID}, because: {reasonName}");
+        OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
     }
 
     #endregion
@@ -146,7 +156,7 @@ public class SuperServer
             {
                 await session.SendAsync(message);
                 Interlocked.Increment(ref _deliveredCount);
-                statusAction(ServerStatus.DeliveredCount, _deliveredCount);
+                OnStatusChanged(ServerStatus.DeliveredCount, _deliveredCount);
             }
             catch (Exception ex)
             {
