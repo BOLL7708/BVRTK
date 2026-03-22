@@ -54,3 +54,6 @@ public class PlayAreaSettings
 {
     
 }
+
+[JsonSerializable(typeof(Settings))]
+public partial class SettingsJsonSerializerContext : JsonSerializerContext;
