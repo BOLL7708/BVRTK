@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using BVRTK.Components.Server;
 using BVRTK.Data;
 using EasyOpenVR;
@@ -21,6 +20,12 @@ class Program
 
     static async Task Main(string[] args)
     {
+#if DEBUG
+        var isDebug = true;
+#else
+        var isDebug = false;
+#endif
+
         var options = new JsonSerializerOptions
         {
             IncludeFields = true,
@@ -43,30 +48,49 @@ class Program
 
         await server.Start(8077);
 
-        #region Manifest
-        var vrManifestFilename = "software.boll.bvrtk.vrmanifest";
-        if (!FileUtils.FileExists(vrManifestFilename).FileExists)
-        {
-            var application = new ApplicationBuilder("software.boll.bvrtk")
-                .IsDashboardOverlay()
-                .SetBinaryPathWindows("D:/Google Drive/-= BOLL7708 =-/Rider/BVRTK/BVRTK/bin/Debug/net10.0/BVRTK.exe")
-                .AddStrings("en_us", new Strings("BOLL's VR Toolkit", "Suite of tools and extensions for SteamVR."))
-                .Build();
-            var manifestJsonResult = new VrManifestBuilder()
-                .AddApplication(application)
-                .BuildAndSerialize();
-            Console.WriteLine(manifestJsonResult);
-            var manifestWriteTextResult = FileUtils.WriteText(vrManifestFilename, manifestJsonResult.Json);
-            if (!manifestWriteTextResult.Success || manifestWriteTextResult.CharsWritten == 0)
-            {
-                Console.WriteLine("Failed to write VR Manifest to file.");
-            }
-        }
+        #region App Manifest
+
+        const string vrManifestFilename = "software.boll.bvrtk.vrmanifest";
+        var application = new ApplicationBuilder("software.boll.bvrtk")
+            .IsDashboardOverlay()
+            .SetBinaryPathWindows("D:/Google Drive/-= BOLL7708 =-/Rider/BVRTK/BVRTK/bin/Debug/net10.0/BVRTK.exe")
+            .AddStrings("en_us", new Strings("BOLL's VR Toolkit", "Suite of tools and extensions for SteamVR."))
+            .Build();
+        var vrManifestBuilder = new VrManifestBuilder()
+            .AddApplication(application);
+
         #endregion
-        
+
+        #region Action Manifest
+
+        const string actionManifestFilename = "software.boll.bvrtk.actions.json";
+        var actionManifestBuilder = new ActionManifestBuilder()
+            .AddVersion(1, 1)
+            .AddAction(
+                "/actions/default/in/test",
+                ActionType.Boolean,
+                ActionRequirement.Suggested,
+                ActionSkeleton.SkeletonHandLeft
+            )
+            .AddActionSet(
+                "/actions/default",
+                ActionSetUsage.Leftright
+            )
+            .AddLocalization(
+                "en-US",
+                new OrderedDictionary<string, string>
+                {
+                    ["/actions/default/in/test"] = "Test Input",
+                    ["/actions/default"] = "Default"
+                });
+
+        #endregion
+
         #region VR
+
         var vr = new EasyOpenVrBuilder()
-            .SetVrAppManifestPath(vrManifestFilename)
+            .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, isDebug)
+            .SetActionManifest(actionManifestFilename, actionManifestBuilder, isDebug)
             .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
             .SetPumpInterval(EasyOpenVr.EPumpInterval.FractionOfHmdHz, 1)
             .SetDebug(true)
@@ -74,9 +98,10 @@ class Program
             .BuildAndInit();
 
         #region Event Registration
+
         vr.State += connected => Console.WriteLine($"[STATE] {connected}");
         vr.DebugMessage += message => Console.WriteLine($"[DEBUG] {message}");
-        
+
         vr.Event.Register((in vrEvent) =>
             {
                 // TODO: If enabled, output device IDs to WS.
@@ -100,24 +125,26 @@ class Program
             EVREventType.VREvent_SceneApplicationChanged,
             EVREventType.VREvent_SceneApplicationStateChanged
         );
+
         #endregion
+
         #endregion
-        
+
         uint[] indexArr = [];
         while (true)
         {
             if (!vr.IsInitialized()) continue;
-            
-            if(indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
+
+            if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;
             if (hmdIndex == uint.MaxValue) continue;
-                
+
             // var poses = vr.Device.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding);
             // if (poses.Length <= 0) continue;
-                
+
             // var pose = poses[0];
             // Console.WriteLine($"Tracking HMD: {pose.mDeviceToAbsoluteTracking.m3}.{pose.mDeviceToAbsoluteTracking.m7}.{pose.mDeviceToAbsoluteTracking.m11}");
-            
+
             Thread.Sleep(1000);
         }
     }
