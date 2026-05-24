@@ -1,4 +1,8 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using BVRTK.Components.Server;
 using BVRTK.Data;
 using EasyOpenVR;
@@ -10,7 +14,7 @@ namespace BVRTK;
 
 /*
  * ✅ WebSocket server
- * OpenVR client
+ * ✅ OpenVR client
  * Steam client
  * GUI controller
  */
@@ -25,29 +29,12 @@ class Program
 #else
         var isDebug = false;
 #endif
-
-        var options = new JsonSerializerOptions
-        {
-            IncludeFields = true,
-            WriteIndented = true
-        };
-
         Console.WriteLine("Hello, World!");
-        var server = new SuperServer();
-        server.StatusChanged += (status, i) => { Console.WriteLine($"Action: {status.GetType().FullName} - {Enum.GetName(typeof(SuperServer.ServerStatus), i)}"); };
-        server.MessageReceived += (session, message) =>
-        {
-            Console.WriteLine($"MessageReceived: {session?.SessionID} - {message}");
-            var settings = JsonUtils.Deserialize<Settings>(message);
-            Console.WriteLine($"Settings: Value[{settings.Data?.test}],  Error[{settings.Exception?.Message ?? ""}]");
-            Console.WriteLine($"Serialized: {JsonUtils.Serialize(settings.Data)}");
-        };
-        server.StatusMessage += (session, newSession, message) => { Console.WriteLine($"MessageAction: {session?.SessionID} - {newSession} - {message}"); };
 
-        // If we could turn off without terminating we should unsubscribe from events.
-
-        await server.Start(8077);
-
+        var server = new JsonRpcServer(8077);
+        await server.Restart();
+        
+        
         #region App Manifest
 
         const string vrManifestFilename = "software.boll.bvrtk.vrmanifest";
@@ -90,7 +77,7 @@ class Program
 
         var vr = new EasyOpenVrBuilder()
             .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, isDebug)
-            .SetActionManifest(actionManifestFilename, actionManifestBuilder, isDebug)
+            .SetActionManifest(actionManifestFilename, actionManifestBuilder, isDebug) // TODO: Still not working
             .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
             .SetPumpInterval(EasyOpenVr.EPumpInterval.FractionOfHmdHz, 1)
             .SetDebug(true)
@@ -102,28 +89,31 @@ class Program
         vr.State += connected => Console.WriteLine($"[STATE] {connected}");
         vr.DebugMessage += message => Console.WriteLine($"[DEBUG] {message}");
 
-        vr.Event.Register((in vrEvent) =>
+        vr.Event.Register([
+                EVREventType.VREvent_TrackedDeviceActivated,
+                EVREventType.VREvent_TrackedDeviceDeactivated,
+                EVREventType.VREvent_TrackedDeviceRoleChanged,
+                EVREventType.VREvent_TrackedDeviceUpdated
+            ], (in vrEvent) =>
             {
                 // TODO: If enabled, output device IDs to WS.
-            },
-            EVREventType.VREvent_TrackedDeviceActivated,
-            EVREventType.VREvent_TrackedDeviceDeactivated,
-            EVREventType.VREvent_TrackedDeviceRoleChanged,
-            EVREventType.VREvent_TrackedDeviceUpdated
+            }
         );
-        vr.Event.Register((in vrEvent) =>
+        vr.Event.Register([
+                EVREventType.VREvent_ChaperoneDataHasChanged,
+                EVREventType.VREvent_ChaperoneUniverseHasChanged
+            ], (in vrEvent) =>
             {
                 // TODO: If enabled, output play area data to WS.
-            },
-            EVREventType.VREvent_ChaperoneDataHasChanged,
-            EVREventType.VREvent_ChaperoneUniverseHasChanged
+            }
         );
-        vr.Event.Register((in vrEvent) =>
+        vr.Event.Register([
+                EVREventType.VREvent_SceneApplicationChanged,
+                EVREventType.VREvent_SceneApplicationStateChanged
+            ], (in vrEvent) =>
             {
                 // TODO: If enabled, send application data to WS.
-            },
-            EVREventType.VREvent_SceneApplicationChanged,
-            EVREventType.VREvent_SceneApplicationStateChanged
+            }
         );
 
         #endregion

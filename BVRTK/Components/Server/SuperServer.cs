@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SuperSocket.Connection;
@@ -13,67 +12,47 @@ namespace BVRTK.Components.Server;
 /**
  * Derived from: https://github.com/BOLL7708/EasyFramework/blob/main/SuperServer.cs
  */
-public sealed class SuperServer
+public sealed class SuperServer : ServerBase
 {
-    #region Events
-    public delegate void ServerStatusHandler(ServerStatus status, int count);
-    public event ServerStatusHandler? StatusChanged;
-    private void OnStatusChanged(ServerStatus status, int count)
-    {
-        StatusChanged?.Invoke(status, count);
-    }
-    
-    public delegate void MessageReceivedHandler(WebSocketSession? session, string message);
-    public event MessageReceivedHandler? MessageReceived;
-    private void OnMessageReceived(WebSocketSession? session, string message)
-    {
-        MessageReceived?.Invoke(session, message);
-    }
-    
-    public delegate void StatusMessageHandler(WebSocketSession? session, bool newSession, string message);
-    public event StatusMessageHandler? StatusMessage;
-    private void OnStatusMessage(WebSocketSession? session, bool newSession, string message)
-    {
-        StatusMessage?.Invoke(session, newSession, message);
-    }    
-    #endregion
-    
-    public enum ServerStatus
-    {
-        Connected,
-        Disconnected,
-        Error,
-        ReceivedCount,
-        DeliveredCount,
-        SessionCount
-    }
+    #region Defaults
 
     private const int DefaultPort = 7708;
     private const string DefaultIp = "Any";
+
+    #endregion
 
     private IServer? _server;
 
     // We are getting crashes when loading sessions from _server directly, so we also store sessions here.
     private readonly ConcurrentDictionary<string, WebSocketSession?> _sessions = new();
 
-    private int _deliveredCount;
-    private int _receivedCount;
 
     #region Manage
 
-    public async Task Start(int port = DefaultPort, string ip = DefaultIp)
+    private int _port = DefaultPort;
+    private string _ip = DefaultIp;
+
+    /// This will set the port and IP to use when the server is started.
+    /// If you set this while the server is running, it needs to be restarted for them to apply.
+    public void SetValues(int port, string ip = DefaultIp)
+    {
+        _port = port;
+        _ip = ip;
+    }
+
+    public override async Task Start()
     {
         // Stop in case of already running
         await Stop();
 
         // Start
-        _server = Build(port, ip);
+        _server = Build(_port, _ip);
         _server.Options.MaxPackageLength = 100 * 1024 * 1024;
         await _server.StartAsync();
         OnStatusChanged(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0);
     }
 
-    public async Task Stop()
+    public override async Task Stop()
     {
         if (_server != null)
         {
@@ -90,6 +69,12 @@ public sealed class SuperServer
         OnStatusChanged(ServerStatus.Disconnected, 0);
     }
 
+    public override async Task Restart()
+    {
+        await Stop();
+        await Start();
+    }
+
     #endregion
 
     #region Listeners
@@ -98,22 +83,22 @@ public sealed class SuperServer
     {
         if (session == null) return;
         _sessions[session.SessionID] = session;
-        OnStatusMessage(session, true, $"New session connected: {session.SessionID}");
+        OnStatusMessage(session.SessionID, true, $"New session connected: {session.SessionID}");
         OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
     }
 
     private void Server_NewMessageReceived(WebSocketSession? session, string value)
     {
-        OnMessageReceived(session, value);
-        Interlocked.Increment(ref _receivedCount);
-        OnStatusChanged(ServerStatus.ReceivedCount, _receivedCount);
+        OnMessageReceived(session?.SessionID, value);
+        Interlocked.Increment(ref ReceivedCount);
+        OnStatusChanged(ServerStatus.ReceivedCount, ReceivedCount);
     }
 
     private void Server_SessionClosed(WebSocketSession? session, CloseReason reason)
     {
         if (session == null) return;
-        _sessions.TryRemove(session.SessionID, out var _);
-        var reasonName = Enum.GetName(typeof(CloseReason), reason);
+        _sessions.TryRemove(session.SessionID, out _);
+        var reasonName = Enum.GetName(reason);
         OnStatusMessage(null, false, $"Session closed: {session.SessionID}, because: {reasonName}");
         OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
     }
@@ -122,63 +107,60 @@ public sealed class SuperServer
 
     #region Send
 
-    /**
-     * Send a message to a single session if provided, otherwise it will send to all sessions.
-     */
-    public async Task SendMessageToSingleOrAll(WebSocketSession? session, string message)
+    public override async Task SendMessageToSingleOrAll(string? sessionId, string message)
     {
-        if(session != null) await SendMessageToSingle(session, message);
+        if (sessionId != null) await SendMessageToSingle(sessionId, message);
         else await SendMessageToAll(message);
     }
-    
+
     /**
      * Send a message to a single session.
      */
-    public async Task SendMessageToSingle(WebSocketSession session, string message)
+    public override async Task SendMessageToSingle(string sessionId, string message)
     {
         try
         {
-            if (_server is not { State: ServerState.Started }) 
+            if (_server is not { State: ServerState.Started })
             {
-                Debug.WriteLine("Server has not started yet.");
+                OnServerError("Server has not started yet.");
                 return;
             }
         }
         catch (ObjectDisposedException ex)
         {
-            Debug.WriteLine($"Could not access server: {ex.Message}");
+            OnServerError($"Could not access server: {ex.Message}");
             return;
         }
 
+        _sessions.TryGetValue(sessionId, out var session);
         if (session is { Handshaked: true })
         {
             try
             {
                 await session.SendAsync(message);
-                Interlocked.Increment(ref _deliveredCount);
-                OnStatusChanged(ServerStatus.DeliveredCount, _deliveredCount);
+                Interlocked.Increment(ref DeliveredCount);
+                OnStatusChanged(ServerStatus.DeliveredCount, DeliveredCount);
             }
             catch (Exception ex)
             {
-                // TODO: Try again here?
-                Debug.WriteLine($"Failed to send message: {ex.Message}");
+                OnServerError($"Failed to send message: {ex.Message}");
             }
         }
         else
         {
-            Debug.WriteLine("Session is not ready, missing handshake.");
+            OnServerError("Session is not ready, missing handshake.");
         }
     }
 
     /**
      * Send a message to all sessions.
      */
-    public async Task SendMessageToAll(string message)
+    public override async Task SendMessageToAll(string message)
     {
         List<Task> tasks = [];
-        foreach (var session in _sessions.Values)
+        foreach (var sessionId in _sessions.Keys)
         {
-            if (session != null) tasks.Add(SendMessageToSingle(session, message));
+            tasks.Add(SendMessageToSingle(sessionId, message));
         }
 
         await Task.WhenAll(tasks);
@@ -187,12 +169,12 @@ public sealed class SuperServer
     /**
      * Send a message to all sessions except the sender.
      */
-    public async Task SendMessageToOthers(string senderSessionId, string message)
+    public override async Task SendMessageToOthers(string senderSessionId, string message)
     {
         List<Task> tasks = [];
-        foreach (var session in _sessions.Values)
+        foreach (var sessionId in _sessions.Keys)
         {
-            if (session != null && session.SessionID != senderSessionId) tasks.Add(SendMessageToSingle(session, message));
+            if (sessionId != senderSessionId) tasks.Add(SendMessageToSingle(sessionId, message));
         }
 
         await Task.WhenAll(tasks);
@@ -201,12 +183,12 @@ public sealed class SuperServer
     /**
      * Send a message to a group of sessions.
      */
-    public async Task SendMessageToGroup(string[] sessionIDs, string message)
+    public override async Task SendMessageToGroup(string[] sessionIDs, string message)
     {
         List<Task> tasks = [];
-        foreach (var session in _sessions.Values)
+        foreach (var sessionId in _sessions.Keys)
         {
-            if (session != null && sessionIDs.Contains(session.SessionID)) tasks.Add(SendMessageToSingle(session, message));
+            if (sessionIDs.Contains(sessionId)) tasks.Add(SendMessageToSingle(sessionId, message));
         }
 
         await Task.WhenAll(tasks);
@@ -216,7 +198,7 @@ public sealed class SuperServer
 
     #region BoilerPlate
 
-    public IServer Build(int port = DefaultPort, string ip = DefaultIp)
+    private IServer Build(int port = DefaultPort, string ip = DefaultIp)
     {
         var hostBuilder = WebSocketHostBuilder.Create();
 
@@ -250,7 +232,7 @@ public sealed class SuperServer
 
         hostBuilder.ConfigureErrorHandler((session, exception) =>
         {
-            Debug.WriteLine($"Exception from Error Handler: {exception.Message} from {session.SessionID}");
+            OnServerError($"Exception from Error Handler: {exception.Message} from {session.SessionID}");
             return ValueTask.FromResult(false);
         });
 

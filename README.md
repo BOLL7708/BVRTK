@@ -10,7 +10,7 @@ The overarching steps of this plan are listed below:
 3. Implement a new texture backend that will be compatible with various graphics APIs, it is currently unclear which solution to use, but as I want to adopt [PanGui](https://pangui.io/) which currently uses [SDL3](https://github.com/libsdl-org/SDL) that will be investigated and evaluated.
    1. With PanGui, I hope to create a full interface to configure this application through a SteamVR dashboard overlay.
    2. It will also be used for anything that needs to be rendered to a texture, like screenshot overlays, notifications, HUD elements, possible other features that are unannounced.
-4. Implement the Steam API for things like achievements and workshop content, any feature that can be motivated. This is secondary, but I want the experience and would love to have a deep integration.
+4. Implement the [Steam API](https://github.com/rlabrecque/Steamworks.NET) for things like achievements and workshop content, any feature that can be motivated. This is secondary, but I want the experience and would love to have a deep integration.
 
 ## Current Status
 1. The project has been set up with .NET 10 for multi-platform builds, no testing has been done if Linux is viable though, but it can hopefully happen at some point.
