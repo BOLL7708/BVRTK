@@ -30,11 +30,11 @@ public abstract class ServerBase
 
     #region MessageReceivedHandler
 
-    public delegate void MessageReceivedHandler(string? sessionId, string message);
+    public delegate void MessageReceivedHandler(string sessionId, string message);
 
     public event MessageReceivedHandler? MessageReceived;
 
-    protected void OnMessageReceived(string? sessionId, string message)
+    protected void OnMessageReceived(string sessionId, string message)
     {
         MessageReceived?.Invoke(sessionId, message);
     }
@@ -69,9 +69,8 @@ public abstract class ServerBase
 
     #region Manage
 
-    public abstract Task Start();
+    public abstract Task StartOrRestart();
     public abstract Task Stop();
-    public abstract Task Restart();
 
     #endregion
 

@@ -15,7 +15,7 @@ namespace BVRTK.Components.Server;
     Converters =
     [
         // Append this list with all enums that should be possible to serialize/deserialize
-        typeof(JsonStringEnumConverter<SuperServer.ServerStatus>)
+        typeof(JsonStringEnumConverter<ServerBase.ServerStatus>)
     ]
 )]
 public partial class AppJsonSerializerContext : JsonSerializerContext

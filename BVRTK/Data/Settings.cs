@@ -3,6 +3,9 @@ using BVRTK.Components.Server;
 
 namespace BVRTK.Data;
 
+/**
+ * TODO: Figure out how to use this with the rest of the application. Make it reactive?
+ */
 public class Settings
 {
     public string test = "MyDefaultValue";

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SuperSocket.Connection;
 using SuperSocket.Server;
 using SuperSocket.Server.Abstractions;
+using SuperSocket.Server.Abstractions.Session;
 using SuperSocket.Server.Host;
 using SuperSocket.WebSocket.Server;
 
@@ -24,7 +25,7 @@ public sealed class SuperServer : ServerBase
     private IServer? _server;
 
     // We are getting crashes when loading sessions from _server directly, so we also store sessions here.
-    private readonly ConcurrentDictionary<string, WebSocketSession?> _sessions = new();
+    private readonly ConcurrentDictionary<string, IAppSession?> _sessions = new();
 
 
     #region Manage
@@ -40,7 +41,7 @@ public sealed class SuperServer : ServerBase
         _ip = ip;
     }
 
-    public override async Task Start()
+    public override async Task StartOrRestart()
     {
         // Stop in case of already running
         await Stop();
@@ -58,7 +59,7 @@ public sealed class SuperServer : ServerBase
         {
             foreach (var sessionPair in _sessions)
             {
-                if (sessionPair.Value != null) await sessionPair.Value.CloseAsync();
+                if (sessionPair.Value != null) await sessionPair.Value.CloseAsync(CloseReason.ServerShutdown);
             }
 
             await _server.StopAsync();
@@ -69,34 +70,26 @@ public sealed class SuperServer : ServerBase
         OnStatusChanged(ServerStatus.Disconnected, 0);
     }
 
-    public override async Task Restart()
-    {
-        await Stop();
-        await Start();
-    }
-
     #endregion
 
     #region Listeners
 
-    private void Server_NewSessionConnected(WebSocketSession? session)
+    private void Server_NewSessionConnected(IAppSession session)
     {
-        if (session == null) return;
         _sessions[session.SessionID] = session;
         OnStatusMessage(session.SessionID, true, $"New session connected: {session.SessionID}");
         OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
     }
 
-    private void Server_NewMessageReceived(WebSocketSession? session, string value)
+    private void Server_NewMessageReceived(IAppSession session, string value)
     {
-        OnMessageReceived(session?.SessionID, value);
+        OnMessageReceived(session.SessionID, value);
         Interlocked.Increment(ref ReceivedCount);
         OnStatusChanged(ServerStatus.ReceivedCount, ReceivedCount);
     }
 
-    private void Server_SessionClosed(WebSocketSession? session, CloseReason reason)
+    private void Server_SessionClosed(IAppSession session, CloseReason reason)
     {
-        if (session == null) return;
         _sessions.TryRemove(session.SessionID, out _);
         var reasonName = Enum.GetName(reason);
         OnStatusMessage(null, false, $"Session closed: {session.SessionID}, because: {reasonName}");
@@ -133,11 +126,15 @@ public sealed class SuperServer : ServerBase
         }
 
         _sessions.TryGetValue(sessionId, out var session);
-        if (session is { Handshaked: true })
+        if ((session as WebSocketSession) is { Handshaked: true })
         {
             try
             {
-                await session.SendAsync(message);
+                if (session is not WebSocketSession webSocketSession)
+                {
+                    throw new Exception("Could not cast session to WebSocketSession.");
+                }
+                await webSocketSession.SendAsync(message);
                 Interlocked.Increment(ref DeliveredCount);
                 OnStatusChanged(ServerStatus.DeliveredCount, DeliveredCount);
             }
@@ -211,12 +208,12 @@ public sealed class SuperServer : ServerBase
         hostBuilder.UseSessionHandler(
             session =>
             {
-                Server_NewSessionConnected(session as WebSocketSession);
+                Server_NewSessionConnected(session);
                 return ValueTask.CompletedTask;
             },
             (session, e) =>
             {
-                Server_SessionClosed(session as WebSocketSession ?? null, e.Reason);
+                Server_SessionClosed(session, e.Reason);
                 return ValueTask.CompletedTask;
             }
         );

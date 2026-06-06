@@ -32,7 +32,7 @@ class Program
         Console.WriteLine("Hello, World!");
 
         var server = new JsonRpcServer(8077);
-        await server.Restart();
+        await server.Start();
         
         
         #region App Manifest
@@ -86,8 +86,8 @@ class Program
 
         #region Event Registration
 
-        vr.State += connected => Console.WriteLine($"[STATE] {connected}");
-        vr.DebugMessage += message => Console.WriteLine($"[DEBUG] {message}");
+        vr.State += connected => Console.WriteLine("[STATE] "+(connected ? "Connected" : "Disconnected"));
+        vr.DebugMessage += (message, level) => Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
 
         vr.Event.Register([
                 EVREventType.VREvent_TrackedDeviceActivated,
