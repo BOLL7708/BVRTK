@@ -1,5 +1,6 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using BVRTK.Data.Request;
+using BVRTK.Data.Response;
 
 namespace BVRTK.Components.Server;
 
@@ -9,8 +10,8 @@ public static class JsonHandler
     {
         return jsonString.Trim().StartsWith('[');
     }
-    
-    public static Tuple<List<JsonRpcResult>, bool> ParseMessage(string jsonString)
+
+    public static Tuple<List<JsonRpcResult>, bool> DecodeMessage(string jsonString)
     {
         var result = new List<JsonRpcResult>();
         var isBatch = IsBatch(jsonString);
@@ -19,15 +20,15 @@ public static class JsonHandler
             // Batch
             try
             {
-                var list = JsonSerializer.Deserialize<List<JsonRpcMessage>>(jsonString, JsonRpcSourceGenerationContext.Default.ListJsonRpcMessage) ?? [];
+                var list = JsonSerializer.Deserialize<List<JsonRpcRequest>>(jsonString, JsonRpcRequestSerializerContext.Default.ListJsonRpcRequest) ?? [];
                 foreach (var item in list)
                 {
-                    result.Add(new JsonRpcResult(true, null, item));
+                    result.Add(new JsonRpcResult(null, item));
                 }
             }
             catch (Exception ex)
             {
-                result.Add(new JsonRpcResult(false, $"[{ex.Source}] {ex.Message}", null));
+                result.Add(new JsonRpcResult($"[{ex.Source}] {ex.Message}", null));
             }
         }
         else
@@ -35,61 +36,52 @@ public static class JsonHandler
             // Single
             try
             {
-                var instance = JsonSerializer.Deserialize<JsonRpcMessage>(jsonString, JsonRpcSourceGenerationContext.Default.JsonRpcMessage);
+                var instance = JsonSerializer.Deserialize<JsonRpcRequest>(jsonString, JsonRpcRequestSerializerContext.Default.JsonRpcRequest);
                 if (instance != null)
                 {
                     // Successfully parsed incoming message
-                    result.Add(new JsonRpcResult(true, null, instance));
+                    result.Add(new JsonRpcResult(null, instance));
                 }
                 else
                 {
                     // Not sure if this can even happen, if it fails it probably throws and is caught below.
-                    result.Add(new JsonRpcResult(false, "Unable to deserialize message.", null));
+                    result.Add(new JsonRpcResult("Unable to deserialize message.", null));
                 }
             }
             catch (Exception ex)
             {
-                result.Add(new JsonRpcResult(false, $"[{ex.Source}] {ex.Message}", null));
+                result.Add(new JsonRpcResult($"[{ex.Source}] {ex.Message}", null));
             }
         }
 
         return new Tuple<List<JsonRpcResult>, bool>(result, isBatch);
     }
+
+    public static string EncodeMessage(List<JsonRpcResponse> responseList, bool isBatch)
+    {
+        string message;
+        try
+        {
+            if (isBatch)
+            {
+                message = JsonSerializer.Serialize(responseList, JsonRpcResponseSerializerContext.Default.ListJsonRpcResponse);
+            }
+            else
+            {
+                message = JsonSerializer.Serialize(responseList.First(), JsonRpcResponseSerializerContext.Default.JsonRpcResponse);
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $$"""{"jsonrpc":"2.0","error":{"code":100,"message":"[{{ex.Source}}] {{ex.Message}}"} }""";
+        }
+
+        return message;
+    }
 }
 
-public class JsonRpcMessage
+public readonly struct JsonRpcResult(string? error, JsonRpcRequest? result)
 {
-    [JsonPropertyName("jsonrpc")]
-    public required string JsonRpc { get; init; }
-
-    [JsonPropertyName("method")]
-    public required EMethod Method { get; init; }
-
-    [JsonPropertyName("id")] public string? Id { get; init; }
-
-    [JsonPropertyName("params")] public JsonElement? Params { get; init; }
-}
-
-public readonly struct JsonRpcResult(bool success, string? error, JsonRpcMessage? result)
-{
-    public bool Success { get;} = success;
     public string? Error { get; } = error;
-    public JsonRpcMessage? Result { get; } = result;
-}
-
-public enum EMethod
-{
-    ShowBindingsEditor
-}
-
-[JsonSourceGenerationOptions(
-    // IncludeFields = true,
-    // NumberHandling = JsonNumberHandling.AllowReadingFromString,
-    // GenerationMode = JsonSourceGenerationMode.Metadata | JsonSourceGenerationMode.Serialization,
-    UseStringEnumConverter = true
-)]
-[JsonSerializable(typeof(JsonRpcMessage))]
-[JsonSerializable(typeof(List<JsonRpcMessage>))]
-public partial class JsonRpcSourceGenerationContext : JsonSerializerContext
-{
+    public JsonRpcRequest? Result { get; } = result;
 }
