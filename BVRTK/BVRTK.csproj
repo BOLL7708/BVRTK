@@ -29,4 +29,28 @@
       <Folder Include="Components\Scripts\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Update="Resources\Methods.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Methods.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Resources\JsonRpcErrors.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>JsonRpcErrors.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Resources\Methods.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Methods.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Resources\JsonRpcErrors.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>JsonRpcErrors.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

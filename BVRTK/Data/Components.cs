@@ -2,7 +2,7 @@ namespace BVRTK.Data;
 
 public class Components
 {
-    public enum SectionEnum
+    public enum ESection
     {
         Settings,
         Server,

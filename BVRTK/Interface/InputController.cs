@@ -5,11 +5,11 @@ namespace BVRTK.Interface;
 
 public class InputController
 {
-    public delegate void InputEventHandler(Data.Components.SectionEnum section, string option); 
+    public delegate void InputEventHandler(Data.Components.ESection eSection, string option); 
     public event InputEventHandler? InputEvent;
-    protected virtual void OnInputEvent(Data.Components.SectionEnum section, string option)
+    protected virtual void OnInputEvent(Data.Components.ESection eSection, string option)
     {
-        InputEvent?.Invoke(section, option);
+        InputEvent?.Invoke(eSection, option);
     }
     
     public InputController()

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using BVRTK.Data.Request;
 using BVRTK.Data.Response;
+using BVRTK.Resources;
+using static BVRTK.Data.Response.ResponseUtils.EJsonRpcErrorCode;
 
 namespace BVRTK.Components.Server;
 
@@ -32,13 +34,29 @@ public class JsonRpcServer
             // Console.WriteLine($"Serialized: {json.Serialize(settings.Data)}");
             // await _superServer.SendMessageToSingle(sessionId, "Welcome!");
         };
-        _superServer.StatusMessage += (sessionId, newSession, message) => { Console.WriteLine($"MessageAction: {sessionId} - {newSession} - {message}"); };
+        _superServer.StatusMessage += async (sessionId, newSession, message) =>
+        {
+            Console.WriteLine($"MessageAction: {sessionId}, {newSession}, {message}");
+            if (sessionId != null && newSession)
+            {
+                await HandleResponse([ResponseUtils.BuildList(null, [
+                        "You have connected to BVRTK!",
+                        "This is a JSON-RPC 2.0 compliant server, see the official specification: https://www.jsonrpc.org/specification",
+                        "The methods available can be listed calling method: ListMethods"
+                    ])], false, sessionId, ESourceServer.Websocket);
+            }
+        };
         // If we could turn off without terminating we should unsubscribe from events.
     }
 
     public async Task Start()
     {
         await _superServer.StartOrRestart();
+    }
+
+    private async Task HandleResult(JsonRpcResult result, string sessionId, ESourceServer sourceServer)
+    {
+        await HandleResult([result], false, sessionId, sourceServer);
     }
 
     /// Takes parsed messages and acts upon them. Will handle responses and errors.
@@ -54,77 +72,58 @@ public class JsonRpcServer
             Console.WriteLine($"BODY: {item.Result?.Id}-{item.Result?.Method}, ERR: {item.Error}");
 
             #region Validate
-            // TODO: Figure out how to store strings including error messages later.
-            //  We probably want localisation so check how resource files work.
+
             if (item.Result == null)
             {
-                responseList.Add(new JsonRpcResponse
-                {
-                    Error = new JsonRpcError
-                    {
-                        Code = 1,
-                        Message = item.Error ?? "Body of message was invalid."
-                    },
-                    Id = null
-                });
+                responseList.Add(ResponseUtils.BuildError(item, InvalidRequestBody, item.Error));
+                continue;
             }
+
             if (item.Result?.JsonRpc != "2.0")
             {
-                responseList.Add(new JsonRpcResponse
-                {
-                    Error = new JsonRpcError
-                    {
-                        Code = 2,
-                        Message = "The field $.jsonrpc must be: 2.0"
-                    },
-                    Id = item.Result?.Id
-                });
+                responseList.Add(ResponseUtils.BuildError(item, InvalidJsonRpcVersion));
+                continue;
             }
+
             #endregion
 
             #region Process
-            switch (item.Result?.Method)
+
+            switch (item.Result.Method)
             {
-                case null:
-                    responseList.Add(new JsonRpcResponse
+                case EJsonRpcMethod.Help:
+                    break;
+                case EJsonRpcMethod.ListMethods:
+                    if (item.Result?.Id != null)
                     {
-                        Error = new JsonRpcError
+                        // Enum.GetNames(EJsonRpcMethod);
+                        responseList.Add(ResponseUtils.BuildDictionary(item.Result?.Id, new Dictionary<string, string>
                         {
-                            Code = 3,
-                            Message = $"No $.method supplied: {item.Result?.Method}"
-                        },
-                        Id = item.Result?.Id
-                    });
+                            [nameof(EJsonRpcMethod.ListMethods)] = Methods.ListMethods
+                        }));
+                    }
+
                     break;
                 case EJsonRpcMethod.ShowBindingsEditor:
-                    if(item.Result?.Id != null)
+                    if (item.Result?.Id != null)
                     {
-                        responseList.Add(new JsonRpcResponse
-                        {
-                            Result = JsonSerializer.SerializeToNode(new ResultStatus
-                            {
-                                Done = true,
-                                Message = "Successfully launched the bindings interface."
-                            }, JsonRpcResponseSerializerContext.Default.ResultStatus),
-                            Id = item.Result?.Id
-                        });
+                        responseList.Add(ResponseUtils.BuildStatus(item.Result?.Id, true,
+                            "Successfully launched the bindings interface.")
+                        );
                     }
+
                     break;
                 default:
-                    responseList.Add(new JsonRpcResponse
-                    {
-                        Error = new JsonRpcError
-                        {
-                            Code = 4,
-                            Message = $"Valid but unhandled $.method supplied: {item.Result?.Method}"
-                        },
-                        Id = item.Result?.Id
-                    });
+                    responseList.Add(ResponseUtils.BuildError(item, UnhandledMethod));
                     break;
             }
+
             #endregion
         }
-
+        await HandleResponse(responseList, isBatch, sessionId, sourceServer);
+    }
+    
+    private async Task HandleResponse(List<JsonRpcResponse> responseList, bool isBatch, string sessionId, ESourceServer sourceServer) {
         if (responseList.Count == 0)
         {
             // If there is nothing to return we should not send anything.

@@ -5,6 +5,8 @@ namespace BVRTK.Data.Request;
 
 public enum EJsonRpcMethod
 {
+    Help,
+    ListMethods,
     ShowBindingsEditor
 }
 

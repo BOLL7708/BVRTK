@@ -63,5 +63,5 @@ public class JsonRpcError
 )]
 [JsonSerializable(typeof(JsonRpcResponse))]
 [JsonSerializable(typeof(List<JsonRpcResponse>))]
-[JsonSerializable(typeof(ResultStatus))]
+[JsonSerializable(typeof(GenericResponse))]
 public partial class JsonRpcResponseSerializerContext : JsonSerializerContext;
