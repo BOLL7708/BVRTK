@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using BVRTK.Components.Server;
-using BVRTK.Data;
-using EasyOpenVR;
-using EasyOpenVR.Data;
-using Software.Boll.EasyUtils;
-using Valve.VR;
+﻿using Valve.VR;
 
 namespace BVRTK;
 
@@ -20,73 +10,18 @@ namespace BVRTK;
  */
 class Program
 {
-    private static readonly JsonUtils JsonUtils = new(new AppJsonSerializerContext());
-
     static async Task Main(string[] args)
     {
-#if DEBUG
-        var isDebug = true;
-#else
-        var isDebug = false;
-#endif
         Console.WriteLine("Hello, World!");
 
-        var server = new JsonRpcServer(8077);
-        await server.Start();
-        
-        
-        #region App Manifest
+        var server = Services.Server;
+        await server.StartWebSocket(8077);
 
-        const string vrManifestFilename = "software.boll.bvrtk.vrmanifest";
-        var application = new ApplicationBuilder("software.boll.bvrtk")
-            .IsDashboardOverlay()
-            .SetBinaryPathWindows("D:/Google Drive/-= BOLL7708 =-/Rider/BVRTK/BVRTK/bin/Debug/net10.0/BVRTK.exe")
-            .AddStrings("en_us", new Strings("BOLL's VR Toolkit", "Suite of tools and extensions for SteamVR."))
-            .Build();
-        var vrManifestBuilder = new VrManifestBuilder()
-            .AddApplication(application);
-
-        #endregion
-
-        #region Action Manifest
-
-        const string actionManifestFilename = "software.boll.bvrtk.actions.json";
-        var actionManifestBuilder = new ActionManifestBuilder()
-            .AddVersion(1, 1)
-            .AddAction(
-                "/actions/default/in/test",
-                ActionType.Boolean,
-                ActionRequirement.Suggested,
-                ActionSkeleton.SkeletonHandLeft
-            )
-            .AddActionSet(
-                "/actions/default",
-                ActionSetUsage.Leftright
-            )
-            .AddLocalization(
-                "en-US",
-                new OrderedDictionary<string, string>
-                {
-                    ["/actions/default/in/test"] = "Test Input",
-                    ["/actions/default"] = "Default"
-                });
-
-        #endregion
-
-        #region VR
-
-        var vr = new EasyOpenVrBuilder()
-            .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, isDebug)
-            .SetActionManifest(actionManifestFilename, actionManifestBuilder, isDebug) // TODO: Still not working
-            .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
-            .SetPumpInterval(EasyOpenVr.EPumpInterval.FractionOfHmdHz, 1)
-            .SetDebug(true)
-            .QuitWithRuntime()
-            .BuildAndInit();
+        var vr = Services.Vr;
 
         #region Event Registration
 
-        vr.State += connected => Console.WriteLine("[STATE] "+(connected ? "Connected" : "Disconnected"));
+        vr.State += connected => Console.WriteLine("[STATE] " + (connected ? "Connected" : "Disconnected"));
         vr.DebugMessage += (message, level) => Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
 
         vr.Event.Register([
@@ -115,8 +50,6 @@ class Program
                 // TODO: If enabled, send application data to WS.
             }
         );
-
-        #endregion
 
         #endregion
 

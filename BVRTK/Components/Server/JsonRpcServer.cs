@@ -1,4 +1,3 @@
-using System.Text.Json;
 using BVRTK.Data.Request;
 using BVRTK.Data.Response;
 using BVRTK.Resources;
@@ -11,17 +10,10 @@ public class JsonRpcServer
     private readonly SuperServer _superServer;
     private readonly PipeServer _pipeServer;
 
-    public JsonRpcServer(int port)
+    public JsonRpcServer()
     {
-        var options = new JsonSerializerOptions
-        {
-            IncludeFields = true,
-            WriteIndented = true
-        };
-        // var jsonRequest = new JsonUtils(new RequestBaseJsonSerializerContext(options));
-        // var jsonResponse = new JsonUtils(new ResponseBaseJsonSerializerContext(options));
+        #region WebSocket
         _superServer = new SuperServer();
-        _superServer.SetValues(port);
         _superServer.ServerError += Console.WriteLine;
         _superServer.StatusChanged += (status, i) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(ServerBase.ServerStatus), i)}"); };
         _superServer.MessageReceived += async (sessionId, message) =>
@@ -29,30 +21,53 @@ public class JsonRpcServer
             Console.WriteLine($"MessageReceived: {sessionId} - {message}");
             var tuple = JsonHandler.DecodeMessage(message);
             await HandleResult(tuple.Item1, tuple.Item2, sessionId, ESourceServer.Websocket);
-            // var settings = json.Deserialize<Settings>(message);
-            // Console.WriteLine($"Settings: Value[{settings.Data?.test}],  Error[{settings.Exception?.Message ?? ""}]");
-            // Console.WriteLine($"Serialized: {json.Serialize(settings.Data)}");
-            // await _superServer.SendMessageToSingle(sessionId, "Welcome!");
         };
         _superServer.StatusMessage += async (sessionId, newSession, message) =>
         {
             Console.WriteLine($"MessageAction: {sessionId}, {newSession}, {message}");
             if (sessionId != null && newSession)
             {
-                await HandleResponse([ResponseUtils.BuildList(null, [
+                await HandleResponse([
+                    ResponseUtils.BuildList(null, [
                         "You have connected to BVRTK!",
                         "This is a JSON-RPC 2.0 compliant server, see the official specification: https://www.jsonrpc.org/specification",
                         "The methods available can be listed calling method: ListMethods"
-                    ])], false, sessionId, ESourceServer.Websocket);
+                    ])
+                ], false, sessionId, ESourceServer.Websocket);
             }
         };
-        // If we could turn off without terminating we should unsubscribe from events.
+        #endregion
+        
+        #region NamedPipe
+        _pipeServer  = new PipeServer();
+        // TODO: Implement
+        #endregion
     }
 
-    public async Task Start()
+    #region LifeTime
+
+    public async Task StartWebSocket(int port)
     {
+        _superServer.SetValues(port);
         await _superServer.StartOrRestart();
     }
+
+    public async Task StopWebSocket()
+    {
+        await _superServer.Stop();
+    }
+
+    public void StartNamedPipe()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void StopNamedPipe()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
 
     private async Task HandleResult(JsonRpcResult result, string sessionId, ESourceServer sourceServer)
     {
@@ -120,10 +135,12 @@ public class JsonRpcServer
 
             #endregion
         }
+
         await HandleResponse(responseList, isBatch, sessionId, sourceServer);
     }
-    
-    private async Task HandleResponse(List<JsonRpcResponse> responseList, bool isBatch, string sessionId, ESourceServer sourceServer) {
+
+    private async Task HandleResponse(List<JsonRpcResponse> responseList, bool isBatch, string sessionId, ESourceServer sourceServer)
+    {
         if (responseList.Count == 0)
         {
             // If there is nothing to return we should not send anything.
