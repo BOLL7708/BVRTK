@@ -7,7 +7,7 @@ public enum EJsonRpcMethod
 {
     Help,
     ListMethods,
-    ShowBindingsEditor
+    ShowBindingEditor
 }
 
 /// <summary>

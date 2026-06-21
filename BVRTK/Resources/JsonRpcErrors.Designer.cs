@@ -60,6 +60,24 @@ namespace BVRTK.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to serialize the response object..
+        /// </summary>
+        internal static string FailedSerialization {
+            get {
+                return ResourceManager.GetString("FailedSerialization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The field $.params did not deserialize properly..
+        /// </summary>
+        internal static string InvalidBodyParams {
+            get {
+                return ResourceManager.GetString("InvalidBodyParams", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The field $.jsonrpc must be: 2.0.
         /// </summary>
         internal static string InvalidJsonRpcVersion {
@@ -83,6 +101,15 @@ namespace BVRTK.Resources {
         internal static string InvalidRequestBody {
             get {
                 return ResourceManager.GetString("InvalidRequestBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SteamVR returned an error state..
+        /// </summary>
+        internal static string SteamVrError {
+            get {
+                return ResourceManager.GetString("SteamVrError", resourceCulture);
             }
         }
         

@@ -53,12 +53,21 @@ public class JsonRpcError
     /// <para>A Primitive or Structured value that contains additional information about the error.</para>
     /// <para>This may be omitted.</para>
     /// <para>The value of this member is defined by the Server (e.g. detailed error information, nested errors etc.).</para>
-    public JsonNode? Data { get; init; }
+    public JsonRpcErrorData? Data { get; init; }
+}
+
+public class JsonRpcErrorData
+{
+    public string? RequestMethod { get; init; }
+    public string? ExceptionMessage { get; init; }
+    public string? ExceptionType { get; init; }
+    public string? ExceptionSource { get; set; }
+    public string[]? ExceptionStackTrace { get; set; }
 }
 
 [JsonSourceGenerationOptions(
     UseStringEnumConverter = true,
-    PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 )]
 [JsonSerializable(typeof(JsonRpcResponse))]

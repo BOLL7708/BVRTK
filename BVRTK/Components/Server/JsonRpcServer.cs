@@ -1,6 +1,9 @@
+using System.Text.Json;
 using BVRTK.Data.Request;
+using BVRTK.Data.Request.Params;
 using BVRTK.Data.Response;
 using BVRTK.Resources;
+using Valve.VR;
 using static BVRTK.Data.Response.ResponseUtils.EJsonRpcErrorCode;
 
 namespace BVRTK.Components.Server;
@@ -119,15 +122,30 @@ public class JsonRpcServer
                     }
 
                     break;
-                case EJsonRpcMethod.ShowBindingsEditor:
-                    if (item.Result?.Id != null)
+                case EJsonRpcMethod.ShowBindingEditor: {
+                    var decodedParams = JsonHandler.DecodeParamsOrDefault<ShowBindingEditor>(item.Result?.Params, ParamsJsonSerializerContext.Default.ShowBindingEditor);
+                    if (!decodedParams.Success)
                     {
-                        responseList.Add(ResponseUtils.BuildStatus(item.Result?.Id, true,
-                            "Successfully launched the bindings interface.")
-                        );
+                        if(item.IdExists) responseList.Add(ResponseUtils.BuildError(item, InvalidBodyParams, decodedParams.Exception));
+                        break;
                     }
-
+                    var steamVrError = OpenVR.Input.OpenBindingUI("", 0, 0, decodedParams.Result.OnDesktop);
+                    
+                    if (!item.IdExists) break; // Notification
+                    
+                    if (steamVrError == EVRInputError.None)
+                    {
+                        responseList.Add(ResponseUtils.BuildStatus(item.Result.Id, true,
+                            "Successfully launched the bindings interface.") // TODO: Localize
+                        );                            
+                    }
+                    else
+                    {
+                        responseList.Add(ResponseUtils.BuildError(item, SteamVrError, new Exception(Enum.GetName(steamVrError))));
+                    }
+                    
                     break;
+                }
                 default:
                     responseList.Add(ResponseUtils.BuildError(item, UnhandledMethod));
                     break;

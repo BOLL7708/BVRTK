@@ -13,8 +13,8 @@ The overarching steps of this plan are listed below:
 4. Implement the [Steam API](https://github.com/rlabrecque/Steamworks.NET) for things like achievements and workshop content, any feature that can be motivated. This is secondary, but I want the experience and would love to have a deep integration.
 
 ## Current Status
-1. The project has been set up with .NET 10 for multi-platform builds, no testing has been done if Linux is viable though, but it can hopefully happen at some point.
-2. The WebSocket server has been set up with precompiled JSON handling, but does not have working JSON-RPC support yet.
+1. The project has been set up with .NET 10 and AOT builds for multi-platform support, no testing has been done if Linux is viable though, but it can hopefully happen at some point.
+2. The WebSocket server has been set up with working JSON-RPC support.
 3. The work on updating EasyOpenVR is ongoing.
 4. The work on integrating SDL3 and in extension PanGui has not started yet.
 5. The work on integrating the Steam API and features has not started yet.

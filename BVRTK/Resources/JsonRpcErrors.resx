@@ -33,4 +33,13 @@
     <data name="UnhandledMethod" xml:space="preserve">
         <value>The $.method was valid but is currently not handled.</value>
     </data>
+    <data name="FailedSerialization" xml:space="preserve">
+        <value>Failed to serialize the response object.</value>
+    </data>
+    <data name="SteamVrError" xml:space="preserve">
+        <value>SteamVR returned an error state.</value>
+    </data>
+    <data name="InvalidBodyParams" xml:space="preserve">
+        <value>The field $.params did not deserialize properly.</value>
+    </data>
 </root>

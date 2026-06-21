@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using BVRTK.Data.Request;
+using BVRTK.Data.Request.Params;
 using BVRTK.Data.Response;
 
 namespace BVRTK.Components.Server;
@@ -62,26 +65,65 @@ public static class JsonHandler
         string message;
         try
         {
-            if (isBatch)
-            {
-                message = JsonSerializer.Serialize(responseList, JsonRpcResponseSerializerContext.Default.ListJsonRpcResponse);
-            }
-            else
-            {
-                message = JsonSerializer.Serialize(responseList.First(), JsonRpcResponseSerializerContext.Default.JsonRpcResponse);
-            }
+            message = isBatch 
+                ? JsonSerializer.Serialize(responseList, JsonRpcResponseSerializerContext.Default.ListJsonRpcResponse) 
+                : JsonSerializer.Serialize(responseList.First(), JsonRpcResponseSerializerContext.Default.JsonRpcResponse);
         }
         catch (Exception ex)
         {
-            message = $$"""{"jsonrpc":"2.0","error":{"code":100,"message":"[{{ex.Source}}] {{ex.Message}}"} }""";
+            var errorMessage = ResponseUtils.GetErrorMessage(ResponseUtils.EJsonRpcErrorCode.FailedSerialization);
+            message = $$"""{"jsonrpc":"2.0","error":{"code":100,"message":"{{errorMessage}} [{{ex.Source}}] ({{ex.Message}})"} }""";
         }
 
         return message;
+    }
+
+    public static JsonRpcResultParams<T> DecodeParams<T>(JsonElement? jsonElement, JsonTypeInfo<T> jsonTypeInfo) where T : class, new()
+    {
+        try
+        {
+            var decodedParams = jsonElement is JsonElement element
+                ? element.Deserialize(jsonTypeInfo)
+                : null;
+            return new JsonRpcResultParams<T>(decodedParams, null);
+        }
+        catch (Exception ex)
+        {
+            return new JsonRpcResultParams<T>(null, ex);
+        }
+    }
+
+    public static JsonRpcResultParams<T> DecodeParamsOrDefault<T>(JsonElement? jsonElement, JsonTypeInfo<T> jsonTypeInfo) where T : class, new()
+    {
+        try
+        {
+            var decodedParams = jsonElement is JsonElement element
+                ? element.Deserialize(jsonTypeInfo)
+                : new T();
+            return new JsonRpcResultParams<T>(decodedParams, null);
+        }
+        catch (Exception ex)
+        {
+            return new JsonRpcResultParams<T>(new T(), ex);
+        }
     }
 }
 
 public readonly struct JsonRpcResult(string? error, JsonRpcRequest? result)
 {
+    [MemberNotNullWhen(true, nameof(Result))]
+    public bool IdExists => Result?.Id != null;
+    [MemberNotNullWhen(true, nameof(Result))]
+    public bool ParamsExists => Result?.Params != null;
     public string? Error { get; } = error;
     public JsonRpcRequest? Result { get; } = result;
+}
+
+public readonly struct JsonRpcResultParams<T>(T? result, Exception? exception) where T : class, new()
+{
+    [MemberNotNullWhen(true, nameof(Result))]
+    [MemberNotNullWhen(false, nameof(Exception))]
+    public bool Success => Result != null && Exception == null;
+    public T? Result { get; }  = result;
+    public Exception? Exception { get; } = exception;
 }
