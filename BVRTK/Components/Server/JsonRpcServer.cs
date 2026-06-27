@@ -1,10 +1,9 @@
-using System.Text.Json;
-using BVRTK.Data.Request;
-using BVRTK.Data.Request.Params;
-using BVRTK.Data.Response;
+using BVRTK.Components.Server.Request;
+using BVRTK.Components.Server.Request.Params;
+using BVRTK.Components.Server.Response;
 using BVRTK.Resources;
 using Valve.VR;
-using static BVRTK.Data.Response.ResponseUtils.EJsonRpcErrorCode;
+using ParamsJsonSerializerContext = BVRTK.Components.Server.Request.ParamsJsonSerializerContext;
 
 namespace BVRTK.Components.Server;
 
@@ -31,7 +30,7 @@ public class JsonRpcServer
             if (sessionId != null && newSession)
             {
                 await HandleResponse([
-                    ResponseUtils.BuildList(null, [
+                    new ResponseBuilder().BuildList([
                         "You have connected to BVRTK!",
                         "This is a JSON-RPC 2.0 compliant server, see the official specification: https://www.jsonrpc.org/specification",
                         "The methods available can be listed calling method: ListMethods"
@@ -93,13 +92,13 @@ public class JsonRpcServer
 
             if (item.Result == null)
             {
-                responseList.Add(ResponseUtils.BuildError(item, InvalidRequestBody, item.Error));
+                responseList.Add(ResponseBuilder.BuildErrorWithMessage(item, EJsonRpcErrorCode.InvalidRequestBody, item.Error));
                 continue;
             }
 
             if (item.Result?.JsonRpc != "2.0")
             {
-                responseList.Add(ResponseUtils.BuildError(item, InvalidJsonRpcVersion));
+                responseList.Add(ResponseBuilder.BuildError(item, EJsonRpcErrorCode.InvalidJsonRpcVersion));
                 continue;
             }
 
@@ -115,7 +114,7 @@ public class JsonRpcServer
                     if (item.Result?.Id != null)
                     {
                         // Enum.GetNames(EJsonRpcMethod);
-                        responseList.Add(ResponseUtils.BuildDictionary(item.Result?.Id, new Dictionary<string, string>
+                        responseList.Add(new ResponseBuilder(item.Result?.Id).BuildDictionary(new Dictionary<string, string>
                         {
                             [nameof(EJsonRpcMethod.ListMethods)] = Methods.ListMethods
                         }));
@@ -126,7 +125,7 @@ public class JsonRpcServer
                     var decodedParams = JsonHandler.DecodeParamsOrDefault<ShowBindingEditor>(item.Result?.Params, ParamsJsonSerializerContext.Default.ShowBindingEditor);
                     if (!decodedParams.Success)
                     {
-                        if(item.IdExists) responseList.Add(ResponseUtils.BuildError(item, InvalidBodyParams, decodedParams.Exception));
+                        if(item.IdExists) responseList.Add(ResponseBuilder.BuildErrorWithException(item, EJsonRpcErrorCode.InvalidBodyParams, decodedParams.Exception));
                         break;
                     }
                     var steamVrError = OpenVR.Input.OpenBindingUI("", 0, 0, decodedParams.Result.OnDesktop);
@@ -135,19 +134,19 @@ public class JsonRpcServer
                     
                     if (steamVrError == EVRInputError.None)
                     {
-                        responseList.Add(ResponseUtils.BuildStatus(item.Result.Id, true,
+                        responseList.Add(new ResponseBuilder(item.Result.Id).BuildStatus(true,
                             "Successfully launched the bindings interface.") // TODO: Localize
                         );                            
                     }
                     else
                     {
-                        responseList.Add(ResponseUtils.BuildError(item, SteamVrError, new Exception(Enum.GetName(steamVrError))));
+                        responseList.Add(ResponseBuilder.BuildErrorWithException(item, EJsonRpcErrorCode.SteamVrError, new Exception(Enum.GetName(steamVrError))));
                     }
                     
                     break;
                 }
                 default:
-                    responseList.Add(ResponseUtils.BuildError(item, UnhandledMethod));
+                    responseList.Add(ResponseBuilder.BuildError(item, EJsonRpcErrorCode.UnhandledMethod));
                     break;
             }
 

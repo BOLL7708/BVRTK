@@ -1,4 +1,4 @@
-namespace BVRTK.Data.Request.Params;
+namespace BVRTK.Components.Server.Request.Params;
 
 public class ShowBindingEditor
 {

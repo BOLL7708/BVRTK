@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
+using BVRTK.Components.Server.Request.Params;
 
-namespace BVRTK.Data.Request.Params;
+namespace BVRTK.Components.Server.Request;
 
 // Append this list with all classes that should be possible to serialize/deserialize.
 [JsonSerializable(

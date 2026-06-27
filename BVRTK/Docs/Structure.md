@@ -1,10 +1,10 @@
 BOLL's VR Toolkit
 =================
 
-Program
-    Controller for GUI
-        GUI texture
-    Settings in concurrent dictionary
+* Program
+    * Controller for GUI
+        * GUI texture
+    * Settings in concurrent dictionary
 
 ```
 ╔════════════════╦══════════════╤═════════╤════════════╤══════════╤══════╗

@@ -1,8 +1,7 @@
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace BVRTK.Data.Response;
+namespace BVRTK.Components.Server.Response;
 
 /// <summary>
 /// <a href="https://www.jsonrpc.org/specification#response_object">Reference</a> 

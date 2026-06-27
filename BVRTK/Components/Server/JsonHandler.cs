@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
-using BVRTK.Data.Request;
-using BVRTK.Data.Request.Params;
-using BVRTK.Data.Response;
+using BVRTK.Components.Server.Request;
+using BVRTK.Components.Server.Response;
+using JsonRpcRequestSerializerContext = BVRTK.Components.Server.Request.JsonRpcRequestSerializerContext;
+using JsonRpcResponseSerializerContext = BVRTK.Components.Server.Response.JsonRpcResponseSerializerContext;
 
 namespace BVRTK.Components.Server;
 
@@ -14,6 +15,12 @@ public static class JsonHandler
         return jsonString.Trim().StartsWith('[');
     }
 
+    /// <summary>
+    /// Will decode an incoming JSON string into JSON RPC 2.0 message objects.
+    /// Supports both single messages and batches, that is lists of messages.
+    /// </summary>
+    /// <param name="jsonString"></param>
+    /// <returns></returns>
     public static Tuple<List<JsonRpcResult>, bool> DecodeMessage(string jsonString)
     {
         var result = new List<JsonRpcResult>();
@@ -60,6 +67,13 @@ public static class JsonHandler
         return new Tuple<List<JsonRpcResult>, bool>(result, isBatch);
     }
 
+    /// <summary>
+    /// Will take a list of response instances and encode them into a JSON string.
+    /// This supports single messages and a batch of messages, handles errors too.
+    /// </summary>
+    /// <param name="responseList"></param>
+    /// <param name="isBatch"></param>
+    /// <returns></returns>
     public static string EncodeMessage(List<JsonRpcResponse> responseList, bool isBatch)
     {
         string message;
@@ -71,8 +85,26 @@ public static class JsonHandler
         }
         catch (Exception ex)
         {
-            var errorMessage = ResponseUtils.GetErrorMessage(ResponseUtils.EJsonRpcErrorCode.FailedSerialization);
-            message = $$"""{"jsonrpc":"2.0","error":{"code":100,"message":"{{errorMessage}} [{{ex.Source}}] ({{ex.Message}})"} }""";
+            const EJsonRpcErrorCode errorCode = EJsonRpcErrorCode.FailedSerialization;
+            var errorMessage = ErrorBuilder.GetErrorMessage(errorCode);
+            
+            // The below matches JsonRpcResponse with JsonRpcError, what ErrorBuilder.BuildWithException() would output.
+            message = $$"""
+                        {
+                            "jsonrpc":"2.0",
+                            "error":{
+                                "code":{{errorCode}},
+                                "message":"{{errorMessage}}"
+                                "data":{
+                                    "requestMethod":"{{Enum.GetName(EJsonRpcMethod.Unknown)}}",
+                                    "exceptionMessage":"{{ex.Message}}",
+                                    "exceptionType":"{{ex.GetType().Name}}",
+                                    "exceptionSource":"{{ex.Source}}",
+                                    "exceptionStackTrace":"{{ErrorBuilder.GetLocalStackTrace(ex.StackTrace)}}"
+                                }
+                            } 
+                        }
+                        """;
         }
 
         return message;

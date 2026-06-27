@@ -1,10 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace BVRTK.Data.Request;
+namespace BVRTK.Components.Server.Request;
 
 public enum EJsonRpcMethod
 {
+    Unknown,
     Help,
     ListMethods,
     ShowBindingEditor

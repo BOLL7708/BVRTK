@@ -1,4 +1,4 @@
-namespace BVRTK.Data.Response;
+namespace BVRTK.Components.Server.Response;
 
 public class GenericResponse
 {
