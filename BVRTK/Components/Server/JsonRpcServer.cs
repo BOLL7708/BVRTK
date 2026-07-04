@@ -1,3 +1,4 @@
+using BVRTK.Components.Server.Backend;
 using BVRTK.Components.Server.Request;
 using BVRTK.Components.Server.Request.Params;
 using BVRTK.Components.Server.Response;
@@ -9,22 +10,22 @@ namespace BVRTK.Components.Server;
 
 public class JsonRpcServer
 {
-    private readonly SuperServer _superServer;
+    private readonly WebsocketServer _websocketServer;
     private readonly PipeServer _pipeServer;
 
     public JsonRpcServer()
     {
         #region WebSocket
-        _superServer = new SuperServer();
-        _superServer.ServerError += Console.WriteLine;
-        _superServer.StatusChanged += (status, i) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(ServerBase.ServerStatus), i)}"); };
-        _superServer.MessageReceived += async (sessionId, message) =>
+        _websocketServer = new WebsocketServer();
+        _websocketServer.ServerError += Console.WriteLine;
+        _websocketServer.StatusChanged += (status, i) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), i)}"); };
+        _websocketServer.MessageReceived += async (sessionId, message) =>
         {
             Console.WriteLine($"MessageReceived: {sessionId} - {message}");
             var tuple = JsonHandler.DecodeMessage(message);
             await HandleResult(tuple.Item1, tuple.Item2, sessionId, ESourceServer.Websocket);
         };
-        _superServer.StatusMessage += async (sessionId, newSession, message) =>
+        _websocketServer.StatusMessage += async (sessionId, newSession, message) =>
         {
             Console.WriteLine($"MessageAction: {sessionId}, {newSession}, {message}");
             if (sessionId != null && newSession)
@@ -50,13 +51,13 @@ public class JsonRpcServer
 
     public async Task StartWebSocket(int port)
     {
-        _superServer.SetValues(port);
-        await _superServer.StartOrRestart();
+        _websocketServer.SetValues(port);
+        await _websocketServer.StartOrRestart();
     }
 
     public async Task StopWebSocket()
     {
-        await _superServer.Stop();
+        await _websocketServer.Stop();
     }
 
     public void StartNamedPipe()
@@ -168,7 +169,7 @@ public class JsonRpcServer
         {
             case ESourceServer.Websocket:
                 var message = JsonHandler.EncodeMessage(responseList, isBatch);
-                await _superServer.SendMessageToSingle(sessionId, message);
+                await _websocketServer.SendMessageToSingle(sessionId, message);
                 break;
             case ESourceServer.Pipe:
                 break;

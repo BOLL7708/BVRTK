@@ -1,9 +1,6 @@
-using System.IO;
-using System.IO.Pipes; 
+namespace BVRTK.Components.Server.Backend;
 
-namespace BVRTK.Components.Server;
-
-public class PipeServer : ServerBase
+public class PipeServer : AbstractServer
 {
     public override Task StartOrRestart()
     {

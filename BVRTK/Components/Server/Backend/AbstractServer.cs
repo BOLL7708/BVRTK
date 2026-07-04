@@ -1,6 +1,6 @@
-namespace BVRTK.Components.Server;
+namespace BVRTK.Components.Server.Backend;
 
-public abstract class ServerBase
+public abstract class AbstractServer
 {
     #region ServerErrorHandler
 

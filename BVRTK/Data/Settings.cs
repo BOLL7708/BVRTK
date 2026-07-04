@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using BVRTK.Components.Server;
+using BVRTK.Components.Server.Backend;
 
 namespace BVRTK.Data;
 
@@ -9,7 +10,7 @@ namespace BVRTK.Data;
 public class Settings
 {
     public string test = "MyDefaultValue";
-    public SuperServer.ServerStatus status = SuperServer.ServerStatus.Disconnected;
+    public WebsocketServer.ServerStatus status = WebsocketServer.ServerStatus.Disconnected;
     
     public ApplicationSettings settings = new();
     public ServerSettings server = new();

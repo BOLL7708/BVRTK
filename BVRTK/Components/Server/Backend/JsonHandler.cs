@@ -6,7 +6,7 @@ using BVRTK.Components.Server.Response;
 using JsonRpcRequestSerializerContext = BVRTK.Components.Server.Request.JsonRpcRequestSerializerContext;
 using JsonRpcResponseSerializerContext = BVRTK.Components.Server.Response.JsonRpcResponseSerializerContext;
 
-namespace BVRTK.Components.Server;
+namespace BVRTK.Components.Server.Backend;
 
 public static class JsonHandler
 {

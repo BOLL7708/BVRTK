@@ -8,12 +8,12 @@ using SuperSocket.Server.Abstractions.Session;
 using SuperSocket.Server.Host;
 using SuperSocket.WebSocket.Server;
 
-namespace BVRTK.Components.Server;
+namespace BVRTK.Components.Server.Backend;
 
 /**
  * Derived from: https://github.com/BOLL7708/EasyFramework/blob/main/SuperServer.cs
  */
-public sealed class SuperServer : ServerBase
+public sealed class WebsocketServer : AbstractServer
 {
     #region Defaults
 
@@ -233,7 +233,7 @@ public sealed class SuperServer : ServerBase
             return ValueTask.FromResult(false);
         });
 
-        hostBuilder.ConfigureLogging((_, loggingBuilder) => { loggingBuilder.AddConsole(); });
+        hostBuilder.ConfigureLogging((_, loggingBuilder) => { ConsoleLoggerExtensions.AddConsole((ILoggingBuilder)loggingBuilder); });
 
         return hostBuilder.BuildAsServer();
     }
