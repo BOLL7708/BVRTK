@@ -8,10 +8,10 @@ namespace BVRTK;
 public static class Services
 {
     #region Lazy Singletons
-    private static readonly Lazy<JsonRpcServer> LazyServer = new Lazy<JsonRpcServer>(BuildServer);
+    private static readonly Lazy<JsonRpcServer> LazyServer = new(BuildServer);
     public static JsonRpcServer Server => LazyServer.Value;
 
-    private static readonly Lazy<EasyOpenVr> LazyVr = new Lazy<EasyOpenVr>(BuildVr);
+    private static readonly Lazy<EasyOpenVr> LazyVr = new(BuildVr);
     public static EasyOpenVr Vr => LazyVr.Value;
     #endregion
 

@@ -1,63 +1,167 @@
-using System.Text.Json.Serialization;
-using BVRTK.Components.Server;
-using BVRTK.Components.Server.Backend;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using BVRTK.Data.Setting;
+using Software.Boll.EasyUtils;
 
 namespace BVRTK.Data;
 
-/**
- * TODO: Figure out how to use this with the rest of the application. Make it reactive?
- */
 public class Settings
 {
-    public string test = "MyDefaultValue";
-    public WebsocketServer.ServerStatus status = WebsocketServer.ServerStatus.Disconnected;
-    
-    public ApplicationSettings settings = new();
-    public ServerSettings server = new();
-    public KeyboardSimSettings keyboardSim = new();
-    public MouseSimSettings mouseSim = new();
-    public OverlaySettings overlays = new();
-    public ScreenshotSettings screenshots = new();
-    public PlayAreaSettings playArea = new();
-    
+    public static readonly Settings Current = new();
+    private static readonly Settings Defaults = new();
+    private const string Dir = "_settings";
+
+    // TODO: Add more as needed
+    public Application Application = new();
+    public Server Server = new();
+
+    private static readonly Dictionary<Type, ISettingEntry> SettingsList = new()
+    {
+        {
+            typeof(Application),
+            new SettingEntry<Application>(
+                () => Current.Application,
+                () => Defaults.Application,
+                it => Current.Application = it,
+                SettingsJsonSerializerContext.Default.Application
+            )
+        },
+        {
+            typeof(Server),
+            new SettingEntry<Server>(
+                () => Current.Server,
+                () => Defaults.Server,
+                it => Current.Server = it,
+                SettingsJsonSerializerContext.Default.Server
+            )
+        }
+    };
+
+    public static void WriteToDisk()
+    {
+        foreach (var pair in SettingsList)
+        {
+            WriteFileIfDirty(pair.Value);
+        }
+    }
+
+    public static void ReadFromDisk()
+    {
+        foreach (var pair in SettingsList)
+        {
+            ReadFileIfExists(pair.Value);
+        }
+    }
+
+    /**
+     * 
+     */
+    public static bool ResetToDefaults(Type type)
+    {
+        if (!SettingsList.ContainsKey(type)) return false;
+
+        SettingsList.TryGetValue(type, out var entry);
+        if (entry == null) return false;
+
+        entry.Reset();
+        return true;
+    }
+
+    private static string GetFilePath(ISettingEntry entry)
+    {
+        return $"{Dir}{Path.DirectorySeparatorChar}settings_{entry.Value.__getName()}.json";
+    }
+
+    private static void WriteFileIfDirty(ISettingEntry entry)
+    {
+        FileUtils.EnsureDirectoryExists(Dir);
+        if (entry.Value.InternalDirty)
+        {
+            var filepath = GetFilePath(entry);
+            var result = FileUtils.WriteText(filepath, entry.Serialize());
+            Console.WriteLine($"Wrote {filepath} ({result.CharsWritten})");
+            // TODO: Log problems
+            entry.Value.InternalDirty = false;
+        }
+        else Console.WriteLine($"Did NOT write {entry.Value}");
+    }
+
+    private static void ReadFileIfExists(ISettingEntry entry)
+    {
+        var filepath = GetFilePath(entry);
+        var result = FileUtils.ReadText(filepath);
+        if (result is { Success: true, CharsRead: > 0 })
+        {
+            entry.Deserialize(result.Text ?? string.Empty);
+        }
+        else
+        {
+            Console.WriteLine($"Failed to write settings file {entry.Value.__getName()}: {result.Exception}");
+            // TODO: Log problems
+        }
+    }
 }
 
-public class ApplicationSettings 
+internal interface ISettingEntry
 {
-    public bool launchWithSteamVr = true;
-    public bool showTrayIcon = true;
-    public bool hideFromTaskbar = true;
+    AbstractSetting Value { get; }
+    void Deserialize(string json);
+    string Serialize();
+    void Reset();
 }
 
-public class ServerSettings
+internal class SettingEntry<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>(
+    Func<T> getValue,
+    Func<T> getDefault,
+    Action<T> setValue,
+    JsonTypeInfo<T> typeInfo) : ISettingEntry where T : AbstractSetting, new()
 {
-    public short port = 7708;
-}
+    public AbstractSetting Value => getValue();
 
-public class KeyboardSimSettings
-{
-    
-}
+    public void Deserialize(string json)
+    {
+        T? value = null;
+        try
+        {
+            value = JsonSerializer.Deserialize(json, typeInfo);
+            Console.WriteLine($"Deserialized: {json} to {value}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Failed to read from disk: {e.Message}");
+        }
 
-public class MouseSimSettings
-{
-    
-}
+        if (value != null)
+        {
+            setValue(value);
+        }
+        else Console.WriteLine("Failed to deserialize from disk.");
+    }
 
-public class OverlaySettings
-{
-    
-}
+    public string Serialize()
+    {
+        try
+        {
+            return JsonSerializer.Serialize(getValue(), typeInfo);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Failed to serialize {getValue()}: {e.Message}");
+        }
 
-public class ScreenshotSettings
-{
-    
-}
+        return string.Empty;
+    }
 
-public class PlayAreaSettings
-{
-    
+    public void Reset()
+    {
+        var current = getValue();
+        var defaults = getDefault();
+        var fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance);
+        foreach (var field in fields)
+        {
+            field.SetValue(current, field.GetValue(defaults));
+        }
+    }
 }
-
-[JsonSerializable(typeof(Settings))]
-public partial class SettingsJsonSerializerContext : JsonSerializerContext;

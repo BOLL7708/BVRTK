@@ -1,9 +1,8 @@
 using System.Text.Json.Serialization;
-using BVRTK.Data;
 
-namespace BVRTK.Components.Server;
+namespace BVRTK.Data;
 
-// Append this list with all classes that should be possible to serialize/deserialize.
+// Append this list with all root classes that should be possible to serialize/deserialize.
 [JsonSerializable(typeof(Settings))]
 [JsonSourceGenerationOptions(
     GenerationMode = JsonSourceGenerationMode.Default,
@@ -12,8 +11,8 @@ namespace BVRTK.Components.Server;
     PropertyNameCaseInsensitive = true,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     UseStringEnumConverter = true,
-    WriteIndented = false
+    WriteIndented = true
 )]
-public partial class AppJsonSerializerContext : JsonSerializerContext
+public partial class SettingsJsonSerializerContext : JsonSerializerContext
 {
 }

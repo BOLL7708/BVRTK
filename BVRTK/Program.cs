@@ -1,4 +1,6 @@
-﻿using Valve.VR;
+﻿using BVRTK.Data;
+using BVRTK.Data.Setting;
+using Valve.VR;
 
 namespace BVRTK;
 
@@ -14,8 +16,20 @@ class Program
     {
         Console.WriteLine("Hello, World!");
 
+        Settings.ReadFromDisk();
+        Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
+        Settings.ResetToDefaults(typeof(Server));
+        Console.WriteLine($"Port after reset: {Settings.Current.Server.Port}");
+        Settings.WriteToDisk(); // Does nothing
+        Settings.Current.Server.Port = 8077;
+        Settings.Current.Server.__setDirty();
+        Settings.WriteToDisk(); // Writes the Server object to disk
+        Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
+        
         var server = Services.Server;
-        await server.StartWebSocket(8077);
+        await server.StartWebSocket(Settings.Current.Server.Port);
+        
+        // TODO: Setup NLog
 
         var vr = Services.Vr;
 
