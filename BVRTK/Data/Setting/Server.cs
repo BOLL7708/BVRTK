@@ -1,6 +1,8 @@
 namespace BVRTK.Data.Setting;
 
-public class Server : AbstractSetting
+[TrackDirty]
+public partial class Server
 {
-    public int Port = 7708;
+    private int _port = 7708;
+    public partial int Port { get; set; }
 }

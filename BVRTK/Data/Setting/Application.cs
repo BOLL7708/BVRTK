@@ -1,8 +1,14 @@
 namespace BVRTK.Data.Setting;
 
-public class Application : AbstractSetting
+[TrackDirty]
+public partial class Application
 {
-    public bool launchWithSteamVr = true;
-    public bool showTrayIcon = true;
-    public bool hideFromTaskbar = true;
+    private bool _launchWithSteamVr = true;
+    public partial bool LaunchWithSteamVr { get; set; }
+    
+    private bool _showTrayIcon = true;
+    public partial bool ShowTrayIcon { get; set; }
+    
+    private bool _hideFromTaskbar = true;
+    public partial bool HideFromTaskbar { get; set; }
 }

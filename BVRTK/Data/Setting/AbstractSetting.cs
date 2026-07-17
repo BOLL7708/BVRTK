@@ -4,16 +4,11 @@ namespace BVRTK.Data.Setting;
 
 public class AbstractSetting
 {
-    public string __getName()
+    public string InternalName()
     {
         return GetType().Name.ToLower();  
-    } 
+    }
 
     [JsonIgnore]
-    internal bool InternalDirty = false;
-
-    public void __setDirty()
-    {
-        InternalDirty = true;
-    }
+    public bool InternalDirty { get; set; }
 }

@@ -14,8 +14,8 @@ public class Settings
     private const string Dir = "_settings";
 
     // TODO: Add more as needed
-    public Application Application = new();
-    public Server Server = new();
+    public Application Application { get; set; } = new();
+    public Server Server { get; set; } = new();
 
     private static readonly Dictionary<Type, ISettingEntry> SettingsList = new()
     {
@@ -71,7 +71,7 @@ public class Settings
 
     private static string GetFilePath(ISettingEntry entry)
     {
-        return $"{Dir}{Path.DirectorySeparatorChar}settings_{entry.Value.__getName()}.json";
+        return $"{Dir}{Path.DirectorySeparatorChar}settings_{entry.Value.InternalName()}.json";
     }
 
     private static void WriteFileIfDirty(ISettingEntry entry)
@@ -98,7 +98,7 @@ public class Settings
         }
         else
         {
-            Console.WriteLine($"Failed to write settings file {entry.Value.__getName()}: {result.Exception}");
+            Console.WriteLine($"Failed to write settings file {entry.Value.InternalName()}: {result.Exception}");
             // TODO: Log problems
         }
     }
@@ -112,7 +112,7 @@ internal interface ISettingEntry
     void Reset();
 }
 
-internal class SettingEntry<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] T>(
+internal class SettingEntry<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(
     Func<T> getValue,
     Func<T> getDefault,
     Action<T> setValue,
@@ -158,10 +158,10 @@ internal class SettingEntry<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     {
         var current = getValue();
         var defaults = getDefault();
-        var fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance);
-        foreach (var field in fields)
+        var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        foreach (var property in properties)
         {
-            field.SetValue(current, field.GetValue(defaults));
+            property.SetValue(current, property.GetValue(defaults));
         }
     }
 }

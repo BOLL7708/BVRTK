@@ -16,15 +16,17 @@ class Program
     {
         Console.WriteLine("Hello, World!");
 
+        #region Settings
         Settings.ReadFromDisk();
         Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
-        Settings.ResetToDefaults(typeof(Server));
-        Console.WriteLine($"Port after reset: {Settings.Current.Server.Port}");
-        Settings.WriteToDisk(); // Does nothing
+        // Settings.ResetToDefaults(typeof(Server));
+        // Console.WriteLine($"Port after reset: {Settings.Current.Server.Port}");
+        // Settings.WriteToDisk(); // Does nothing
         Settings.Current.Server.Port = 8077;
-        Settings.Current.Server.__setDirty();
-        Settings.WriteToDisk(); // Writes the Server object to disk
+        // Settings.Current.Server.__setDirty();
+        Settings.WriteToDisk(); // Writes the Server object to disk as it is dirty
         Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
+        #endregion
         
         var server = Services.Server;
         await server.StartWebSocket(Settings.Current.Server.Port);
@@ -84,5 +86,7 @@ class Program
 
             Thread.Sleep(1000);
         }
+        
+        
     }
 }
