@@ -18,7 +18,7 @@ public class DirtyTrackingGenerator : IIncrementalGenerator
                                              namespace BVRTK;
                                              public class TrackDirtyAttribute: System.Attribute {} 
                                            """;
-            i.AddSource("TrackDirtyAttribute.g.cs", attributeSource);
+            i.AddSource($"BVRTK.Data.Setting.TrackDirtyAttribute.g.cs", attributeSource);
         });
 
         #endregion
@@ -44,7 +44,6 @@ public class DirtyTrackingGenerator : IIncrementalGenerator
                 foreach (var field in fields)
                 {
                     var propName = field.Name.TrimStart('_') is { Length: >= 1 } s ? char.ToUpper(s[0]) + s.Substring(1) : null;
-                    Debug.WriteLine($"Found field name: {field} converted to {propName}");
                     if (propName == null) continue;
 
                     var typeName = field.Type.ToDisplayString();
@@ -68,7 +67,7 @@ public class DirtyTrackingGenerator : IIncrementalGenerator
                 }
 
                 sb.AppendLine("}");
-                ctx.AddSource($"{classSymbol.Name}.g.cs", sb.ToString());
+                ctx.AddSource($"{classSymbol.ContainingNamespace}.{classSymbol.Name}.g.cs", sb.ToString());
             }
         );
     }

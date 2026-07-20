@@ -3,6 +3,7 @@ using BVRTK.Components.Server.Request;
 using BVRTK.Components.Server.Request.Params;
 using BVRTK.Components.Server.Response;
 using BVRTK.Resources;
+using NLog.Targets;
 using Valve.VR;
 using ParamsJsonSerializerContext = BVRTK.Components.Server.Request.ParamsJsonSerializerContext;
 
@@ -16,6 +17,7 @@ public class JsonRpcServer
     public JsonRpcServer()
     {
         #region WebSocket
+
         _websocketServer = new WebsocketServer();
         _websocketServer.ServerError += Console.WriteLine;
         _websocketServer.StatusChanged += (status, i) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), i)}"); };
@@ -32,6 +34,7 @@ public class JsonRpcServer
             {
                 await HandleResponse([
                     new ResponseBuilder().BuildList([
+                        // TODO: Add to prompts
                         "You have connected to BVRTK!",
                         "This is a JSON-RPC 2.0 compliant server, see the official specification: https://www.jsonrpc.org/specification",
                         "The methods available can be listed calling method: ListMethods"
@@ -39,11 +42,14 @@ public class JsonRpcServer
                 ], false, sessionId, ESourceServer.Websocket);
             }
         };
+
         #endregion
-        
+
         #region NamedPipe
-        _pipeServer  = new PipeServer();
+
+        _pipeServer = new PipeServer();
         // TODO: Implement
+
         #endregion
     }
 
@@ -87,7 +93,7 @@ public class JsonRpcServer
         {
             // TODO: PERFORM ALL THE THINGS HERE.
             //  Respond with an error body if required.
-            Console.WriteLine($"BODY: {item.Result?.Id}-{item.Result?.Method}, ERR: {item.Error}");
+            Console.WriteLine($"BODY? {item.Result?.Id}-{item.Result?.Method}, ERR? {item.Error}");
 
             #region Validate
 
@@ -122,28 +128,53 @@ public class JsonRpcServer
                     }
 
                     break;
-                case EJsonRpcMethod.ShowBindingEditor: {
+                case EJsonRpcMethod.ShowBindingEditor:
+                {
                     var decodedParams = JsonHandler.DecodeParamsOrDefault<ShowBindingEditor>(item.Result?.Params, ParamsJsonSerializerContext.Default.ShowBindingEditor);
                     if (!decodedParams.Success)
                     {
-                        if(item.IdExists) responseList.Add(ResponseBuilder.BuildErrorWithException(item, EJsonRpcErrorCode.InvalidBodyParams, decodedParams.Exception));
+                        if (item.IdExists) responseList.Add(ResponseBuilder.BuildErrorWithException(item, EJsonRpcErrorCode.InvalidBodyParams, decodedParams.Exception));
                         break;
                     }
+
                     var steamVrError = OpenVR.Input.OpenBindingUI("", 0, 0, decodedParams.Result.OnDesktop);
-                    
+
                     if (!item.IdExists) break; // Notification
-                    
+
                     if (steamVrError == EVRInputError.None)
                     {
                         responseList.Add(new ResponseBuilder(item.Result.Id).BuildStatus(true,
-                            "Successfully launched the bindings interface.") // TODO: Localize
-                        );                            
+                                "Successfully launched the bindings interface.") // TODO: Localize
+                        );
                     }
                     else
                     {
                         responseList.Add(ResponseBuilder.BuildErrorWithException(item, EJsonRpcErrorCode.SteamVrError, new Exception(Enum.GetName(steamVrError))));
                     }
+
+                    break;
+                }
+                case EJsonRpcMethod.ToggleDesktopWindow:
+                {
+                    var decodedParams = JsonHandler.DecodeParamsOrDefault<ToggleDesktopWindow>(item.Result?.Params, ParamsJsonSerializerContext.Default.ToggleDesktopWindow);
+                    if (!decodedParams.Success)
+                    {
+                        if (item.IdExists) responseList.Add(ResponseBuilder.BuildErrorWithException(item, EJsonRpcErrorCode.InvalidBodyParams, decodedParams.Exception));
+                        break;
+                    }
+
+                    try
+                    {
+                        Services.ApplicationWindow.SetWindowVisible(decodedParams.Result?.Visible ?? false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                     
+                    if (!item.IdExists) break; // Notification
+                    
+                    responseList.Add(new ResponseBuilder(item.Result.Id).BuildStatus(true, $"Toggled the desktop window! {decodedParams.Result?.Visible}"));
                     break;
                 }
                 default:

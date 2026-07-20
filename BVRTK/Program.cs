@@ -1,4 +1,5 @@
-﻿using BVRTK.Data;
+﻿using System.Drawing;
+using BVRTK.Data;
 using BVRTK.Data.Setting;
 using Valve.VR;
 
@@ -69,6 +70,9 @@ class Program
 
         #endregion
 
+        // Services.Graphics.SetWindowVisible(true);
+        Services.ApplicationWindow.Run(); // TODO Circumvents blocking? Figure this out.
+        
         uint[] indexArr = [];
         while (true)
         {
@@ -86,7 +90,5 @@ class Program
 
             Thread.Sleep(1000);
         }
-        
-        
     }
 }

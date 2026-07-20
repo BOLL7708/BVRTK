@@ -8,7 +8,8 @@ public enum EJsonRpcMethod
     Unknown,
     Help,
     ListMethods,
-    ShowBindingEditor
+    ShowBindingEditor,
+    ToggleDesktopWindow,
 }
 
 /// <summary>

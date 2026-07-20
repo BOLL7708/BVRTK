@@ -4,9 +4,10 @@ using BVRTK.Components.Server.Request.Params;
 namespace BVRTK.Components.Server.Request;
 
 // Append this list with all classes that should be possible to serialize/deserialize.
-[JsonSerializable(
-    typeof(ShowBindingEditor)
-)]
+[
+    JsonSerializable(typeof(ShowBindingEditor)),
+    JsonSerializable(typeof(ToggleDesktopWindow))
+]
 [JsonSourceGenerationOptions(
     GenerationMode = JsonSourceGenerationMode.Default,
     IncludeFields = true,

@@ -1,3 +1,4 @@
+using BVRTK.Components.Graphics;
 using BVRTK.Components.Server;
 using EasyOpenVR;
 using EasyOpenVR.Data.Manifest;
@@ -13,6 +14,9 @@ public static class Services
 
     private static readonly Lazy<EasyOpenVr> LazyVr = new(BuildVr);
     public static EasyOpenVr Vr => LazyVr.Value;
+
+    private static readonly Lazy<ApplicationWindow> LazyApplicationWindow = new(BuildApplicationWindow);
+    public static ApplicationWindow ApplicationWindow => LazyApplicationWindow.Value;
     #endregion
 
     private static JsonRpcServer BuildServer()
@@ -70,5 +74,10 @@ public static class Services
             .SetDebug(true)
             .QuitWithRuntime()
             .BuildAndInit();
+    }
+
+    private static ApplicationWindow BuildApplicationWindow()
+    {
+        return new ApplicationWindow();
     }
 }
