@@ -40,6 +40,7 @@ class Program
 
         vr.State += connected => Console.WriteLine("[STATE] " + (connected ? "Connected" : "Disconnected"));
         vr.DebugMessage += (message, level) => Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
+        Services.ApplicationWindow.Run();
 
         vr.Event.Register([
                 EVREventType.VREvent_TrackedDeviceActivated,
