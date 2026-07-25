@@ -1,15 +1,18 @@
+using System.Collections.Concurrent;
+using System.Numerics;
 using System.Runtime.CompilerServices;
-
-namespace BVRTK.Components.Graphics;
-
 using Hexa.NET.GLFW;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Hexa.NET.ImGui.Backends.OpenGL3;
-using Hexa.NET.ImGui.Utilities;
 using Hexa.NET.OpenGL;
 using HexaGen.Runtime;
-using GLFWmonitorPtr = Hexa.NET.GLFW.GLFWmonitorPtr;
+using Valve.VR;
+using GLFWwindow = Hexa.NET.GLFW.GLFWwindow;
+using HexaUtils = HexaGen.Runtime.Utils;
+
+namespace BVRTK.Components.Graphics;
+
 using GLFWwindowPtr = Hexa.NET.GLFW.GLFWwindowPtr;
 
 public class ApplicationWindow
@@ -18,44 +21,237 @@ public class ApplicationWindow
     {
     }
 
-    private Hexa.NET.GLFW.GLFWwindowPtr? _window = null;
-    private GL? _gl  = null;
-    
+    private readonly ConcurrentQueue<VREvent_t> _overlayEvents = new();
+
+    public void EnqueueOverlayEvent(in VREvent_t vrEvent)
+    {
+        _overlayEvents.Enqueue(vrEvent);
+    }
+
+    private GLFWwindowPtr? _window = null;
+
     // Based on: https://github.com/HexaEngine/Hexa.NET.ImGui/blob/main/Examples/ExampleGLFWOpenGL3/Program.cs
-    
+
     /// Setup ImGui config.
-    private void UpdateConfig(float mainScale)
+    private static unsafe void UpdateConfig()
     {
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard; // Enable Keyboard Controls
-        
+
         ImGui.StyleColorsDark();
         var style = ImGui.GetStyle();
-        style.ScaleAllSizes(mainScale);
-        style.FontScaleDpi = mainScale;
+        style.ScaleAllSizes(Constants.OverlayGuiScale);
+        style.FontScaleDpi = Constants.OverlayGuiScale;
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
+        io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Regular.ttf"]));
     }
 
-    public void Run()
+    private static void RenderUiToFbo(GL gl, uint fbo)
     {
-        NativeCallback<GLFWerrorfun> error;
+        // Render ImGui into the FBO (single render)
+        gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, fbo);
+        gl.ClearColor(0, 0, 0, 0);
+        gl.Clear(GLClearBufferMask.ColorBufferBit);
+
+        ImGuiImplOpenGL3.NewFrame();
+        ImGuiImplGLFW.NewFrame();
+        var io = ImGui.GetIO();
+        io.DisplaySize = new Vector2(Constants.OverlayTextureWidth, Constants.OverlayTextureHeight); // match the FBO
+        io.DisplayFramebufferScale = new Vector2(1, 1);
+        if (_overlayFocus)
+        {
+            // This is performed so that hover effects still work when the desktop cursor has left the window.
+            // A side effect is that the overlay cursor now overrides the desktop one completely if active.
+            ImGui.GetIO().AddMousePosEvent(_lastOverlayMouse.x, _lastOverlayMouse.y);
+        }
+
+        ImGui.NewFrame();
+
+        ImGui.ShowDemoWindow();
+
+        #region Restrict Demo window to parent
+
+        // TODO: delete when I have made my own GUI.
+        var mvp = ImGui.GetMainViewport();
+        ImGui.SetWindowPos("Dear ImGui Demo", mvp.WorkPos);
+        ImGui.SetWindowSize("Dear ImGui Demo", mvp.WorkSize);
+
+        #endregion
+
+        ImGui.Render();
+        ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
+
+        gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
+    }
+
+    private static void SubmitOverlayTexture(ulong mainHandle, uint fboTex)
+    {
+        // Submit the same texture to the overlay
+        var tex = new Texture_t
+        {
+            handle = (IntPtr)fboTex,
+            eType = ETextureType.OpenGL,
+            eColorSpace = EColorSpace.Auto
+        };
+        OpenVR.Overlay.SetOverlayTexture(mainHandle, ref tex);
+    }
+
+    private void ApplyOverlayEventsAsInput()
+    {
+        var io = ImGui.GetIO();
+        while (_overlayEvents.TryDequeue(out var vrEvent))
+        {
+            switch ((EVREventType)vrEvent.eventType)
+            {
+                case EVREventType.VREvent_MouseMove:
+                    _lastOverlayMouse = vrEvent.data.mouse;
+                    io.AddMousePosEvent(vrEvent.data.mouse.x, vrEvent.data.mouse.y);
+                    break;
+                case EVREventType.VREvent_MouseButtonDown:
+                    io.AddMouseButtonEvent(Utils.ConvertMouseButton(vrEvent.data.mouse.button), true);
+                    break;
+                case EVREventType.VREvent_MouseButtonUp:
+                    io.AddMouseButtonEvent(Utils.ConvertMouseButton(vrEvent.data.mouse.button), false);
+                    break;
+                case EVREventType.VREvent_ScrollDiscrete:
+                case EVREventType.VREvent_ScrollSmooth:
+                    io.AddMouseWheelEvent(vrEvent.data.scroll.xdelta, vrEvent.data.scroll.ydelta);
+                    break;
+                case EVREventType.VREvent_KeyboardCharInput:
+                    // TODO: Possibly move this big blob into a separate method.
+                    var str = Utils.ConvertKeyboardChar(vrEvent.data.keyboard);
+                    Console.WriteLine($"Decoded input chars: {str}");
+                    var runes = str.EnumerateRunes();
+                    var lastRune = runes.Last();
+                    var isEscapeSymbol = false;
+
+                    foreach (var rune in runes)
+                    {
+                        if (isEscapeSymbol)
+                        {
+                            switch (rune.Value)
+                            {
+                                case 'A': PressKey(ImGuiKey.UpArrow); break;
+                                case 'B': PressKey(ImGuiKey.DownArrow); break;
+                                case 'C': PressKey(ImGuiKey.RightArrow); break;
+                                case 'D': PressKey(ImGuiKey.LeftArrow); break;
+                            }
+
+                            continue;
+                        }
+
+                        switch (rune.Value)
+                        {
+                            case '\b': // backspace
+                                PressKey(ImGuiKey.Backspace);
+                                break;
+                            case '\n':
+                            case '\r': // enter/submit
+                                PressKey(ImGuiKey.Enter);
+                                break;
+                            case 0x1b: // escape -> close keyboard
+                                if (lastRune.Value == 0x1b)
+                                {
+                                    Services.Vr.Overlay.HideKeyboard();
+                                    _softKeyboardShown = false;
+                                }
+                                else
+                                {
+                                    isEscapeSymbol = true;
+                                }
+
+                                break;
+                            default:
+                                if (rune.Value >= 0x20)
+                                {
+                                    // printable only
+                                    io.AddInputCharactersUTF8(rune.ToString());
+                                }
+
+                                break;
+                        }
+                    }
+
+                    break;
+
+                    void PressKey(ImGuiKey k)
+                    {
+                        io.AddKeyEvent(k, true);
+                        io.AddKeyEvent(k, false);
+                    }
+                case EVREventType.VREvent_FocusEnter:
+                    _overlayFocus = true;
+                    UpdateFocus();
+                    break;
+                case EVREventType.VREvent_FocusLeave:
+                    _overlayFocus = false;
+                    UpdateFocus();
+                    break;
+                default:
+                    // Console.WriteLine($"UNHANDLED: {Enum.GetName((EVREventType)vrEvent.eventType)}");
+                    break;
+            }
+        }
+    }
+
+    private static bool _overlayFocus = false;
+    private static bool _desktopFocus = false;
+    private static bool _hasFocus = false;
+    private static VREvent_Mouse_t _lastOverlayMouse = new();
+
+    private static unsafe void OnWindowFocus(GLFWwindow* window, int focused)
+    {
+        _desktopFocus = focused != 0;
+        UpdateFocus();
+    }
+
+    private static void UpdateFocus()
+    {
+        var io = ImGui.GetIO();
+        var focus = _desktopFocus || _overlayFocus;
+        if (_hasFocus == focus) return;
+        _hasFocus = focus;
+        io.AddFocusEvent(focus);
+    }
+
+    private static bool _softKeyboardShown = false;
+
+    private static void DisplayVrKeyboardOnTextInput(ulong handle)
+    {
+        var io = ImGui.GetIO();
+        if (io.WantTextInput && !_softKeyboardShown)
+        {
+            _softKeyboardShown = true;
+            Services.Vr.Overlay.ShowDirectModeKeyboard(handle);
+        }
+        else if (!io.WantTextInput && _softKeyboardShown)
+        {
+            _softKeyboardShown = false;
+            Services.Vr.Overlay.HideKeyboard();
+        }
+    }
+
+    public unsafe void Run(ulong overlayHandle)
+    {
         unsafe
         {
-            error = new NativeCallback<GLFWerrorfun>(static (errorCode, description) => { Console.WriteLine(Utils.DecodeStringUTF8(description)); });
+            var error = new NativeCallback<GLFWerrorfun>(static (errorCode, description) => { Console.WriteLine(HexaUtils.DecodeStringUTF8(description)); });
             GLFW.SetErrorCallback(error);
         }
 
         GLFW.Init();
-        string glslVersion = "#version 150";
+        const string glslVersion = "#version 150";
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
         GLFW.WindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
         GLFW.WindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
 
-        var mon = GLFW.GetPrimaryMonitor();
-        var mainScale = ImGuiImplGLFW.GetContentScaleForMonitor(Unsafe.BitCast<GLFWmonitorPtr, Hexa.NET.ImGui.Backends.GLFW.GLFWmonitorPtr>(mon));
-        GLFWwindowPtr window = GLFW.CreateWindow((int)(1280 * mainScale), (int)(800 * mainScale), "GLFW Example", null, null);
+        var window = GLFW.CreateWindow(
+            Constants.OverlayTextureWidth,
+            Constants.OverlayTextureHeight,
+            "BVRTK", null, null
+        );
         if (window.IsNull)
         {
             Console.WriteLine("Failed to create GLFW window.");
@@ -63,20 +259,31 @@ public class ApplicationWindow
             return;
         }
 
+        // TODO: Set icon
+        // GLFW.SetWindowIcon(window, 1, new GLFWimagePtr());
+
         _window = window;
         GLFW.MakeContextCurrent(window);
 
         var guiContext = ImGui.CreateContext();
         ImGui.SetCurrentContext(guiContext);
-        UpdateConfig(mainScale);
+        UpdateConfig();
         ImGuiImplGLFW.SetCurrentContext(guiContext);
 
-        if (!ImGuiImplGLFW.InitForOpenGL(Unsafe.BitCast<GLFWwindowPtr, Hexa.NET.ImGui.Backends.GLFW.GLFWwindowPtr>(window), true))
+        if (!ImGuiImplGLFW.InitForOpenGL(
+                Unsafe.BitCast<GLFWwindowPtr, Hexa.NET.ImGui.Backends.GLFW.GLFWwindowPtr>(window),
+                true
+            )
+           )
         {
             Console.WriteLine("Failed to init ImGui Impl GLFW");
             GLFW.Terminate();
             return;
         }
+
+        // Replace the default window focus callback as it will disable all
+        // input handling when the desktop mouse cursor leaves the window.
+        GLFW.SetWindowFocusCallback(window, &OnWindowFocus);
 
         ImGuiImplOpenGL3.SetCurrentContext(guiContext);
         if (!ImGuiImplOpenGL3.Init(glslVersion))
@@ -86,46 +293,53 @@ public class ApplicationWindow
             return;
         }
 
-        GL GL = new(new BindingsContext(window));
-        _gl = GL;
+        GL gl = new(new BindingsContext(window));
+
+        // --- Offscreen FBO ---
+        var fbo = gl.GenFramebuffer();
+        gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, fbo);
+
+        var fboTex = gl.GenTexture();
+        gl.BindTexture(GLTextureTarget.Texture2D, fboTex);
+        gl.TexImage2D(GLTextureTarget.Texture2D, 0, GLInternalFormat.Rgba8, Constants.OverlayTextureWidth, Constants.OverlayTextureHeight, 0, GLPixelFormat.Rgba, GLPixelType.UnsignedByte, 0);
+        gl.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MinFilter, (int)GLEnum.Linear);
+        gl.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MagFilter, (int)GLEnum.Linear);
+        gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
+        gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
         // Main loop
-        var io = ImGui.GetIO();
         while (GLFW.WindowShouldClose(window) == 0)
         {
+            // TODO: This loop should be possible to pause or slow down if both the overlay and desktop windows are hidden.
             // Poll for and process events
             GLFW.PollEvents();
+            ApplyOverlayEventsAsInput();
+            DisplayVrKeyboardOnTextInput(overlayHandle);
 
             if (GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) != 0)
             {
+                // TODO: This is an actual render pause, just that it goes for minimized... which we don't do.
                 ImGuiImplGLFW.Sleep(10);
                 continue;
             }
 
             GLFW.MakeContextCurrent(window);
-            GL.ClearColor(1, 0.8f, 0.75f, 1);
-            GL.Clear(GLClearBufferMask.ColorBufferBit);
+            RenderUiToFbo(gl, fbo);
+            SubmitOverlayTexture(overlayHandle, fboTex);
 
-            ImGuiImplOpenGL3.NewFrame();
-            ImGuiImplGLFW.NewFrame();
-            ImGui.NewFrame();
-            
-            ImGui.ShowDemoWindow();
+            // Mirror to the desktop window (GPU copy, not a re-render)
+            int ww, wh;
+            unsafe
+            {
+                GLFW.GetFramebufferSize(window, &ww, &wh);
+            }
 
-            #region Restrict Demo window to parent 
-            var mvp = ImGui.GetMainViewport();
-            ImGui.SetWindowPos("Dear ImGui Demo", mvp.WorkPos);
-            ImGui.SetWindowSize("Dear ImGui Demo", mvp.WorkSize);
-            #endregion
-            
-            ImGui.Render();
+            // Figure out what the below does
+            gl.BindFramebuffer(GLFramebufferTarget.ReadFramebuffer, fbo);
+            gl.BindFramebuffer(GLFramebufferTarget.DrawFramebuffer, 0);
+            gl.BlitFramebuffer(0, 0, Constants.OverlayTextureWidth, Constants.OverlayTextureHeight, 0, 0, ww, wh, GLClearBufferMask.ColorBufferBit, GLBlitFramebufferFilter.Linear);
+            gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
-            GLFW.MakeContextCurrent(window);
-            ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
-            
-            GLFW.MakeContextCurrent(window);
-
-            // Swap front and back buffers (double buffering)
             GLFW.SwapBuffers(window);
         }
 
@@ -134,7 +348,9 @@ public class ApplicationWindow
         ImGuiImplGLFW.Shutdown();
         ImGuiImplGLFW.SetCurrentContext(null);
         ImGui.DestroyContext();
-        GL.Dispose();
+        gl.DeleteFramebuffer(fbo);
+        gl.DeleteTexture(fboTex);
+        gl.Dispose();
 
         // Clean up and terminate GLFW
         GLFW.DestroyWindow(window);
@@ -144,12 +360,12 @@ public class ApplicationWindow
     public void SetWindowVisible(bool visible)
     {
         if (_window is null) return; // TODO: Log to log system here.
-        if(visible) GLFW.ShowWindow(_window.Value);
+        if (visible) GLFW.ShowWindow(_window.Value);
         else GLFW.HideWindow(_window.Value);
     }
 }
 
-internal unsafe class BindingsContext(Hexa.NET.GLFW.GLFWwindowPtr window) : HexaGen.Runtime.IGLContext
+internal unsafe class BindingsContext(GLFWwindowPtr window) : IGLContext
 {
     public nint Handle => (nint)window.Handle;
 

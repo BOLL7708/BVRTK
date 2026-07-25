@@ -62,4 +62,22 @@
         </Compile>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Resources\Media\bvrtk.thumbnail.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Fonts\AtkinsonHyperlegible-BoldItalic.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Fonts\AtkinsonHyperlegible-Italic.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="Resources\Fonts\AtkinsonHyperlegible-Regular.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

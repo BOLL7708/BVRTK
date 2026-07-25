@@ -2,6 +2,7 @@
 using BVRTK.Data;
 using BVRTK.Data.Setting;
 using Valve.VR;
+using Steamworks;
 
 namespace BVRTK;
 
@@ -40,7 +41,7 @@ class Program
 
         vr.State += connected => Console.WriteLine("[STATE] " + (connected ? "Connected" : "Disconnected"));
         vr.DebugMessage += (message, level) => Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
-        Services.ApplicationWindow.Run();
+        // vr.PumpCycle += Services.ApplicationWindow.Render;
 
         vr.Event.Register([
                 EVREventType.VREvent_TrackedDeviceActivated,
@@ -68,17 +69,40 @@ class Program
                 // TODO: If enabled, send application data to WS.
             }
         );
-
         #endregion
-
-        // Services.Graphics.SetWindowVisible(true);
-        Services.ApplicationWindow.Run(); // TODO Circumvents blocking? Figure this out.
         
         uint[] indexArr = [];
+        var launchServicesDone = false;
         while (true)
         {
             if (!vr.IsInitialized()) continue;
-
+            if (!launchServicesDone)
+            {
+                launchServicesDone = true;
+                
+                // var result1 = vr.Overlay.CreateDashboardOverlay("bvrtk.dashboard.test.1", "BVRTK Test 1", out var mainHandle, out var thumbnailHandle);
+                // var result2 = vr.Overlay.SetOverlayTextureFromFile(mainHandle, @"D:\Temp\TEST\main.jpg");
+                // var result3 = vr.Overlay.SetOverlayTextureFromFile(thumbnailHandle, @"D:\Temp\TEST\thumbnail.png");
+                // vr.Overlay.SetOverlayWidth(mainHandle, 2.5f);
+                // Console.WriteLine($"TEST OVERLAY: {result1.Success} {result2.Success} {result3.Success}");
+                var ds = Path.DirectorySeparatorChar;
+                vr.Overlay.CreateDashboardOverlay(
+                    Constants.OverlayUniqueId, 
+                    Constants.OverlayTitle, 
+                    out ulong mainHandle, 
+                    out ulong thumbnailHandle, 
+                    Constants.OverlayTextureWidth, 
+                    Constants.OverlayTextureHeight,
+                    Constants.OverlayWidth,
+                    Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.png"])
+                );
+                vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
+                {
+                    Services.ApplicationWindow.EnqueueOverlayEvent(in vrEvent);
+                });
+                
+                Services.ApplicationWindow.Run(mainHandle);
+            }
             if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;
             if (hmdIndex == uint.MaxValue) continue;
