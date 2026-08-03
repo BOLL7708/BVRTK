@@ -100,8 +100,8 @@ class Program
                 {
                     Services.ApplicationWindow.EnqueueOverlayEvent(in vrEvent);
                 });
-                
                 Services.ApplicationWindow.Run(mainHandle);
+                Services.ApplicationWindow.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
             }
             if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;

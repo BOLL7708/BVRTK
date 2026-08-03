@@ -10,10 +10,9 @@ using HexaGen.Runtime;
 using Valve.VR;
 using GLFWwindow = Hexa.NET.GLFW.GLFWwindow;
 using HexaUtils = HexaGen.Runtime.Utils;
+using GLFWwindowPtr = Hexa.NET.GLFW.GLFWwindowPtr;
 
 namespace BVRTK.Components.Graphics;
-
-using GLFWwindowPtr = Hexa.NET.GLFW.GLFWwindowPtr;
 
 public class ApplicationWindow
 {
@@ -26,9 +25,11 @@ public class ApplicationWindow
     public void EnqueueOverlayEvent(in VREvent_t vrEvent)
     {
         _overlayEvents.Enqueue(vrEvent);
+        GLFW.PostEmptyEvent(); // Only here to wake the render cycle from sleep.
     }
 
     private GLFWwindowPtr? _window = null;
+    private bool _shouldTerminate = false;
 
     // Based on: https://github.com/HexaEngine/Hexa.NET.ImGui/blob/main/Examples/ExampleGLFWOpenGL3/Program.cs
 
@@ -186,6 +187,13 @@ public class ApplicationWindow
                     _overlayFocus = false;
                     UpdateFocus();
                     break;
+                case EVREventType.VREvent_OverlayShown:
+                    _overlayVisible = true;
+                    break;
+                case EVREventType.VREvent_OverlayHidden:
+                case EVREventType.VREvent_OverlayClosed:
+                    _overlayVisible = false;
+                    break;
                 default:
                     // Console.WriteLine($"UNHANDLED: {Enum.GetName((EVREventType)vrEvent.eventType)}");
                     break;
@@ -217,6 +225,20 @@ public class ApplicationWindow
 
     #endregion
 
+    #region Termination
+
+    /// <summary>
+    /// Instead of closing the desktop window, we hide it, to allow the overlay to still render.
+    /// </summary>
+    /// <param name="window"></param>
+    private static unsafe void OnWindowClose(GLFWwindow* window)
+    {
+        GLFW.SetWindowShouldClose(window, GLFW.GLFW_FALSE); // cancel the close request
+        GLFW.HideWindow(window);
+    }
+
+    #endregion
+
     #region Keyboard
 
     private static bool _softKeyboardShown = false;
@@ -240,11 +262,14 @@ public class ApplicationWindow
 
     public unsafe void Run(ulong overlayHandle)
     {
-        unsafe
+        _shouldTerminate = false;
+
+        var error = new NativeCallback<GLFWerrorfun>(static (errorCode, description) =>
         {
-            var error = new NativeCallback<GLFWerrorfun>(static (errorCode, description) => { Console.WriteLine(HexaUtils.DecodeStringUTF8(description)); });
-            GLFW.SetErrorCallback(error);
-        }
+            // TODO: Switch to proper logging
+            Console.WriteLine(HexaUtils.DecodeStringUTF8(description));
+        });
+        GLFW.SetErrorCallback(error);
 
         GLFW.Init();
         const string glslVersion = "#version 150";
@@ -294,6 +319,10 @@ public class ApplicationWindow
         // Replace the default window focus callback as it will disable all
         // input handling when the desktop mouse cursor leaves the window.
         GLFW.SetWindowFocusCallback(window, &OnWindowFocus);
+        
+        // Replace the default window close callback as it will terminate
+        // the GL window which houses the texture the overlay is using.
+        GLFW.SetWindowCloseCallback(window, &OnWindowClose);
 
         ImGuiImplOpenGL3.SetCurrentContext(guiContext);
         if (!ImGuiImplOpenGL3.Init(glslVersion))
@@ -317,20 +346,23 @@ public class ApplicationWindow
         gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
+        var isDesktopVisible = bool () => 
+            GLFW.GetWindowAttrib(window, GLFW.GLFW_VISIBLE) != 0
+            && GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) == 0;
+
         // Main loop
         // TODO: Closing should just hide, so this should listen to real termination.
-        while (GLFW.WindowShouldClose(window) == 0)
+        while (!_shouldTerminate)
         {
             // TODO: This loop should be possible to pause or slow down if both the overlay and desktop windows are hidden.
             // Poll for and process events
             GLFW.PollEvents();
             ApplyOverlayEventsAsInput();
             DisplayVrKeyboardOnTextInput(overlayHandle);
-
-            if (GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) != 0)
+            
+            if (!(_overlayVisible || isDesktopVisible()))
             {
-                // TODO: This is an actual render pause, just that it goes for minimized... which we don't do.
-                ImGuiImplGLFW.Sleep(10);
+                GLFW.WaitEventsTimeout(1); // Will interrupt on an event, which happens if the window is shown.
                 continue;
             }
 
@@ -340,10 +372,7 @@ public class ApplicationWindow
 
             // Mirror to the desktop window (GPU copy, not a re-render)
             int ww, wh;
-            unsafe
-            {
-                GLFW.GetFramebufferSize(window, &ww, &wh);
-            }
+            GLFW.GetFramebufferSize(window, &ww, &wh);
 
             // Figure out what the below does
             gl.BindFramebuffer(GLFramebufferTarget.ReadFramebuffer, fbo);
@@ -368,11 +397,32 @@ public class ApplicationWindow
         GLFW.Terminate();
     }
 
+    public void Terminate()
+    {
+        _shouldTerminate = true;
+    }
+
     public void SetWindowVisible(bool visible)
     {
         if (_window is null) return; // TODO: Log to log system here.
-        if (visible) GLFW.ShowWindow(_window.Value);
+        if (visible)
+        {
+            GLFW.ShowWindow(_window.Value);
+            GLFW.PostEmptyEvent();
+        }
         else GLFW.HideWindow(_window.Value);
+    }
+    
+    private bool _overlayVisible = false;
+
+    /// <summary>
+    /// Used to provide the overlay state to help decide if the UI should render.
+    /// </summary>
+    /// <param name="visible"></param>
+    public void SetOverlayVisible(bool visible)
+    {
+        _overlayVisible = visible;
+        if(visible) GLFW.PostEmptyEvent();
     }
 }
 
