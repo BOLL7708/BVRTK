@@ -18,6 +18,9 @@ class Program
     {
         Console.WriteLine("Hello, World!");
 
+        var server = Services.Server;
+        await server.StartWebSocket();
+        
         #region Settings
         Settings.ReadFromDisk();
         Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
@@ -29,9 +32,6 @@ class Program
         Settings.WriteToDisk(); // Writes the Server object to disk as it is dirty
         Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
         #endregion
-        
-        var server = Services.Server;
-        await server.StartWebSocket(Settings.Current.Server.Port);
         
         // TODO: Setup NLog
 

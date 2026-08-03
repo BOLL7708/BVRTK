@@ -17,13 +17,13 @@ public abstract class AbstractServer
 
     #region ServerStatusHandler
 
-    public delegate void ServerStatusHandler(ServerStatus status, int count);
+    public delegate void ServerStatusHandler(ServerStatus status, int value, int port);
 
     public event ServerStatusHandler? StatusChanged;
 
-    protected void OnStatusChanged(ServerStatus status, int count)
+    protected void OnStatusChanged(ServerStatus status, int value, int port)
     {
-        StatusChanged?.Invoke(status, count);
+        StatusChanged?.Invoke(status, value, port);
     }
 
     #endregion

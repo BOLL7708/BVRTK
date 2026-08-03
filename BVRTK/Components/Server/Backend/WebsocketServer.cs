@@ -50,7 +50,7 @@ public sealed class WebsocketServer : AbstractServer
         _server = Build(_port, _ip);
         _server.Options.MaxPackageLength = 100 * 1024 * 1024;
         await _server.StartAsync();
-        OnStatusChanged(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0);
+        OnStatusChanged(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0, _port);
     }
 
     public override async Task Stop()
@@ -67,7 +67,7 @@ public sealed class WebsocketServer : AbstractServer
             _server = null;
         }
 
-        OnStatusChanged(ServerStatus.Disconnected, 0);
+        OnStatusChanged(ServerStatus.Disconnected, 0, _port);
     }
 
     #endregion
@@ -78,14 +78,14 @@ public sealed class WebsocketServer : AbstractServer
     {
         _sessions[session.SessionID] = session;
         OnStatusMessage(session.SessionID, true, $"New session connected: {session.SessionID}");
-        OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
+        OnStatusChanged(ServerStatus.SessionCount, _sessions.Count, _port);
     }
 
     private void Server_NewMessageReceived(IAppSession session, string value)
     {
         OnMessageReceived(session.SessionID, value);
         Interlocked.Increment(ref ReceivedCount);
-        OnStatusChanged(ServerStatus.ReceivedCount, ReceivedCount);
+        OnStatusChanged(ServerStatus.ReceivedCount, ReceivedCount, _port);
     }
 
     private void Server_SessionClosed(IAppSession session, CloseReason reason)
@@ -93,7 +93,7 @@ public sealed class WebsocketServer : AbstractServer
         _sessions.TryRemove(session.SessionID, out _);
         var reasonName = Enum.GetName(reason);
         OnStatusMessage(null, false, $"Session closed: {session.SessionID}, because: {reasonName}");
-        OnStatusChanged(ServerStatus.SessionCount, _sessions.Count);
+        OnStatusChanged(ServerStatus.SessionCount, _sessions.Count, _port);
     }
 
     #endregion
@@ -136,7 +136,7 @@ public sealed class WebsocketServer : AbstractServer
                 }
                 await webSocketSession.SendAsync(message);
                 Interlocked.Increment(ref DeliveredCount);
-                OnStatusChanged(ServerStatus.DeliveredCount, DeliveredCount);
+                OnStatusChanged(ServerStatus.DeliveredCount, DeliveredCount, _port);
             }
             catch (Exception ex)
             {

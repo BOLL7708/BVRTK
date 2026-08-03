@@ -2,6 +2,7 @@ using BVRTK.Components.Server.Backend;
 using BVRTK.Components.Server.Request;
 using BVRTK.Components.Server.Request.Params;
 using BVRTK.Components.Server.Response;
+using BVRTK.Data;
 using BVRTK.Resources;
 using NLog.Targets;
 using Valve.VR;
@@ -20,7 +21,10 @@ public class JsonRpcServer
 
         _websocketServer = new WebsocketServer();
         _websocketServer.ServerError += Console.WriteLine;
-        _websocketServer.StatusChanged += (status, i) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), i)}"); };
+        _websocketServer.StatusChanged += (status, value, port) =>
+        {
+            Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), value)} ({port})");
+        };
         _websocketServer.MessageReceived += async (sessionId, message) =>
         {
             Console.WriteLine($"MessageReceived: {sessionId} - {message}");
@@ -55,9 +59,17 @@ public class JsonRpcServer
 
     #region LifeTime
 
-    public async Task StartWebSocket(int port)
+    private int _usedPort = 0;
+    public async Task StartWebSocket()
     {
-        _websocketServer.SetValues(port);
+        SettingsChangeHandlers.OnServerPortChanged += async (current, previous) =>
+        {
+            _websocketServer.SetValues(current);
+            await _websocketServer.StartOrRestart();
+        };
+        
+        _usedPort = Settings.Current.Server.Port;
+        _websocketServer.SetValues(_usedPort);
         await _websocketServer.StartOrRestart();
     }
 
