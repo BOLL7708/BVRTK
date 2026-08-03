@@ -37,11 +37,13 @@ public class ApplicationWindow
     {
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard; // Enable Keyboard Controls
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
 
         ImGui.StyleColorsDark();
         var style = ImGui.GetStyle();
         style.ScaleAllSizes(Constants.OverlayGuiScale);
         style.FontScaleDpi = Constants.OverlayGuiScale;
+
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
         io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Regular.ttf"]));
@@ -68,16 +70,7 @@ public class ApplicationWindow
 
         ImGui.NewFrame();
 
-        ImGui.ShowDemoWindow();
-
-        #region Restrict Demo window to parent
-
-        // TODO: delete when I have made my own GUI.
-        var mvp = ImGui.GetMainViewport();
-        ImGui.SetWindowPos("Dear ImGui Demo", mvp.WorkPos);
-        ImGui.SetWindowSize("Dear ImGui Demo", mvp.WorkSize);
-
-        #endregion
+        ImGui.ShowDemoWindow(); // TODO: Replace with our own window
 
         ImGui.Render();
         ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());
@@ -97,6 +90,11 @@ public class ApplicationWindow
         OpenVR.Overlay.SetOverlayTexture(mainHandle, ref tex);
     }
 
+
+    /// <summary>
+    /// We read the queue of incoming Overlay events from VR and
+    /// convert those to valid input events for ImGui
+    /// </summary>
     private void ApplyOverlayEventsAsInput()
     {
         var io = ImGui.GetIO();
@@ -195,6 +193,8 @@ public class ApplicationWindow
         }
     }
 
+    #region Focus
+
     private static bool _overlayFocus = false;
     private static bool _desktopFocus = false;
     private static bool _hasFocus = false;
@@ -215,6 +215,10 @@ public class ApplicationWindow
         io.AddFocusEvent(focus);
     }
 
+    #endregion
+
+    #region Keyboard
+
     private static bool _softKeyboardShown = false;
 
     private static void DisplayVrKeyboardOnTextInput(ulong handle)
@@ -232,6 +236,8 @@ public class ApplicationWindow
         }
     }
 
+    #endregion
+
     public unsafe void Run(ulong overlayHandle)
     {
         unsafe
@@ -246,6 +252,10 @@ public class ApplicationWindow
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
         GLFW.WindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
         GLFW.WindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
+
+        // Handle monitor scaling, scale the window but not the frame buffer, to avoid affecting VR overlay.
+        GLFW.WindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_TRUE);
+        GLFW.WindowHint(GLFW.GLFW_SCALE_FRAMEBUFFER, GLFW.GLFW_FALSE);
 
         var window = GLFW.CreateWindow(
             Constants.OverlayTextureWidth,
@@ -308,6 +318,7 @@ public class ApplicationWindow
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
         // Main loop
+        // TODO: Closing should just hide, so this should listen to real termination.
         while (GLFW.WindowShouldClose(window) == 0)
         {
             // TODO: This loop should be possible to pause or slow down if both the overlay and desktop windows are hidden.
