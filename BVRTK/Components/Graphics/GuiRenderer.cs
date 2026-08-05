@@ -14,9 +14,9 @@ using GLFWwindowPtr = Hexa.NET.GLFW.GLFWwindowPtr;
 
 namespace BVRTK.Components.Graphics;
 
-public class ApplicationWindow
+public class GuiRenderer
 {
-    public ApplicationWindow()
+    public GuiRenderer()
     {
     }
 
@@ -25,10 +25,11 @@ public class ApplicationWindow
     public void EnqueueOverlayEvent(in VREvent_t vrEvent)
     {
         _overlayEvents.Enqueue(vrEvent);
-        GLFW.PostEmptyEvent(); // Only here to wake the render cycle from sleep.
+        WakeRenderLoop();
     }
 
     private GLFWwindowPtr? _window = null;
+    private bool _glfwInitialized = false;
     private bool _shouldTerminate = false;
 
     // Based on: https://github.com/HexaEngine/Hexa.NET.ImGui/blob/main/Examples/ExampleGLFWOpenGL3/Program.cs
@@ -90,8 +91,7 @@ public class ApplicationWindow
         };
         OpenVR.Overlay.SetOverlayTexture(mainHandle, ref tex);
     }
-
-
+    
     /// <summary>
     /// We read the queue of incoming Overlay events from VR and
     /// convert those to valid input events for ImGui
@@ -271,7 +271,8 @@ public class ApplicationWindow
         });
         GLFW.SetErrorCallback(error);
 
-        GLFW.Init();
+        _glfwInitialized = GLFW.Init() == GLFW.GLFW_TRUE;
+        
         const string glslVersion = "#version 150";
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -408,7 +409,7 @@ public class ApplicationWindow
         if (visible)
         {
             GLFW.ShowWindow(_window.Value);
-            GLFW.PostEmptyEvent();
+            WakeRenderLoop();
         }
         else GLFW.HideWindow(_window.Value);
     }
@@ -422,7 +423,12 @@ public class ApplicationWindow
     public void SetOverlayVisible(bool visible)
     {
         _overlayVisible = visible;
-        if(visible) GLFW.PostEmptyEvent();
+        if(visible) WakeRenderLoop();
+    }
+
+    private void WakeRenderLoop()
+    {
+        if(_glfwInitialized) GLFW.PostEmptyEvent();
     }
 }
 

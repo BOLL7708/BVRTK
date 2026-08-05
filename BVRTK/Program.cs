@@ -17,9 +17,6 @@ class Program
     static async Task Main(string[] args)
     {
         Console.WriteLine("Hello, World!");
-
-        var server = Services.Server;
-        await server.StartWebSocket();
         
         #region Settings
         Settings.ReadFromDisk();
@@ -32,6 +29,9 @@ class Program
         Settings.WriteToDisk(); // Writes the Server object to disk as it is dirty
         Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
         #endregion
+        
+        var server = Services.Server;
+        await server.StartWebSocket();
         
         // TODO: Setup NLog
 
@@ -98,10 +98,10 @@ class Program
                 );
                 vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
                 {
-                    Services.ApplicationWindow.EnqueueOverlayEvent(in vrEvent);
+                    Services.GuiRenderer.EnqueueOverlayEvent(in vrEvent);
                 });
-                Services.ApplicationWindow.Run(mainHandle);
-                Services.ApplicationWindow.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
+                Services.GuiRenderer.Run(mainHandle);
+                Services.GuiRenderer.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
             }
             if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;

@@ -29,28 +29,19 @@ BOLL's VR Toolkit
 
 Settings
 --------
-
-Listen to events from the InputController, and switch flags or set values in the settings file. We encode and write this to disk as JSON.
-
-Provide events in turn for settings that change... monitor the file? Need to think about how to do this with the least amount of overhead and code clutter.
+* Listen to events from the InputController, and switch flags or set values in the settings file. We encode and write this to disk as JSON.
+* Provide events in turn for settings that change... monitor the file? Need to think about how to do this with the least amount of overhead and code clutter.
 
 Server
 ------
-
 A shared server for all solutions.
 
 1. Allow clients to subscribe to topics that will get data to be piped to those clients, like device poses, input values, other more sporadic events.
-
 2. Use JSON-RPC2.0 as the communications standard for JSON messages.
-
 3. Include the shape of objects that can be submitted in error reports.
-
 4. Have some methods for accessing all other methods.
-   
    1. List all available methods.
-   
    2. Show the payload format for a method.
-
 5. Support WebSockets and possibly Named Pipes?
 
 Keyboard Sim
@@ -60,14 +51,12 @@ Mouse Sim
 ---------
 
 My personal motivation for this feature is:
-
 * The ability to aim in a first person desktop game while using Virtual Desktop as a display overlay that is attached to the HMD. 
   This means it is following head movements, and the mouse simulation will look around in the game to match the head motion.
 * It could also be used to control a mouse cursor with other inputs, like joysticks or trackpads or the direction of a controller.
   Will have to avoid scope creep here, and add things that are actually requested and motivated, to avoid overcomplication.
 
 Minimal viable product:
-
 * Be able to set how to simulate mouse actions per Steam app ID, like for key mappings. Also provide a default one.
 * Provide various options for how to simulate mouse movement.
   * Absolute or relative positioning
@@ -92,13 +81,8 @@ Play Area
 ----------
 
 ## Run Sripts
-
 Run system scripts on various events.
-
 1. On startup
-
 2. On shutdown
-
 3. On input action
-
 4. On headset moving outside of play area? Stuff like that, maybe.

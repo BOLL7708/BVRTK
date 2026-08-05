@@ -43,14 +43,24 @@ public sealed class WebsocketServer : AbstractServer
 
     public override async Task StartOrRestart()
     {
-        // Stop in case of already running
-        await Stop();
+        // Stop in case of already running and not failed
+        if (_server?.State != ServerState.Failed)
+        {
+            await Stop();
+        }
 
         // Start
         _server = Build(_port, _ip);
         _server.Options.MaxPackageLength = 100 * 1024 * 1024;
-        await _server.StartAsync();
-        OnStatusChanged(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0, _port);
+        try
+        {
+            await _server.StartAsync();
+            OnStatusChanged(_server.State == ServerState.Started ? ServerStatus.Connected : ServerStatus.Error, 0, _port);
+        }
+        catch (Exception ex)
+        {
+            OnServerError(ex.Message);
+        }
     }
 
     public override async Task Stop()
