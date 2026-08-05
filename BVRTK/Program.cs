@@ -89,12 +89,12 @@ class Program
                 vr.Overlay.CreateDashboardOverlay(
                     Constants.OverlayUniqueId, 
                     Constants.OverlayTitle, 
-                    out ulong mainHandle, 
-                    out ulong thumbnailHandle, 
+                    out var mainHandle, 
+                    out var thumbnailHandle, 
                     Constants.OverlayTextureWidth, 
                     Constants.OverlayTextureHeight,
                     Constants.OverlayWidth,
-                    Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.png"])
+                    thumbnailBytes: Utils.LoadEmbeddedResource("BVRTK.Resources.Media.bvrtk.thumbnail.png")
                 );
                 vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
                 {

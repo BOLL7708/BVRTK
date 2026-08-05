@@ -1,11 +1,13 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Hexa.NET.GLFW;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
 using Hexa.NET.ImGui.Backends.OpenGL3;
 using Hexa.NET.OpenGL;
+using Hexa.NET.StbImage;
 using HexaGen.Runtime;
 using Valve.VR;
 using GLFWwindow = Hexa.NET.GLFW.GLFWwindow;
@@ -294,9 +296,8 @@ public class GuiRenderer
             GLFW.Terminate();
             return;
         }
-
-        // TODO: Set icon
-        // GLFW.SetWindowIcon(window, 1, new GLFWimagePtr());
+        
+        SetWindowIcon(window, "BVRTK.Resources.Media.bvrtk.thumbnail.png");
 
         _window = window;
         GLFW.MakeContextCurrent(window);
@@ -429,6 +430,32 @@ public class GuiRenderer
     private void WakeRenderLoop()
     {
         if(_glfwInitialized) GLFW.PostEmptyEvent();
+    }
+
+    private static unsafe void SetWindowIcon(GLFWwindowPtr window, string resourceName)
+    {
+        var bytes = Utils.LoadEmbeddedResource(resourceName);
+        fixed (byte* bytesPointer = bytes)
+        {
+            int width, height, channels;
+            var pixels = StbImage.LoadFromMemory(bytesPointer, bytes.Length, &width, &height, &channels, 4);
+            if (pixels == null)
+            {
+                var reason = Marshal.PtrToStringAnsi((IntPtr)StbImage.FailureReason());
+                Console.WriteLine($"Overlay: StbImage decode FAILED: {reason}"); // TODO: Switch to proper logging
+                return;
+            }
+            
+            // Instantiate image object
+            GLFWimage image;
+            image.Width  = width;
+            image.Height = height;
+            image.Pixels = pixels;
+
+            // Submit the pixels to GLFW that copies them, then free the resource.
+            GLFW.SetWindowIcon(window, 1, &image);
+            StbImage.ImageFree(pixels);
+        }
     }
 }
 
