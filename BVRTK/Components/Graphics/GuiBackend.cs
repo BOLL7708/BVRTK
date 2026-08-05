@@ -16,9 +16,12 @@ using GLFWwindowPtr = Hexa.NET.GLFW.GLFWwindowPtr;
 
 namespace BVRTK.Components.Graphics;
 
-public class GuiRenderer
+/// <summary>
+/// Handles the OpenGL backend with OpenGLFW, handles input from both SteamVR and GLFW events, and draws the ImGui interface.
+/// </summary>
+public class GuiBackend
 {
-    public GuiRenderer()
+    public GuiBackend()
     {
     }
 
@@ -74,7 +77,8 @@ public class GuiRenderer
 
         ImGui.NewFrame();
 
-        ImGui.ShowDemoWindow(); // TODO: Replace with our own window
+        // ImGui.ShowDemoWindow(); // Use to ensure stuff is still working.
+        Gui.RenderWindow();
 
         ImGui.Render();
         ImGuiImplOpenGL3.RenderDrawData(ImGui.GetDrawData());

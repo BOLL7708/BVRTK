@@ -177,7 +177,7 @@ public class JsonRpcServer
 
                     try
                     {
-                        Services.GuiRenderer.SetWindowVisible(decodedParams.Result?.Visible ?? false);
+                        Services.GuiBackend.SetWindowVisible(decodedParams.Result?.Visible ?? false);
                     }
                     catch (Exception ex)
                     {

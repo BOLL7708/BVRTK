@@ -15,8 +15,8 @@ public static class Services
     private static readonly Lazy<EasyOpenVr> LazyVr = new(BuildVr);
     public static EasyOpenVr Vr => LazyVr.Value;
 
-    private static readonly Lazy<GuiRenderer> LazyApplicationWindow = new(BuildApplicationWindow);
-    public static GuiRenderer GuiRenderer => LazyApplicationWindow.Value;
+    private static readonly Lazy<GuiBackend> LazyApplicationWindow = new(BuildApplicationWindow);
+    public static GuiBackend GuiBackend => LazyApplicationWindow.Value;
     #endregion
 
     private static JsonRpcServer BuildServer()
@@ -76,8 +76,8 @@ public static class Services
             .BuildAndInit();
     }
 
-    private static GuiRenderer BuildApplicationWindow()
+    private static GuiBackend BuildApplicationWindow()
     {
-        return new GuiRenderer();
+        return new GuiBackend();
     }
 }
