@@ -20,11 +20,8 @@ public static partial class Gui
         ImGui.PushStyleColor(ImGuiCol.TabSelected, section.AccentColor.TabActive());
         ImGui.PushStyleColor(ImGuiCol.Tab, section.AccentColor.Tab());
         ImGui.PushStyleColor(ImGuiCol.TabDimmed, section.AccentColor.Tab()); // Not really used but set just in case
-        if (!ImGui.BeginTabBar($"##Tabs{section.Title}"))
-        {
-            ImGui.EndChild();
-            return;
-        }
+        
+        ImGui.BeginTabBar($"##Tabs{section.Title}");
 
         ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, Constants.GuiGlobalRounding);
         foreach (var page in section.Pages)
@@ -51,18 +48,23 @@ public static partial class Gui
                 ImGui.BeginChild($"##Separator{section.Title}", Vector2.Zero with { Y = Constants.GuiSeparatorGirth });
                 ImGui.EndChild();
                 ImGui.PopStyleColor();
-                
+
                 // Store that this tab was selected, helps with color states.
                 SelectedTabs[_selectedSection] = i;
 
                 // Also skip the automatic spacing below the custom line.
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGui.GetStyle().ItemSpacing.Y);
-                
+
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
                 PushColorAccents(section.AccentColor);
-                ImGui.BeginChild($"##Content{section.Title}{page.Title}");
+                
+                // Turns out window padding is ignored by default without a border.
+                ImGui.BeginChild($"##Content{section.Title}{page.Title}", ImGuiChildFlags.AlwaysUseWindowPadding); 
                 page.Renderer(section.AccentColor);
                 ImGui.EndChild();
+                
                 PopColorAccents();
+                ImGui.PopStyleVar();
 
                 ImGui.EndTabItem();
             }
@@ -83,17 +85,21 @@ public static partial class Gui
         { ImGuiCol.ChildBg, 0.25f },
         { ImGuiCol.CheckMark, 1f },
         // TODO: Checkmark backgrounds are still blue when not focused. 
-        
-        { ImGuiCol.ScrollbarBg, 0.1f},
-        { ImGuiCol.ScrollbarGrab, 0.5f},
-        { ImGuiCol.ScrollbarGrabHovered, 0.75f},
-        { ImGuiCol.ScrollbarGrabActive, 1f},
-        
+
+        // Used for any element with a scrollbar
+        { ImGuiCol.ScrollbarBg, 0.1f },
+        { ImGuiCol.ScrollbarGrab, 0.5f },
+        { ImGuiCol.ScrollbarGrabHovered, 0.75f },
+        { ImGuiCol.ScrollbarGrabActive, 1f },
+
+        // Used for things like the checkmark
+        { ImGuiCol.FrameBg, 0.1f },
+        { ImGuiCol.FrameBgHovered, 0.5f },
+        { ImGuiCol.FrameBgActive, 0.75f },
+
         // Unverified entries below
         { ImGuiCol.SliderGrab, 1f },
         { ImGuiCol.SliderGrabActive, 1.2f },
-        { ImGuiCol.FrameBgHovered, 0.5f },
-        { ImGuiCol.FrameBgActive, 0.7f },
         { ImGuiCol.Button, 1f },
         { ImGuiCol.ButtonHovered, 1.15f },
         { ImGuiCol.ButtonActive, 0.85f },
@@ -102,8 +108,6 @@ public static partial class Gui
         { ImGuiCol.HeaderActive, 0.85f },
         { ImGuiCol.SeparatorHovered, 1f },
         { ImGuiCol.TextSelectedBg, 0.5f },
-        
-        
     };
 
     private static void PushColorAccents(Vector4 a)
@@ -113,9 +117,9 @@ public static partial class Gui
             ImGui.PushStyleColor(kv.Key, a.Fade(kv.Value));
         }
     }
+
     private static void PopColorAccents()
     {
         ImGui.PopStyleColor(AccentComponents.Count);
     }
 }
-
