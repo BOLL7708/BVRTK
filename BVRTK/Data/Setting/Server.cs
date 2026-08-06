@@ -1,6 +1,6 @@
 namespace BVRTK.Data.Setting;
 
-[TrackDirty]
+[Setting]
 public partial class Server
 {
     private int _port = 7708;

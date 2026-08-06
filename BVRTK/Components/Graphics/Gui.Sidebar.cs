@@ -25,17 +25,17 @@ public static partial class Gui
         var i = 0;
         foreach (var section in GuiStructure.Sections)
         {
-            var isCurrent = i == _selectedSection;
-            ImGui.PushStyleColor(ImGuiCol.Button, isCurrent
-                ? section.AccentColor
-                : section.AccentColor * 0.80f
+            var isActive = i == _selectedSection;
+            ImGui.PushStyleColor(ImGuiCol.Button, isActive
+                ? section.AccentColor.TabActive()
+                : section.AccentColor.Tab()
             );
-            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, isCurrent
-                ? section.AccentColor
-                : section.AccentColor * 0.90f
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, isActive
+                ? section.AccentColor.TabActive()
+                : section.AccentColor.TabHover()
             );
-            ImGui.PushStyleColor(ImGuiCol.ButtonActive, section.AccentColor);
-            ImGui.PushStyleColor(ImGuiCol.Text, isCurrent
+            ImGui.PushStyleColor(ImGuiCol.ButtonActive, section.AccentColor.TabActive());
+            ImGui.PushStyleColor(ImGuiCol.Text, isActive
                 ? Vector4.Zero with { W = 1f }
                 : Vector4.One
             );

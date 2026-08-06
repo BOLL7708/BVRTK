@@ -93,7 +93,7 @@ class Program
                     out var thumbnailHandle, 
                     Constants.OverlayTextureWidth, 
                     Constants.OverlayTextureHeight,
-                    Constants.OverlayWidth,
+                    Constants.OverlayPhysicalWidth,
                     thumbnailBytes: Utils.LoadEmbeddedResource("BVRTK.Resources.Media.bvrtk.thumbnail.png")
                 );
                 vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>

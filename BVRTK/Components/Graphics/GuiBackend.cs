@@ -53,6 +53,8 @@ public class GuiBackend
 
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
+        
+        // TODO: Also move to resources?
         io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Regular.ttf"]));
     }
 
@@ -352,8 +354,8 @@ public class GuiBackend
         gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
-        var isDesktopVisible = bool () => 
-            GLFW.GetWindowAttrib(window, GLFW.GLFW_VISIBLE) != 0
+        bool IsDesktopVisible() => 
+            GLFW.GetWindowAttrib(window, GLFW.GLFW_VISIBLE) != 0 
             && GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) == 0;
 
         // Main loop
@@ -366,7 +368,7 @@ public class GuiBackend
             ApplyOverlayEventsAsInput();
             DisplayVrKeyboardOnTextInput(overlayHandle);
             
-            if (!(_overlayVisible || isDesktopVisible()))
+            if (!(_overlayVisible || IsDesktopVisible()))
             {
                 GLFW.WaitEventsTimeout(1); // Will interrupt on an event, which happens if the window is shown.
                 continue;

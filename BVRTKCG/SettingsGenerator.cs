@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace BVRTKCG;
 
 [Generator]
-public class DirtyTrackingGenerator : IIncrementalGenerator
+public class SettingsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -17,15 +17,15 @@ public class DirtyTrackingGenerator : IIncrementalGenerator
         {
             const string attributeSource = """
                                              namespace BVRTK;
-                                             public class TrackDirtyAttribute: System.Attribute {} 
+                                             public class SettingAttribute: System.Attribute {} 
                                            """;
-            i.AddSource($"BVRTK.Data.Setting.TrackDirtyAttribute.g.cs", attributeSource);
+            i.AddSource($"BVRTK.Data.Setting.SettingAttribute.g.cs", attributeSource);
         });
 
         #endregion
 
         var classes = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "BVRTK.TrackDirtyAttribute",
+            "BVRTK.SettingAttribute",
             predicate: (node, _) => node is ClassDeclarationSyntax,
             transform: (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol
         ).Where(m => m is not null);

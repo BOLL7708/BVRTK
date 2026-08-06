@@ -1,0 +1,32 @@
+using System.Numerics;
+
+namespace BVRTK.Components.Graphics;
+
+public static class GuiColor
+{
+    public static readonly Vector4 Yellow = new Vector4(0.9f, 0.8f, 0f, 1f);
+    public static readonly Vector4 Green = new Vector4(0f, 1f, 0f, 1f);
+    public static readonly Vector4 Cyan = new Vector4(0f, 0.75f, 0.5f, 1f);
+    public static readonly Vector4 Blue = new Vector4(0f, 0f, 1f, 1f);
+
+    public static readonly Vector4 White = Vector4.One;
+    public static readonly Vector4 Black = Vector4.Zero with { W = 1f };
+    public static readonly Vector4 GrayLightest = new Vector4(0.8f, 0.8f, 0.8f, 1f);
+    public static readonly Vector4 GrayLighter = new Vector4(0.7f, 0.7f, 0.7f, 1f);
+    public static readonly Vector4 GrayLight = new Vector4(0.6f, 0.6f, 0.6f, 1f);
+    public static readonly Vector4 Gray = new Vector4(0.5f, 0.5f, 0.5f, 1f);
+    public static readonly Vector4 GrayDark = new Vector4(0.4f, 0.4f, 0.4f, 1f);
+    public static readonly Vector4 GrayDarker = new Vector4(0.3f, 0.3f, 0.3f, 1f);
+    public static readonly Vector4 GrayDarkest = new Vector4(0.2f, 0.2f, 0.2f, 1f);
+}
+
+public static class Vector4Extensions
+{
+    public static Vector4 Fade(this Vector4 vec, float value) => (vec * value) with { W = 1f };
+
+    public static Vector4 Tab(this Vector4 vec) => vec.Fade(0.5f);
+    public static Vector4 TabHover(this Vector4 vec) => vec.Fade(0.75f);
+    public static Vector4 TabActive(this Vector4 vec) => vec;
+    
+    public static Vector4 PageBg(this Vector4 vec) => vec.Fade(0.2f);
+}
