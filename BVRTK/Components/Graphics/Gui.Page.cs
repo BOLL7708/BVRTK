@@ -59,7 +59,8 @@ public static partial class Gui
                 PushColorAccents(section.AccentColor);
                 
                 // Turns out window padding is ignored by default without a border.
-                ImGui.BeginChild($"##Content{section.Title}{page.Title}", ImGuiChildFlags.AlwaysUseWindowPadding); 
+                ImGui.BeginChild($"##Content{section.Title}{page.Title}", ImGuiChildFlags.AlwaysUseWindowPadding);
+                ConvertDragToScroll();
                 page.Renderer(section.AccentColor);
                 ImGui.EndChild();
                 
@@ -121,5 +122,22 @@ public static partial class Gui
     private static void PopColorAccents()
     {
         ImGui.PopStyleColor(AccentComponents.Count);
+    }
+    
+    /// <summary>
+    /// Because the window should not be draggable inside the GL window, we convert
+    /// dragging to scrolling, so that internal surfaces can be moved instead.
+    /// </summary>
+    private static void ConvertDragToScroll()
+    {
+        if (
+            !ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows)
+            || !ImGui.IsMouseDragging(ImGuiMouseButton.Left)
+        ) return;
+        
+        var io = ImGui.GetIO();
+        var delta = io.MouseDelta;
+        ImGui.SetScrollX(ImGui.GetScrollX() - delta.X);
+        ImGui.SetScrollY(ImGui.GetScrollY() - delta.Y);
     }
 }

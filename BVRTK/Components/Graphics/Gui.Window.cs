@@ -34,8 +34,7 @@ public static partial class Gui
         ImGui.Begin("##Root", flags);
         ImGui.PopStyleColor();
         ImGui.PopStyleVar(3);
-
-        ConvertWindowMovementToScrolling();
+        
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.GuiItemSpacing);
         RenderSidebar();
         ImGui.SameLine(0, 0);
@@ -59,24 +58,5 @@ public static partial class Gui
             Vector2.Zero, ImGui.GetWindowSize(),
             top, middle, bottom, middle
         );
-    }
-
-    /// <summary>
-    /// Because the window should not be draggable inside the GL window, we convert
-    /// dragging to scrolling, so that internal surfaces can be moved instead.
-    /// </summary>
-    private static void ConvertWindowMovementToScrolling()
-    {
-        var io = ImGui.GetIO();
-        if (
-            ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows)
-            && !ImGui.IsAnyItemActive()
-            && ImGui.IsMouseDragging(ImGuiMouseButton.Left)
-        )
-        {
-            var delta = io.MouseDelta;
-            ImGui.SetScrollX(ImGui.GetScrollX() - delta.X);
-            ImGui.SetScrollY(ImGui.GetScrollY() - delta.Y);
-        }
     }
 }

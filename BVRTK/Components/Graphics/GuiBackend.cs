@@ -354,8 +354,8 @@ public class GuiBackend
         gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
-        bool IsDesktopVisible() => 
-            GLFW.GetWindowAttrib(window, GLFW.GLFW_VISIBLE) != 0 
+        bool IsDesktopVisible() =>
+            GLFW.GetWindowAttrib(window, GLFW.GLFW_VISIBLE) != 0
             && GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) == 0;
 
         // Main loop
@@ -377,6 +377,7 @@ public class GuiBackend
             GLFW.MakeContextCurrent(window);
             RenderUiToFbo(gl, fbo);
             SubmitOverlayTexture(overlayHandle, fboTex);
+            HapticVibrationOnHover(overlayHandle);
 
             // Mirror to the desktop window (GPU copy, not a re-render)
             int ww, wh;
@@ -430,12 +431,12 @@ public class GuiBackend
     public void SetOverlayVisible(bool visible)
     {
         _overlayVisible = visible;
-        if(visible) WakeRenderLoop();
+        if (visible) WakeRenderLoop();
     }
 
     private void WakeRenderLoop()
     {
-        if(_glfwInitialized) GLFW.PostEmptyEvent();
+        if (_glfwInitialized) GLFW.PostEmptyEvent();
     }
 
     private static unsafe void SetWindowIcon(GLFWwindowPtr window, string resourceName)
@@ -454,7 +455,7 @@ public class GuiBackend
             
             // Instantiate image object
             GLFWimage image;
-            image.Width  = width;
+            image.Width = width;
             image.Height = height;
             image.Pixels = pixels;
 
@@ -462,6 +463,19 @@ public class GuiBackend
             GLFW.SetWindowIcon(window, 1, &image);
             StbImage.ImageFree(pixels);
         }
+    }
+    
+    private static uint _lastHoveredId;
+
+    private static void HapticVibrationOnHover(ulong handle)
+    {
+        var hoveredId = ImGui.GetCurrentContext().HoveredId;
+        if (hoveredId != 0 && hoveredId != _lastHoveredId)
+        {
+            Services.Vr.Overlay.TriggerHapticVibration(handle);
+        }
+
+        _lastHoveredId = hoveredId;
     }
 }
 
