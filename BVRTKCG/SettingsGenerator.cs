@@ -11,21 +11,8 @@ public class SettingsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        #region Attribute Registration
-
-        context.RegisterPostInitializationOutput(i =>
-        {
-            const string attributeSource = """
-                                             namespace BVRTK;
-                                             public class SettingAttribute: System.Attribute {} 
-                                           """;
-            i.AddSource($"BVRTK.Data.Setting.SettingAttribute.g.cs", attributeSource);
-        });
-
-        #endregion
-
         var classes = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "BVRTK.SettingAttribute",
+            "BVRTKCG.Attributes.SettingAttribute",
             predicate: (node, _) => node is ClassDeclarationSyntax,
             transform: (ctx, _) => (INamedTypeSymbol)ctx.TargetSymbol
         ).Where(m => m is not null);
@@ -34,19 +21,13 @@ public class SettingsGenerator : IIncrementalGenerator
             {
                 var fields = classSymbol
                     .GetMembers()
-                    .OfType<IFieldSymbol>();
+                    .OfType<IFieldSymbol>()
+                    .Where(f => !f.IsImplicitlyDeclared); // Will avoid auto-created backing fields so we can discretely use private properties as non-settings GUI generators.
                 var fieldsArr = fields.ToArray();
                 GenerateSettingsHandlers(ctx, classSymbol, fieldsArr);
                 GenerateSettingsProps(ctx, classSymbol, fieldsArr);
             }
         );
-    }
-
-    private string? GetPropName(IFieldSymbol field)
-    {
-        return field.Name.TrimStart('_') is { Length: >= 1 } s 
-            ? char.ToUpper(s[0]) + s.Substring(1) 
-            : null;
     }
 
     private void GenerateSettingsHandlers(SourceProductionContext ctx, INamedTypeSymbol classSymbol, IFieldSymbol[] fields)
@@ -57,7 +38,7 @@ public class SettingsGenerator : IIncrementalGenerator
         sb.AppendLine("{");
         foreach (var field in fields)
         {
-            var propName = GetPropName(field);
+            var propName = GeneratorUtils.GetPropName(field);
             if (propName == null) continue;
 
             var typeName = field.Type.ToDisplayString();
@@ -82,7 +63,7 @@ public class SettingsGenerator : IIncrementalGenerator
         sb.AppendLine("{");
         foreach (var field in fields)
         {
-            var propName = GetPropName(field);
+            var propName = GeneratorUtils.GetPropName(field);
             if (propName == null) continue;
 
             var typeName = field.Type.ToDisplayString();
@@ -98,7 +79,6 @@ public class SettingsGenerator : IIncrementalGenerator
                                              Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{propName}}Changed(value, {{field.Name}});
                                              {{field.Name}} = value;
                                              InternalDirty = true;
-                                             Console.WriteLine($"Settings: Updated {{classSymbol.Name}}.{{field.Name}} to {value} and marked as DIRTY!");
                                          }
                                          // TODO: Add log handler here to report failure to set.
                                      }

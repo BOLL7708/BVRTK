@@ -1,4 +1,5 @@
 using System.Numerics;
+using BVRTK.Data.Setting;
 using Hexa.NET.ImGui;
 
 namespace BVRTK.Components.Graphics;
@@ -6,7 +7,7 @@ namespace BVRTK.Components.Graphics;
 public static class GuiStructure
 {
     // TODO: Temporary while building this out.
-    private static readonly Action<Vector4> PlaceholderRenderer = accentColor =>
+    private static readonly Action PlaceholderRenderer = () =>
     {
         for(var i=0; i<100; i++) ImGui.Text($"PlaceHolder Renderer: Row #{i}");
     };
@@ -14,7 +15,7 @@ public static class GuiStructure
     public static readonly List<Section> Sections =
     [
         new("Settings", GuiColor.Yellow, [
-            new Page("Instructions", Gui.RenderPageSettings), 
+            new Page("Instructions", GuiRenderers.RenderApplicationPage), 
             new Page("Bingo", PlaceholderRenderer)
         ]),
         new("Server", GuiColor.Green, [
@@ -35,8 +36,8 @@ public class Section(string title, Vector4 accentColor, List<Page> pages)
     public readonly List<Page> Pages = pages;
 }
 
-public class Page(string title, Action<Vector4> renderer)
+public class Page(string title, Action renderer)
 {
     public readonly string Title = title;
-    public readonly Action<Vector4> Renderer = renderer;
+    public readonly Action Renderer = renderer;
 }

@@ -61,7 +61,7 @@ public static partial class Gui
                 // Turns out window padding is ignored by default without a border.
                 ImGui.BeginChild($"##Content{section.Title}{page.Title}", ImGuiChildFlags.AlwaysUseWindowPadding);
                 ConvertDragToScroll();
-                page.Renderer(section.AccentColor);
+                page.Renderer();
                 ImGui.EndChild();
                 
                 PopColorAccents();

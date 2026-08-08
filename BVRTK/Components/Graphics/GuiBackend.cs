@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using BVRTK.Data;
 using Hexa.NET.GLFW;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Backends.GLFW;
@@ -290,6 +291,8 @@ public class GuiBackend
         // Handle monitor scaling, scale the window but not the frame buffer, to avoid affecting VR overlay.
         GLFW.WindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_TRUE);
         GLFW.WindowHint(GLFW.GLFW_SCALE_FRAMEBUFFER, GLFW.GLFW_FALSE);
+        
+        GLFW.WindowHint(GLFW.GLFW_VISIBLE, Settings.Current.Application.ShowDesktopWindowOnLaunch ? GLFW.GLFW_TRUE : GLFW.GLFW_FALSE);
 
         var window = GLFW.CreateWindow(
             Constants.OverlayTextureWidth,
