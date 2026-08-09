@@ -153,6 +153,14 @@ public class GuiGenerator : IIncrementalGenerator
     private static void AppendTooltip(StringBuilder sb, string tooltip)
     {
         if (tooltip.Trim().Length == 0) return;
-        sb.AppendLine($"        if (Settings.Current.Application.ShowTooltips && ImGui.IsItemHovered()) ImGui.SetTooltip(\"{tooltip}\");");
+        sb.AppendLine($$"""
+                               if (Settings.Current.Application.ShowTooltips && ImGui.IsItemHovered()) {
+                                   ImGui.BeginTooltip();
+                                   ImGui.PushTextWrapPos(ImGui.GetFontSize() * Constants.GuiTooltipWrap);
+                                   ImGui.TextUnformatted("{{tooltip}}");
+                                   ImGui.PopTextWrapPos();
+                                   ImGui.EndTooltip();
+                               }
+                       """);
     }
 }

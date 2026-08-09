@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using BVRTK.Data;
 using Hexa.NET.GLFW;
 using Hexa.NET.ImGui;
@@ -54,9 +55,27 @@ public class GuiBackend
 
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
-        
-        // TODO: Also move to resources?
-        io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Regular.ttf"]));
+
+        var cfg = ImGui.ImFontConfig();
+        cfg.FontDataOwnedByAtlas = false; // To retain fonts in memory
+        Session.GuiFonts.Regular = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Regular.ttf"); // Becomes default as added first
+        Session.GuiFonts.Bold = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Bold.ttf");
+        Session.GuiFonts.Italic = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Italic.ttf");
+        Session.GuiFonts.BoldItalic = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-BoldItalic.ttf");
+    }
+
+    private static unsafe ImFontPtr LoadFont(string resourceName)
+    {
+        var io = ImGui.GetIO();
+        var cfg = ImGui.ImFontConfig();
+        var bytes = Utils.LoadEmbeddedResource(resourceName);
+        ImFontPtr pointer;
+        fixed (byte* p = bytes)
+        {
+            pointer = io.Fonts.AddFontFromMemoryTTF(p, bytes.Length, 0f, cfg);
+        }
+
+        return pointer;
     }
 
     private static void RenderUiToFbo(GL gl, uint fbo)

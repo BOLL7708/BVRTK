@@ -12,8 +12,8 @@ public static partial class Gui
         // The sidebar
         ImGui.BeginChild("##Sidebar", new Vector2(Constants.GuiSidebarWidth, 0));
 
-        // Temporary text, should be image logo
-        ImGui.Text("BVRTK");
+        // To add top space.
+        ImGui.Dummy(Vector2.Zero);
 
         // Section buttons, each colored by its accent
 
@@ -25,6 +25,23 @@ public static partial class Gui
         var i = 0;
         foreach (var section in GuiStructure.Sections)
         {
+            switch (section.Font)
+            {
+                case FontStyle.Regular:
+                    ImGui.PushFont(Session.GuiFonts.Regular, 0f);
+                    break;
+                case FontStyle.Bold:
+                    ImGui.PushFont(Session.GuiFonts.Bold, 0f);
+                    break;
+                case FontStyle.Italic:
+                    ImGui.PushFont(Session.GuiFonts.Italic, 0f);
+                    break;
+                case FontStyle.BoldItalic:
+                    ImGui.PushFont(Session.GuiFonts.BoldItalic, 0f);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             var isActive = i == _selectedSection;
             ImGui.PushStyleColor(ImGuiCol.Button, isActive
                 ? section.AccentColor.TabActive()
@@ -48,6 +65,7 @@ public static partial class Gui
             }
 
             ImGui.PopStyleColor(4);
+            ImGui.PopFont();
             i++;
         }
 

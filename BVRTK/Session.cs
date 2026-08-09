@@ -1,3 +1,5 @@
+using Hexa.NET.ImGui;
+
 namespace BVRTK;
 
 public static class Session
@@ -7,4 +9,11 @@ public static class Session
 #else
     public const bool isDebug = false;
 #endif
+    public static class GuiFonts
+    {
+        public static ImFontPtr Regular;
+        public static ImFontPtr Bold;
+        public static ImFontPtr Italic;
+        public static ImFontPtr BoldItalic;
+    }
 }
