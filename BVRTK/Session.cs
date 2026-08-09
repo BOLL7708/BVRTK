@@ -1,3 +1,5 @@
+using System.Numerics;
+using BVRTK.Components.Graphics;
 using Hexa.NET.ImGui;
 
 namespace BVRTK;
@@ -15,5 +17,10 @@ public static class Session
         public static ImFontPtr Bold;
         public static ImFontPtr Italic;
         public static ImFontPtr BoldItalic;
+    }
+
+    public static class GuiImages
+    {
+        public static GlImage Logo;
     }
 }

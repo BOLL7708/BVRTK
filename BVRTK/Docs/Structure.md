@@ -18,6 +18,7 @@ BOLL's VR Toolkit
 ║       Overlays ║ OpenVROverlayPipe: Show overlays with various effects ║
 ║    Screenshots ║ SuperScreenShotterVR: Viewfinder and custom output    ║
 ║      Play Area ║ New: Walls around the play area that will pop up      ║
+║         Events ║ New: Example, send screenshots to webhook, workshop?  ║
 ║    Run Scripts ║ OpenVRStartup: Run scripts on SteamVR launch or exit  ║
 ║                ║                                                       ║
 ║   About & Help ║ Link to website, Discord, Github                      ║
@@ -26,6 +27,7 @@ BOLL's VR Toolkit
 ║                ║                                                       ║
 ╚════════════════╩═══════════════════════════════════════════════════════╝
 ```
+In the above Run Scripts is superceded by Events, which will hopefully be a dynamically allocated list of registered triggers that can run events, which will include webhooks, settings, overlays and scripts!
 
 Settings
 --------

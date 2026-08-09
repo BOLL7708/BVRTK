@@ -12,27 +12,48 @@ public static class GuiStructure
     {
         for(var i=0; i<100; i++) ImGui.Text($"PlaceHolder Renderer: Row #{i}");
     };
+
+    private static readonly Page PageWip = new Page("WIP", () => { ImGui.TextWrapped("Work in progress, this feature is not yet available."); });
+
+    private static int _currentColor = 0;
+    private const int NumOfColors = 8;
+
+    private static Vector4 GetNextColor()
+    {
+        const float startValue = 0.15f;
+        const float endValue = 0.60f;
+        var value = 1f / NumOfColors * _currentColor;
+        var hue = (endValue - startValue) * value + startValue;
+        _currentColor++;
+        return GuiColor.FromHue(hue);
+    }
     
     public static readonly List<Section> Sections =
     [
-        new("BVRTK", FontStyle.Bold, GuiColor.GrayLightest, [
-            new Page("Splash", Root.RenderSplashPage),
-            new Page("About", Root.RenderAboutPage),
-            new Page("Links", Root.RenderLinksPage)
+        new("Development", FontStyle.Bold, GuiColor.FromHue(0), [
+            new Page("Component Zoo", Develop.RenderZooPage)
         ]),
-        new("Settings", FontStyle.Regular, GuiColor.Yellow, [
-            new Page("Instructions", GuiRenderers.RenderApplicationPage), 
+        new("BVRTK", FontStyle.Bold, GuiColor.GrayLighter, [
+            new Page("About", Root.RenderAboutPage),
+            new Page("Links", Root.RenderLinksPage),
+            new Page ("Version History", Root.RenderVersionHistoryPage)
+        ]),
+        new("Preferences", FontStyle.Regular, GetNextColor(), [
+            new Page("Options", GuiRenderers.RenderApplicationPage), 
             new Page("Bingo", PlaceholderRenderer)
         ]),
-        new("Server", FontStyle.Regular, GuiColor.Green, [
-            new Page("Bananas", PlaceholderRenderer), 
+        new("Server", FontStyle.Regular, GetNextColor(), [
+            new Page("Options", PlaceholderRenderer), 
             new Page("Error", PlaceholderRenderer), 
             new Page("Help!", PlaceholderRenderer)
         ]),
-        new("Keyboard Sim", FontStyle.Regular, GuiColor.Cyan, [new Page("Cakes", PlaceholderRenderer)]),
-        new("Mouse Sim", FontStyle.Regular, GuiColor.Blue, [new Page("Whoops!", PlaceholderRenderer)])
+        new("Keyboard Sim", FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Mouse Sim", FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Overlays", FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Screenshots", FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Play Area", FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Events", FontStyle.Regular, GetNextColor(), [PageWip]),
     ];
-
 }
 
 public enum FontStyle

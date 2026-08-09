@@ -25,23 +25,7 @@ public static partial class Gui
         var i = 0;
         foreach (var section in GuiStructure.Sections)
         {
-            switch (section.Font)
-            {
-                case FontStyle.Regular:
-                    ImGui.PushFont(Session.GuiFonts.Regular, 0f);
-                    break;
-                case FontStyle.Bold:
-                    ImGui.PushFont(Session.GuiFonts.Bold, 0f);
-                    break;
-                case FontStyle.Italic:
-                    ImGui.PushFont(Session.GuiFonts.Italic, 0f);
-                    break;
-                case FontStyle.BoldItalic:
-                    ImGui.PushFont(Session.GuiFonts.BoldItalic, 0f);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            GuiUtils.PushFont(section.Font);
             var isActive = i == _selectedSection;
             ImGui.PushStyleColor(ImGuiCol.Button, isActive
                 ? section.AccentColor.TabActive()

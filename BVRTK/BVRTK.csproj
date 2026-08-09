@@ -65,6 +65,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Resources\Media\bvrtk.thumbnail.png"/>
+        <EmbeddedResource Include="Resources\Media\bvrtk.logo.png"/>
         <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf"/>
         <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-BoldItalic.ttf"/>
         <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-Italic.ttf"/>

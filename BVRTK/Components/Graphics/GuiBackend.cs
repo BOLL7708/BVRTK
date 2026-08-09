@@ -42,7 +42,7 @@ public class GuiBackend
     // Based on: https://github.com/HexaEngine/Hexa.NET.ImGui/blob/main/Examples/ExampleGLFWOpenGL3/Program.cs
 
     /// Setup ImGui config.
-    private static unsafe void UpdateConfig()
+    private static void UpdateConfig()
     {
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard; // Enable Keyboard Controls
@@ -56,13 +56,27 @@ public class GuiBackend
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
 
+    }
+
+    private static unsafe void LoadEmbeds(GL gl)
+    {
+        #region Fonts
+
         var cfg = ImGui.ImFontConfig();
         cfg.FontDataOwnedByAtlas = false; // To retain fonts in memory
         Session.GuiFonts.Regular = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Regular.ttf"); // Becomes default as added first
         Session.GuiFonts.Bold = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Bold.ttf");
         Session.GuiFonts.Italic = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Italic.ttf");
         Session.GuiFonts.BoldItalic = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-BoldItalic.ttf");
-    }
+
+        #endregion
+
+        #region Images
+
+        Session.GuiImages.Logo = LoadImage(gl, "BVRTK.Resources.Media.bvrtk.logo.png");
+
+        #endregion
+    } 
 
     private static unsafe ImFontPtr LoadFont(string resourceName)
     {
@@ -76,6 +90,35 @@ public class GuiBackend
         }
 
         return pointer;
+    }
+
+    private static unsafe GlImage LoadImage(GL gl, string resourceName)
+    {
+        var bytes = Utils.LoadEmbeddedResource(resourceName);
+        int width, height;
+        uint tex;
+        fixed (byte* pointer = bytes)
+        {
+            int channels;
+            var pixels = StbImage.LoadFromMemory(pointer, bytes.Length, &width, &height, &channels, 4);
+            gl.GenTextures(1, &tex); // Generate one new texture handle.
+            gl.BindTexture(GLTextureTarget.Texture2D, tex);
+            gl.TexImage2D(
+                GLTextureTarget.Texture2D,
+                0,
+                GLInternalFormat.Rgba8,
+                width,
+                height,
+                0,
+                GLPixelFormat.Rgba,
+                GLPixelType.UnsignedByte,
+                pixels
+            );
+            gl.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MinFilter, (int)GLEnum.Linear);
+            gl.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MagFilter, (int)GLEnum.Linear);
+        }
+
+        return new GlImage(tex, width, height);
     }
 
     private static void RenderUiToFbo(GL gl, uint fbo)
@@ -363,6 +406,7 @@ public class GuiBackend
         }
 
         GL gl = new(new BindingsContext(window));
+        LoadEmbeds(gl);
 
         // --- Offscreen FBO ---
         var fbo = gl.GenFramebuffer();

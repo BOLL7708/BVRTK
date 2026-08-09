@@ -1,20 +1,23 @@
+using System.Numerics;
 using Hexa.NET.ImGui;
 
 namespace BVRTK.Components.Graphics.Pages;
 
 public static class Root
 {
-    public static void RenderSplashPage()
+    public static void RenderAboutPage()
     {
-        ImGui.TextWrapped("This is a test for an auto-wrapped text field.");
+        ImGui.Dummy(Vector2.Zero);
+        GuiUtils.DrawCenteredImage(Session.GuiImages.Logo);
+        GuiUtils.DrawCenteredText("BOLL's VR Toolkit");
     }
 
-    public static void RenderAboutPage()
+    public static void RenderLinksPage()
     {
         
     }
 
-    public static void RenderLinksPage()
+    public static void RenderVersionHistoryPage()
     {
         
     }
