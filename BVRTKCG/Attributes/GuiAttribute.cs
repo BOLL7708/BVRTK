@@ -33,4 +33,16 @@ public class GuiDebugAttribute(string valuePath): Attribute
     public string ValuePath = valuePath;
 }
 
+[AttributeUsage(AttributeTargets.Property)]
+public class GuiTestAttribute(bool b, int i, float f, string s, bool[] ba, int[] ia, float[] fa, string[] sa): Attribute
+{
+    public bool B = b;
+    public int I = i;
+    public float F = f;
+    public string S = s;
+    public bool[] Ba = ba;
+    public int[] Ia = ia;
+    public float[] Fa = fa;
+    public string[] Sa = sa;
+}
 

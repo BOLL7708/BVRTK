@@ -23,4 +23,7 @@ public partial class Application
     
     // [GuiDebug("Settings.Current.Application.ShowTooltips")] 
     // private object Debug { get; set; }
+    
+    // [GuiTest(true, 1, 1.2f, "Test", [true, false], [0,2], [1.2f, 2.3f], ["Testing", "Arrays"])]
+    // private object Test { get; set; }
 }

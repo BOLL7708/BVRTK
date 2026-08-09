@@ -1,4 +1,5 @@
 using System.Numerics;
+using BVRTK.Components.Graphics.Pages;
 using BVRTK.Data.Setting;
 using Hexa.NET.ImGui;
 
@@ -14,6 +15,11 @@ public static class GuiStructure
     
     public static readonly List<Section> Sections =
     [
+        new("BVRTK", GuiColor.GrayLightest, [
+            new Page("Splash", Root.RenderSplashPage),
+            new Page("About", Root.RenderAboutPage),
+            new Page("Links", Root.RenderLinksPage)
+        ]),
         new("Settings", GuiColor.Yellow, [
             new Page("Instructions", GuiRenderers.RenderApplicationPage), 
             new Page("Bingo", PlaceholderRenderer)

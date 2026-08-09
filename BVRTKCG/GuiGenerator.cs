@@ -1,8 +1,10 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static BVRTKCG.GeneratorUtils;
 
 namespace BVRTKCG;
 
@@ -15,12 +17,11 @@ public class GuiGenerator : IIncrementalGenerator
         Checkbox,
         Slider,
         Text,
-        Debug
+        Debug,
+        Test
     }
 
-    private static string StringArg(AttributeData a, int i) => a.ConstructorArguments.Length > i ? a.ConstructorArguments[i].Value as string ?? "" : "";
-    private static int IntArg(AttributeData a, int i) => a.ConstructorArguments.Length > i ? int.Parse(a.ConstructorArguments[i].Value as string ?? "0") : 0;
-    private static float FloatArg(AttributeData a, int i) => a.ConstructorArguments.Length > i ? float.Parse(a.ConstructorArguments[i].Value as string ?? "0") : 0;
+    
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -66,11 +67,32 @@ public class GuiGenerator : IIncrementalGenerator
                 return e;
             });
 
+        var tests = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiTestAttribute",
+            static (n, _) => n is PropertyDeclarationSyntax,
+            static (ctx, _) =>
+            {
+                var sb = new StringBuilder();
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.Test);
+                var a = ctx.Attributes[0];
+                sb.AppendLine($"Bool: {BoolArg(a, 0)}");
+                sb.AppendLine($"Int: {IntArg(a, 1)}");
+                sb.AppendLine($"Float: {FloatArg(a, 2)}");
+                sb.AppendLine($"String: {StringArg(a, 3)}");
+                sb.AppendLine($"BoolArray: {string.Join(", ", BoolArrayArg(a, 4))}");
+                sb.AppendLine($"IntArray: {string.Join(", ", IntArrayArg(a, 5))}");
+                sb.AppendLine($"FloatArray: {string.Join(", ", FloatArrayArg(a, 6))}");
+                sb.AppendLine($"StringArray: {string.Join(", ", StringArrayArg(a, 7))}");
+                e.TestLog = sb.ToString();
+                return e;
+            });
+        
         var providers = new[]
         {
             checkboxes.Collect(),
             sliders.Collect(),
-            debugs.Collect()
+            debugs.Collect(),
+            tests.Collect()
         };
         var all = providers.Aggregate(Merge);
 
@@ -116,6 +138,9 @@ public class GuiGenerator : IIncrementalGenerator
                         sb.AppendLine($$"""
                                                ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"Debug Value: {{{e.DebugValuePath}}}");
                                        """);
+                        break;
+                    case GuiElementKind.Test:
+                        sb.AppendLine($"ImGui.TextWrapped(\n\"\"\"\n{e.TestLog}\"\"\");");
                         break;
                 }
             }

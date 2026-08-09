@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -19,65 +21,32 @@ public static class GeneratorUtils
                 : null
             );
     }
-}
 
-public static class GuiElementFactory
-{
-    public static GuiElement FromField(IFieldSymbol field, GuiGenerator.GuiElementKind kind)
-    {
-        var element = new GuiElement
-        {
-            Kind = kind,
-            Namespace = field.ContainingType.ContainingNamespace.ToDisplayString(),
-            ClassName = field.ContainingType.Name,
-            FieldName = field.Name,
-            PropName = GeneratorUtils.GetPropName(field) ?? field.Name,
-            TypeName = field.Type.ToDisplayString(),
-            Order = field.DeclaringSyntaxReferences.FirstOrDefault()?.Span.Start ?? 0
-        };
-
-        return element;
-    }
-
-    public static GuiElement FromProperty(IPropertySymbol property, GuiGenerator.GuiElementKind kind)
-    {
-        var element = new GuiElement
-        {
-            Kind = kind,
-            Namespace = property.ContainingType.ContainingNamespace.ToDisplayString(),
-            ClassName = property.ContainingType.Name,
-            FieldName = GeneratorUtils.GetFieldName(property) ?? property.Name,
-            PropName = property.Name,
-            TypeName = property.Type.ToDisplayString(),
-            Order = property.DeclaringSyntaxReferences.FirstOrDefault()?.Span.Start ?? 0
-        };
-
-        return element;
-    }
-}
-
-public class GuiElement
-{
-    // Base
-    public GuiGenerator.GuiElementKind Kind = GuiGenerator.GuiElementKind.Unknown;
-    public string Namespace = "";
-    public string ClassName = "";
-    public string FieldName = "";
-    public string PropName = "";
-    public string TypeName = "";
-    public int Order = 0;
-
-    // Universal
-    public string Label = "";
-    public string Tooltip = "";
-
-    // Specific
-    // Slider
-    public float SliderMin = 0;
-    public float SliderMax = 0;
-    public float SliderStep = 0;
-    public float SliderStart = 0;
+    public static bool BoolArg(AttributeData a, int i) => 
+        a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Value is bool and true;
+    public static int IntArg(AttributeData a, int i) => 
+        a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Value is { } v ? Convert.ToInt32(v) : 0;
+    public static float FloatArg(AttributeData a, int i) => 
+        a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Value is { } v ? Convert.ToSingle(v) : 0f;
+    public static string StringArg(AttributeData a, int i) => 
+        a.ConstructorArguments.Length > i ? a.ConstructorArguments[i].Value as string ?? "" : "";
+    public static bool[] BoolArrayArg(AttributeData a, int i) => 
+        ArrayValues(a, i).Select(v => v.Value is bool and true).ToArray();
+    public static int[] IntArrayArg(AttributeData a, int i) => 
+        ArrayValues(a, i).Select(v => v.Value is { } x ? Convert.ToInt32(x) : 0).ToArray();
+    public static float[] FloatArrayArg(AttributeData a, int i) => 
+        ArrayValues(a, i).Select(v => v.Value is { } x ? Convert.ToSingle(x) : 0f).ToArray();
+    public static string[] StringArrayArg(AttributeData a, int i) => 
+        ArrayValues(a, i).Select(v => v.Value as string ?? "").ToArray();
     
-    // Debug
-    public string DebugValuePath = "";
+    /// <summary>
+    /// Will extract an array of arguments if they exist. 
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="i"></param>
+    /// <returns>An array of elements or an empty array if it fails.</returns>
+    private static ImmutableArray<TypedConstant> ArrayValues(AttributeData a, int i) =>
+        a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Kind == TypedConstantKind.Array
+            ? a.ConstructorArguments[i].Values
+            : ImmutableArray<TypedConstant>.Empty;
 }
