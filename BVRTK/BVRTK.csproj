@@ -66,10 +66,18 @@
     <ItemGroup>
         <EmbeddedResource Include="Resources\Media\bvrtk.thumbnail.png"/>
         <EmbeddedResource Include="Resources\Media\bvrtk.logo.png"/>
-        <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf"/>
-        <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-BoldItalic.ttf"/>
-        <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-Italic.ttf"/>
-        <EmbeddedResource Include="Resources\Fonts\AtkinsonHyperlegible-Regular.ttf"/>
+        <None Include="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="Resources\Fonts\AtkinsonHyperlegible-BoldItalic.ttf">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="Resources\Fonts\AtkinsonHyperlegible-Italic.ttf">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="Resources\Fonts\AtkinsonHyperlegible-Regular.ttf">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

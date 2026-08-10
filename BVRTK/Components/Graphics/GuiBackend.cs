@@ -42,7 +42,7 @@ public class GuiBackend
     // Based on: https://github.com/HexaEngine/Hexa.NET.ImGui/blob/main/Examples/ExampleGLFWOpenGL3/Program.cs
 
     /// Setup ImGui config.
-    private static void UpdateConfig()
+    private static unsafe void UpdateConfig()
     {
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard; // Enable Keyboard Controls
@@ -56,21 +56,14 @@ public class GuiBackend
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
 
+        Session.GuiFonts.Regular = io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Regular.ttf"]));
+        Session.GuiFonts.Bold = io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Bold.ttf"]));
+        Session.GuiFonts.Italic = io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-Italic.ttf"]));
+        Session.GuiFonts.BoldItalic = io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-BoldItalic.ttf"]));
     }
 
     private static unsafe void LoadEmbeds(GL gl)
     {
-        #region Fonts
-
-        var cfg = ImGui.ImFontConfig();
-        cfg.FontDataOwnedByAtlas = false; // To retain fonts in memory
-        Session.GuiFonts.Regular = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Regular.ttf"); // Becomes default as added first
-        Session.GuiFonts.Bold = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Bold.ttf");
-        Session.GuiFonts.Italic = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-Italic.ttf");
-        Session.GuiFonts.BoldItalic = LoadFont("BVRTK.Resources.Fonts.AtkinsonHyperlegible-BoldItalic.ttf");
-
-        #endregion
-
         #region Images
 
         Session.GuiImages.Logo = LoadImage(gl, "BVRTK.Resources.Media.bvrtk.logo.png");

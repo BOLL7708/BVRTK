@@ -4,7 +4,7 @@ namespace BVRTK.Components.Graphics;
 
 public static class GuiUtils
 {
-    public static void PushFont(FontStyle font)
+    public static unsafe void PushFont(FontStyle font)
     {
         switch (font)
         {

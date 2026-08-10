@@ -27,7 +27,7 @@ BOLL's VR Toolkit
 ║                ║                                                       ║
 ╚════════════════╩═══════════════════════════════════════════════════════╝
 ```
-In the above Run Scripts is superceded by Events, which will hopefully be a dynamically allocated list of registered triggers that can run events, which will include webhooks, settings, overlays and scripts!
+In the above Run Scripts is superseded by Events, which will hopefully be a dynamically allocated list of registered triggers that can run events, which will include webhooks, settings, overlays and scripts!
 
 Settings
 --------

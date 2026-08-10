@@ -8,7 +8,7 @@ public unsafe class GlImage(uint ptr, int width, int height)
     public readonly int Width = width;
     public readonly int Height = height;
     
-    private ImTextureRef ToTextureRef()
+    public ImTextureRef ToTextureRef()
     {
         return new ImTextureRef(texId: new ImTextureID((nint)ptr));
     }

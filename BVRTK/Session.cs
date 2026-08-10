@@ -11,12 +11,12 @@ public static class Session
 #else
     public const bool isDebug = false;
 #endif
-    public static class GuiFonts
+    public static unsafe class GuiFonts
     {
-        public static ImFontPtr Regular;
-        public static ImFontPtr Bold;
-        public static ImFontPtr Italic;
-        public static ImFontPtr BoldItalic;
+        public static ImFont* Regular { get; set; }
+        public static ImFont* Bold { get; set; }
+        public static ImFont* Italic { get; set; }
+        public static ImFont* BoldItalic { get; set; }
     }
 
     public static class GuiImages
