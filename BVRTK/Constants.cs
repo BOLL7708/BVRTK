@@ -9,7 +9,7 @@ public static class Constants
     public static readonly int OverlayTextureWidth = 1440;
     public static readonly int OverlayTextureHeight = 960;
     public static readonly float OverlayPhysicalWidth = 2.5f;
-    public static readonly float OverlayGuiScale = 2.5f;
+    public static readonly float OverlayGuiScale = 2f;
 
     public static readonly float GuiSidebarWidth = 128f * OverlayGuiScale;
     public static readonly float GuiGlobalRounding = 8f * OverlayGuiScale;

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Hexa.NET.ImGui;
 
 namespace BVRTK.Components.Graphics;
@@ -33,11 +34,13 @@ public static class GuiUtils
 
     public static void DrawCenteredText(string text, FontStyle font = FontStyle.Regular)
     {
-        var availableSpace = ImGui.GetContentRegionAvail().X;
-        var textWidth = ImGui.CalcTextSize(text).X;
         PushFont(font);
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (availableSpace - textWidth) / 2f);
-        ImGui.Text(text);
+        ImGui.TextAligned(0.5f, ImGui.GetContentRegionAvail().X, text);
         ImGui.PopFont();
+    }
+
+    public static void OpenUrl(string url)
+    {
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
 }

@@ -20,10 +20,19 @@ public partial class Application
     [GuiCheckbox("Show tooltips", "VERY BIG TOOLTIPS!")] 
     private bool _showTooltips = true;
     public partial bool ShowTooltips { get; set; }
+
+    private int _currentSection = 0;
+    public partial int CurrentSection { get; set; }
     
+    private Dictionary<int, int> _currentPageInSection = new();
+    public partial Dictionary<int, int> CurrentPageInSection { get; set; }
+
     // [GuiDebug("Settings.Current.Application.ShowTooltips")] 
     // private object Debug { get; set; }
     
     // [GuiTest(true, 1, 1.2f, "Test", [true, false], [0,2], [1.2f, 2.3f], ["Testing", "Arrays"])]
     // private object Test { get; set; }
+    
+    // [GuiDebug("string.Join(Environment.NewLine, Settings.Current.Application.CurrentPageInSection)")]
+    // private object DebugDictionaryValue { get; set; }
 }

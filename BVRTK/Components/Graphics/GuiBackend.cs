@@ -418,10 +418,8 @@ public class GuiBackend
             && GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) == 0;
 
         // Main loop
-        // TODO: Closing should just hide, so this should listen to real termination.
         while (!_shouldTerminate)
         {
-            // TODO: This loop should be possible to pause or slow down if both the overlay and desktop windows are hidden.
             // Poll for and process events
             GLFW.PollEvents();
             ApplyOverlayEventsAsInput();
@@ -429,6 +427,7 @@ public class GuiBackend
             
             if (!(_overlayVisible || IsDesktopVisible()))
             {
+                Settings.WriteToDisk();
                 GLFW.WaitEventsTimeout(1); // Will interrupt on an event, which happens if the window is shown.
                 continue;
             }

@@ -1,12 +1,11 @@
 using System.Numerics;
+using BVRTK.Data;
 using Hexa.NET.ImGui;
 
 namespace BVRTK.Components.Graphics;
 
 public static partial class Gui
 {
-    private static int _selectedSection = 0;
-
     private static void RenderSidebar()
     {
         // The sidebar
@@ -25,8 +24,14 @@ public static partial class Gui
         var i = 0;
         foreach (var section in GuiStructure.Sections)
         {
+            if (Session.isDebug && !section.IsPublic)
+            {
+                i++;
+                continue;
+            }
+            
             GuiUtils.PushFont(section.Font);
-            var isActive = i == _selectedSection;
+            var isActive = i == Settings.Current.Application.CurrentSection;
             ImGui.PushStyleColor(ImGuiCol.Button, isActive
                 ? section.AccentColor.TabActive()
                 : section.AccentColor.Tab()
@@ -45,7 +50,7 @@ public static partial class Gui
             ImGui.Button(section.Title, availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
-                _selectedSection = i;
+                Settings.Current.Application.CurrentSection = i;
             }
 
             ImGui.PopStyleColor(4);

@@ -10,7 +10,7 @@ public static class GuiStructure
     // TODO: Temporary while building this out.
     private static readonly Action PlaceholderRenderer = () =>
     {
-        for(var i=0; i<100; i++) ImGui.Text($"PlaceHolder Renderer: Row #{i}");
+        for (var i = 0; i < 100; i++) ImGui.Text($"PlaceHolder Renderer: Row #{i}");
     };
 
     private static readonly Page PageWip = new Page("WIP", () => { ImGui.TextWrapped("Work in progress, this feature is not yet available."); });
@@ -27,32 +27,32 @@ public static class GuiStructure
         _currentColor++;
         return GuiColor.FromHue(hue);
     }
-    
+
     public static readonly List<Section> Sections =
     [
-        new("Development", FontStyle.Bold, GuiColor.FromHue(0), [
+        // TODO: Add "Live" flag that hides a section if not debugging
+        new("Development", false, FontStyle.Bold, GuiColor.FromHue(0), [
             new Page("Component Zoo", Develop.RenderZooPage)
         ]),
-        new("BVRTK", FontStyle.Bold, GuiColor.GrayLighter, [
+        new("BVRTK", true, FontStyle.Bold, GuiColor.GrayLighter, [
             new Page("About", Root.RenderAboutPage),
-            new Page("Links", Root.RenderLinksPage),
-            new Page ("Version History", Root.RenderVersionHistoryPage)
+            new Page("Version History", Root.RenderVersionHistoryPage)
         ]),
-        new("Preferences", FontStyle.Regular, GetNextColor(), [
-            new Page("Options", GuiRenderers.RenderApplicationPage), 
+        new("Preferences", true, FontStyle.Regular, GetNextColor(), [
+            new Page("Options", GuiRenderers.RenderApplicationPage),
             new Page("Bingo", PlaceholderRenderer)
         ]),
-        new("Server", FontStyle.Regular, GetNextColor(), [
-            new Page("Options", PlaceholderRenderer), 
-            new Page("Error", PlaceholderRenderer), 
+        new("Server", true, FontStyle.Regular, GetNextColor(), [
+            new Page("Options", PlaceholderRenderer),
+            new Page("Error", PlaceholderRenderer),
             new Page("Help!", PlaceholderRenderer)
         ]),
-        new("Keyboard Sim", FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Mouse Sim", FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Overlays", FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Screenshots", FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Play Area", FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Events", FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Keyboard Sim", false, FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Mouse Sim", false, FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Overlays", false, FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Screenshots", true, FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Play Area", false, FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Events", false, FontStyle.Regular, GetNextColor(), [PageWip]),
     ];
 }
 
@@ -64,9 +64,10 @@ public enum FontStyle
     BoldItalic
 }
 
-public class Section(string title, FontStyle font, Vector4 accentColor, List<Page> pages)
+public class Section(string title, bool isPublic, FontStyle font, Vector4 accentColor, List<Page> pages)
 {
     public readonly string Title = title;
+    public readonly bool IsPublic = isPublic;
     public readonly FontStyle Font = font;
     public readonly Vector4 AccentColor = accentColor;
     public readonly List<Page> Pages = pages;
