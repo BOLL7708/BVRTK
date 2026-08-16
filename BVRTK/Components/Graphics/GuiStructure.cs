@@ -15,44 +15,26 @@ public static class GuiStructure
 
     private static readonly Page PageWip = new Page("WIP", () => { ImGui.TextWrapped("Work in progress, this feature is not yet available."); });
 
-    private static int _currentColor = 0;
-    private const int NumOfColors = 8;
-
-    private static Vector4 GetNextColor()
-    {
-        const float startValue = 0.15f;
-        const float endValue = 0.60f;
-        var value = 1f / NumOfColors * _currentColor;
-        var hue = (endValue - startValue) * value + startValue;
-        _currentColor++;
-        return GuiColor.FromHue(hue);
-    }
-
     public static readonly List<Section> Sections =
     [
         // TODO: Add "Live" flag that hides a section if not debugging
         new("Development", false, FontStyle.Bold, GuiColor.FromHue(0), [
             new Page("Component Zoo", Develop.RenderZooPage)
         ]),
-        new("BVRTK", true, FontStyle.Bold, GuiColor.GrayLighter, [
+        new("BVRTK", true, FontStyle.Bold, GuiColor.Root, [
             new Page("About", Root.RenderAboutPage),
             new Page("Version History", Root.RenderVersionHistoryPage)
         ]),
-        new("Preferences", true, FontStyle.Regular, GetNextColor(), [
+        new("Preferences", true, FontStyle.Regular, GuiColor.GrayLight, [
             new Page("Options", GuiRenderers.RenderApplicationPage),
-            new Page("Bingo", PlaceholderRenderer)
         ]),
-        new("Server", true, FontStyle.Regular, GetNextColor(), [
-            new Page("Options", PlaceholderRenderer),
-            new Page("Error", PlaceholderRenderer),
-            new Page("Help!", PlaceholderRenderer)
-        ]),
-        new("Keyboard Sim", false, FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Mouse Sim", false, FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Overlays", false, FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Screenshots", true, FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Play Area", false, FontStyle.Regular, GetNextColor(), [PageWip]),
-        new("Events", false, FontStyle.Regular, GetNextColor(), [PageWip]),
+        new("Server", true, FontStyle.Regular, GuiColor.Server, [PageWip]),
+        new("Keyboard Sim", true, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
+        new("Mouse Sim", true, FontStyle.Regular, GuiColor.GrayLight, [PageWip]),
+        new("Overlays", true, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
+        new("Screenshots", true, FontStyle.Regular, GuiColor.Screenshots, [PageWip]),
+        new("Play Area", true, FontStyle.Regular, GuiColor.GrayLight, [PageWip]),
+        new("Events", true, FontStyle.Regular, GuiColor.GrayLight, [PageWip]),
     ];
 }
 

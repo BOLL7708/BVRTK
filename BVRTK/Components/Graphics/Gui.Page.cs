@@ -67,7 +67,7 @@ public static partial class Gui
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGui.GetStyle().ItemSpacing.Y);
 
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
-                PushColorAccents(section.AccentColor);
+                GuiUtils.PushColorAccents(section.AccentColor);
                 
                 // Turns out window padding is ignored by default without a border.
                 ImGui.BeginChild($"##Content{section.Title}{page.Title}", ImGuiChildFlags.AlwaysUseWindowPadding);
@@ -75,7 +75,7 @@ public static partial class Gui
                 page.Renderer();
                 ImGui.EndChild();
                 
-                PopColorAccents();
+                GuiUtils.PopColorAccents();
                 ImGui.PopStyleVar();
 
                 ImGui.EndTabItem();
@@ -91,49 +91,6 @@ public static partial class Gui
         ImGui.EndTabBar();
         ImGui.PopStyleColor(3);
         ImGui.EndChild();
-    }
-
-    private static readonly Dictionary<ImGuiCol, float> AccentComponents = new()
-    {
-        { ImGuiCol.ChildBg, 0.25f },
-        { ImGuiCol.CheckMark, 1f },
-        // TODO: Checkmark backgrounds are still blue when not focused. 
-
-        // Used for any element with a scrollbar
-        { ImGuiCol.ScrollbarBg, 0.1f },
-        { ImGuiCol.ScrollbarGrab, 0.5f },
-        { ImGuiCol.ScrollbarGrabHovered, 0.75f },
-        { ImGuiCol.ScrollbarGrabActive, 1f },
-
-        // Used for things like the checkmark
-        { ImGuiCol.FrameBg, 0.1f },
-        { ImGuiCol.FrameBgHovered, 0.5f },
-        { ImGuiCol.FrameBgActive, 0.75f },
-
-        // Unverified entries below
-        { ImGuiCol.SliderGrab, 1f },
-        { ImGuiCol.SliderGrabActive, 1.2f },
-        { ImGuiCol.Button, 1f },
-        { ImGuiCol.ButtonHovered, 1.15f },
-        { ImGuiCol.ButtonActive, 0.85f },
-        { ImGuiCol.Header, 1f },
-        { ImGuiCol.HeaderHovered, 1.15f },
-        { ImGuiCol.HeaderActive, 0.85f },
-        { ImGuiCol.SeparatorHovered, 1f },
-        { ImGuiCol.TextSelectedBg, 0.5f },
-    };
-
-    private static void PushColorAccents(Vector4 a)
-    {
-        foreach (var kv in AccentComponents)
-        {
-            ImGui.PushStyleColor(kv.Key, a.Fade(kv.Value));
-        }
-    }
-
-    private static void PopColorAccents()
-    {
-        ImGui.PopStyleColor(AccentComponents.Count);
     }
     
     /// <summary>

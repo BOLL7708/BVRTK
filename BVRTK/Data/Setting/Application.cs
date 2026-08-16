@@ -17,7 +17,6 @@ public partial class Application
     private bool _showDesktopWindowOnLaunch = true;
     public partial bool ShowDesktopWindowOnLaunch { get; set; }
 
-    [GuiCheckbox("Show tooltips", "VERY BIG TOOLTIPS!")] 
     private bool _showTooltips = true;
     public partial bool ShowTooltips { get; set; }
 

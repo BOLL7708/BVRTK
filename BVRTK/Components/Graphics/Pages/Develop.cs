@@ -48,7 +48,7 @@ public static class Develop
         ImGui.TextUnformatted("Text Unformatted");
         ImGui.TextWrapped("Text Wrapped");
         ImGui.TextAligned(0.5f,ImGui.GetContentRegionAvail().X,"Text Aligned");
-        ImGui.TextColored(GuiColor.Yellow, "Text Colored");
+        ImGui.TextColored(GuiColor.Server, "Text Colored");
         ImGui.TextDisabled("Text Disabled");
         ImGui.TextDisabledV("Text Disabled V", 0);
         ImGui.TextLink("A link");
@@ -83,7 +83,7 @@ public static class Develop
         ImGui.SeparatorText("Buttons");
         ImGui.Button("Button");
         ImGui.ArrowButton("Arrow Button", ImGuiDir.Up);
-        ImGui.ColorButton("Color Button", GuiColor.Cyan);
+        ImGui.ColorButton("Color Button", GuiColor.Overlays);
         ImGui.ImageButton("Image Button", Session.GuiImages.Logo.ToTextureRef(), new Vector2(Session.GuiImages.Logo.Width, Session.GuiImages.Logo.Height));
         ImGui.InvisibleButton("Invisible Button", new Vector2(64f, 64f));
         ImGui.RadioButton("Radio Button 1", ref radioButtonValue, 0);

@@ -413,10 +413,6 @@ public class GuiBackend
         gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
-        bool IsDesktopVisible() =>
-            GLFW.GetWindowAttrib(window, GLFW.GLFW_VISIBLE) != 0
-            && GLFW.GetWindowAttrib(window, GLFW.GLFW_ICONIFIED) == 0;
-
         // Main loop
         while (!_shouldTerminate)
         {
@@ -425,7 +421,7 @@ public class GuiBackend
             ApplyOverlayEventsAsInput();
             DisplayVrKeyboardOnTextInput(overlayHandle);
             
-            if (!(_overlayVisible || IsDesktopVisible()))
+            if (!(_overlayVisible || IsWindowVisible()))
             {
                 Settings.WriteToDisk();
                 GLFW.WaitEventsTimeout(1); // Will interrupt on an event, which happens if the window is shown.
@@ -478,6 +474,13 @@ public class GuiBackend
             WakeRenderLoop();
         }
         else GLFW.HideWindow(_window.Value);
+    }
+    
+    public bool IsWindowVisible()
+    {
+        if (_window is null) return false;
+        return GLFW.GetWindowAttrib(_window.Value, GLFW.GLFW_VISIBLE) != 0
+            && GLFW.GetWindowAttrib(_window.Value, GLFW.GLFW_ICONIFIED) == 0;
     }
     
     private bool _overlayVisible = false;

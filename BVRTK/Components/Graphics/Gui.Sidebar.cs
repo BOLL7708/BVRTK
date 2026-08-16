@@ -58,6 +58,35 @@ public static partial class Gui
             i++;
         }
 
+        #region Quick Settings
+        GuiUtils.PushColorAccents(GuiColor.Root);
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
+        ImGui.BeginChild("##QuickSettings", ImGuiChildFlags.AlwaysUseWindowPadding);
+        
+        ImGui.Dummy(Vector2.Zero);
+        var showTooltips = Settings.Current.Application.ShowTooltips;
+        if (ImGui.Checkbox("Tooltips", ref showTooltips))
+        {
+            Settings.Current.Application.ShowTooltips = showTooltips;
+        }
+        GuiUtils.DrawTooltip("Toggle tooltips for all places where a tooltip exists.");
+
+        var showOnDesktop = Services.GuiBackend.IsWindowVisible();
+        if (ImGui.Checkbox("On Desktop", ref showOnDesktop))
+        {
+            Services.GuiBackend.SetWindowVisible(showOnDesktop);
+        }
+        GuiUtils.DrawTooltip("Display this application in a mirror window on the desktop.");
+            
+        ImGui.EndChild();
+        ImGui.PopStyleVar();
+        ImGui.PopStyleColor();
+        GuiUtils.PopColorAccents();
+        #endregion
+        
+        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{string.Join(Environment.NewLine, Settings.Current.Application.CurrentPageInSection)}");
+        
         ImGui.PopStyleVar(3);
         ImGui.EndChild();
     }

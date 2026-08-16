@@ -116,6 +116,7 @@ public class GuiGenerator : IIncrementalGenerator
             sb.AppendLine("using System.Numerics;");
             sb.AppendLine("using BVRTK.Data;");
             sb.AppendLine("using Hexa.NET.ImGui;");
+            sb.AppendLine("using BVRTK.Components.Graphics;");
             sb.AppendLine("public partial class GuiRenderers");
             sb.AppendLine("{");
             sb.AppendLine($"    public static void Render{group.Key.ClassName}Page()");
@@ -154,13 +155,7 @@ public class GuiGenerator : IIncrementalGenerator
     {
         if (tooltip.Trim().Length == 0) return;
         sb.AppendLine($$"""
-                               if (Settings.Current.Application.ShowTooltips && ImGui.IsItemHovered()) {
-                                   ImGui.BeginTooltip();
-                                   ImGui.PushTextWrapPos(ImGui.GetFontSize() * Constants.GuiTooltipWrap);
-                                   ImGui.TextUnformatted("{{tooltip}}");
-                                   ImGui.PopTextWrapPos();
-                                   ImGui.EndTooltip();
-                               }
+                               GuiUtils.DrawTooltip("{{tooltip}}");
                        """);
     }
 }
