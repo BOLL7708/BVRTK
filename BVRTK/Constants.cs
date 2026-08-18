@@ -4,6 +4,8 @@ namespace BVRTK;
 
 public static class Constants
 {
+    public static readonly string SystemApplicationKey = "software.boll.bvrtk";
+    
     /// Forever-invite that applies the from-bvrtk role on the server.
     public static readonly string UrlDiscordInvite = "https://discord.gg/nuegP5CRXh";
     public static readonly string UrlGithubRepository = "https://github.com/BOLL7708/BVRTK";

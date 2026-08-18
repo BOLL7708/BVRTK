@@ -28,6 +28,12 @@ class Program
         // Settings.Current.Server.__setDirty();
         Settings.WriteToDisk(); // Writes the Server object to disk as it is dirty
         Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
+
+        if (File.Exists("Build/version.txt"))
+        {
+            Session.Version = File.ReadAllText("Build/version.txt").Trim();
+        }
+        
         #endregion
         
         var server = Services.Server;
@@ -102,6 +108,12 @@ class Program
                 });
                 Services.GuiBackend.Run(mainHandle);
                 Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
+                
+                vr.System.SetAutoLaunch(Constants.SystemApplicationKey, Settings.Current.Application.LaunchWithSteamVr);
+                SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (current, _) =>
+                {
+                    vr.System.SetAutoLaunch(Constants.SystemApplicationKey, current);
+                };
             }
             if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;

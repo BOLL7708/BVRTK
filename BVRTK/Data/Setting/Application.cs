@@ -5,11 +5,11 @@ namespace BVRTK.Data.Setting;
 [Setting]
 public partial class Application
 {
-    [GuiCheckbox("Launch with SteamVR", "Will register the application to automatically launch with SteamVR. You can launching applications under Startup/Shutdown in the SteamVR settings.")]
+    [GuiCheckbox("Launch with SteamVR", "Will register the application to automatically launch with SteamVR.")]
     private bool _launchWithSteamVr = true;
     public partial bool LaunchWithSteamVr { get; set; }
 
-    [GuiCheckbox("Enable interface gradient", "Will render a gradient that shades the entire app, can be disabled for whatever reason, originally a test setting.")]
+    [GuiCheckbox("Enable interface gradient", "Will render a gradient that shades the entire app, can be disabled for a flatter look, originally a test setting.")]
     private bool _enableInterfaceGradient = true;
     public partial bool EnableInterfaceGradient { get; set; }
 

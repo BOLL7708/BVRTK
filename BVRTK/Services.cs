@@ -31,9 +31,9 @@ public static class Services
         #region App Manifest
 
         const string vrManifestFilename = "software.boll.bvrtk.vrmanifest";
-        var application = new ApplicationBuilder("software.boll.bvrtk")
+        var application = new ApplicationBuilder(Constants.SystemApplicationKey)
             .IsDashboardOverlay()
-            .SetBinaryPathWindows("D:/Google Drive/-= BOLL7708 =-/Rider/BVRTK/BVRTK/bin/Debug/net10.0/BVRTK.exe")
+            .SetBinaryPathWindows("D:/Google Drive/-= BOLL7708 =-/Rider/BVRTK/BVRTK/bin/Debug/net10.0/BVRTK.exe") // TODO: Figure out what this should be.
             .AddStrings("en_us", new Strings("BOLL's VR Toolkit", "Suite of tools and extensions for SteamVR."))
             .Build();
         var vrManifestBuilder = new VrManifestBuilder()
@@ -44,6 +44,7 @@ public static class Services
         #region Action Manifest
 
         const string actionManifestFilename = "software.boll.bvrtk.actions.json";
+        // TODO: This should support sections too, so we can have different input mappings per section.
         var actionManifestBuilder = new ActionManifestBuilder()
             .AddVersion(1, 1)
             .AddAction(

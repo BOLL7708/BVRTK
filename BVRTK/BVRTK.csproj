@@ -78,6 +78,13 @@
         <None Include="Resources\Fonts\AtkinsonHyperlegible-Regular.ttf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="Build\version.txt">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
+    
+    <Target Name="GenerateVersionFile" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true'">
+        <Exec Command="bash ./Build/version.sh" ContinueOnError="false" />
+    </Target>
 
 </Project>

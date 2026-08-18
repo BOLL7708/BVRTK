@@ -80,7 +80,10 @@ public static partial class Gui
             Services.GuiBackend.SetWindowVisible(showOnDesktop);
         }
         GuiUtils.DrawTooltip("Display this application in a mirror window on the desktop.");
-            
+        
+        ImGui.Dummy(Vector2.Zero);
+        GuiUtils.DrawCenteredText(Session.Version);
+        
         ImGui.EndChild();
         ImGui.PopStyleVar(2);
         ImGui.PopStyleColor();

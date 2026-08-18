@@ -11,6 +11,9 @@ public static class Session
 #else
     public const bool isDebug = false;
 #endif
+
+    public static string Version = "v0.0.0";
+    
     public static unsafe class GuiFonts
     {
         public static ImFont* Regular { get; set; }
