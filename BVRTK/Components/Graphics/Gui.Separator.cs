@@ -12,7 +12,7 @@ public static partial class Gui
 
         // Separator
         ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor);
-        ImGui.BeginChild("##Separator", Vector2.Zero with { X = Constants.GuiSeparatorGirth });
+        ImGui.BeginChild("##Separator", Vector2.Zero with { X = Constants.GuiMainSeparatorGirth });
         ImGui.EndChild();
         ImGui.PopStyleColor();
     }

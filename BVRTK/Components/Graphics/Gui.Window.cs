@@ -32,17 +32,23 @@ public static partial class Gui
         #region Draw
 
         ImGui.Begin("##Root", flags);
+        
         ImGui.PopStyleColor();
         ImGui.PopStyleVar(3);
-        
+
+        GuiUtils.PushFont(FontStyle.Regular, Constants.GuiFontSize);
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.GuiItemSpacing);
+        
         RenderSidebar();
         ImGui.SameLine(0, 0);
         RenderSeparator();
         ImGui.SameLine();
         RenderPage();
         if (Settings.Current.Application.EnableInterfaceGradient) RenderGradient();
+        
         ImGui.PopStyleVar();
+        ImGui.PopFont();
+        
         ImGui.End();
 
         #endregion

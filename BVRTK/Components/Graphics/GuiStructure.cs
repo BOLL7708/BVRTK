@@ -23,18 +23,19 @@ public static class GuiStructure
         ]),
         new("BVRTK", true, FontStyle.Bold, GuiColor.Root, [
             new Page("About", Root.RenderAboutPage),
-            new Page("Version History", Root.RenderVersionHistoryPage)
+            new Page("Version History", Root.RenderVersionHistoryPage),
+            new Page("Licenses", Root.RenderLicensesPage)
         ]),
-        new("Preferences", true, FontStyle.Regular, GuiColor.GrayLight, [
+        new("Preferences", true, FontStyle.Regular, GuiColor.Preferences, [
             new Page("Options", GuiRenderers.RenderApplicationPage),
         ]),
         new("Server", true, FontStyle.Regular, GuiColor.Server, [PageWip]),
         new("Keyboard Sim", true, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
-        new("Mouse Sim", true, FontStyle.Regular, GuiColor.GrayLight, [PageWip]),
+        new("Mouse Sim", true, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
         new("Overlays", true, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
         new("Screenshots", true, FontStyle.Regular, GuiColor.Screenshots, [PageWip]),
-        new("Play Area", true, FontStyle.Regular, GuiColor.GrayLight, [PageWip]),
-        new("Events", true, FontStyle.Regular, GuiColor.GrayLight, [PageWip]),
+        new("Play Area", true, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),
+        new("Events", true, FontStyle.Regular, GuiColor.Events, [PageWip]),
     ];
 }
 

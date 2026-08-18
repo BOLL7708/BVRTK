@@ -16,8 +16,8 @@ public static partial class Gui
 
         // Section buttons, each colored by its accent
 
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiGlobalRounding);
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding with { X = Constants.GuiGlobalRounding * 2f });
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiTabRounding);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding with { X = Constants.GuiTabRounding * 2f });
         ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(1f, 0.5f)); // Horizontal and vertical alignment
 
         var availableSpace = ImGui.GetContentRegionAvail();
@@ -46,7 +46,7 @@ public static partial class Gui
                 : Vector4.One
             );
 
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.GuiGlobalRounding);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.GuiTabRounding);
             ImGui.Button(section.Title, availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
@@ -57,10 +57,12 @@ public static partial class Gui
             ImGui.PopFont();
             i++;
         }
-
+        ImGui.PopStyleVar(3);
+        
         #region Quick Settings
         GuiUtils.PushColorAccents(GuiColor.Root);
         ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiGeneralRounding);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
         ImGui.BeginChild("##QuickSettings", ImGuiChildFlags.AlwaysUseWindowPadding);
         
@@ -80,14 +82,12 @@ public static partial class Gui
         GuiUtils.DrawTooltip("Display this application in a mirror window on the desktop.");
             
         ImGui.EndChild();
-        ImGui.PopStyleVar();
+        ImGui.PopStyleVar(2);
         ImGui.PopStyleColor();
         GuiUtils.PopColorAccents();
         #endregion
         
         // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{string.Join(Environment.NewLine, Settings.Current.Application.CurrentPageInSection)}");
-        
-        ImGui.PopStyleVar(3);
         ImGui.EndChild();
     }
 }

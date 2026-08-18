@@ -8,18 +8,16 @@ BOLL's VR Toolkit
 
 ```
 ╔════════════════╦══════════════╤═════════╤════════════╤══════════╤══════╗
-║      LOGO      ║ Instructions │ Options │ Operations │ Examples │      ║
-║      TYPE      ╟──────────────┴─────────┴────────────┴──────────┴──────╢ 
-╠════════════════╣                                                       ║
-║       Settings ║ Start with SteamVR, show tray icon, hide from taskbar ║
+║                ║ Instructions │ Options │ Operations │ Examples │      ║
+║          BVRTK ╟──────────────┴─────────┴────────────┴──────────┴──────╢ 
+║    Preferences ║ Start with SteamVR, show tray icon, hide from taskbar ║
 ║         Server ║ OpenVR2WS: Port, password, various I/O options        ║
 ║   Keyboard Sim ║ OpenVR2Key: Maps keys to simulate from VR input       ║
 ║      Mouse Sim ║ New: Maps mouse events to simulate from VR input      ║
 ║       Overlays ║ OpenVROverlayPipe: Show overlays with various effects ║
 ║    Screenshots ║ SuperScreenShotterVR: Viewfinder and custom output    ║
 ║      Play Area ║ New: Walls around the play area that will pop up      ║
-║         Events ║ New: Example, send screenshots to webhook, workshop?  ║
-║    Run Scripts ║ OpenVRStartup: Run scripts on SteamVR launch or exit  ║
+║         Events ║ New: OpenVRStartup + more triggers and targets        ║
 ║                ║                                                       ║
 ║   About & Help ║ Link to website, Discord, Github                      ║
 ║        Version ║                                                       ║

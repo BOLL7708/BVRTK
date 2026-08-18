@@ -1,20 +1,39 @@
 # BOLL's VR Toolkit
 This is a suite of VR extensions for SteamVR using the OpenVR API.
 
-## Grand Plan
-It is still early days, as this is a spare time project, often hampered by work stress and other distractions, but it is slowly growing. 
+## Plan
+The goal is to combine a range of my existing [OpenVR](https://github.com/ValveSoftware/openvr) projects into one unified application and publish it to the [Steam store](https://store.steampowered.com) for free. 
 
-The overarching steps of this plan are listed below:
-1. Set up a solid foundation with a [JSON-RPC 2.0](https://www.jsonrpc.org) compliant Websocket server for remote access I/O.
-2. Update and streamline [EasyOpenVR](https://github.com/BOLL7708/EasyOpenVR) which is the backbone of all my OpenVR projects.
-3. Implement a new texture backend that will be compatible with various graphics APIs, it is currently unclear which solution to use, but as I want to adopt [PanGui](https://pangui.io/) which currently uses [SDL3](https://github.com/libsdl-org/SDL) that will be investigated and evaluated.
-   1. With PanGui, I hope to create a full interface to configure this application through a SteamVR dashboard overlay.
-   2. It will also be used for anything that needs to be rendered to a texture, like screenshot overlays, notifications, HUD elements, possible other features that are unannounced.
-4. Implement the [Steam API](https://github.com/rlabrecque/Steamworks.NET) for things like achievements and workshop content, any feature that can be motivated. This is secondary, but I want the experience and would love to have a deep integration.
+It would combine:
+* [OpenVR2WS](https://github.com/BOLL7708/OpenVR2WS)
+* [OpenVR2Key](https://github.com/BOLL7708/OpenVR2Key)
+* [OpenVRStartup](https://github.com/BOLL7708/OpenVRStartup)
+* [OpenVROverlayPipe](https://github.com/BOLL7708/OpenVROverlayPipe)
+* [SuperScreenShotterVR](https://github.com/BOLL7708/SuperScreenShotterVR)
 
-## Current Status
-1. The project has been set up with .NET 10 and AOT builds for multi-platform support, no testing has been done if Linux is viable though, but it can hopefully happen at some point.
-2. The WebSocket server has been set up with working JSON-RPC support.
-3. The work on updating EasyOpenVR is ongoing.
-4. The work on integrating SDL3 and in extension PanGui has not started yet.
-5. The work on integrating the Steam API and features has not started yet.
+This is a spare time project, often hampered by work stress and other distractions, but steady progress is being made. 
+
+Work started at the beginning of 2026.
+
+## Progress
+Legend for the status icons:
+* ✅: Completely finished
+* ☑️: Integrated and works but not done 
+* 🚧: Integration not complete 
+* 🧪: Still resarching 
+* 💤: Work has not started
+
+The overarching steps of the development process are listed below, including an icon for the current progress status:
+1. ✅ Create a logotype and application icon.
+2. ☑️ Build from the ground up with .NET 10.
+3. ☑️ Upgrade [EasyOpenVR](https://github.com/BOLL7708/EasyOpenVR) to be more capable.
+4. ☑️ Run a [JSON-RPC 2.0](https://www.jsonrpc.org) server using [SuperSocket](https://www.supersocket.net).
+5. ☑️ Using [DearImGui](https://www.dearimgui.com) with [GLFW](https://www.glfw.org) to build a dashboard interface.
+6. ☑️ Construct a file based settings system that maps JSON to disk, and provides values to the GUI and systems.
+7. 🚧 Steam integration for cloud sync, achievements, and more, using [Steamworks.NET](https://steamworks.github.io).
+8. 💤 Create Steam store assets.
+9. 💤 Transition as much as is suitable and possible from older projects to implement the prevous features.
+
+## Links
+* [Application structure plan](https://github.com/BOLL7708/BVRTK/blob/main/BVRTK/Docs/Structure.md) - Details about features to implement.
+* [Workplan with detailed progress](https://github.com/BOLL7708/BVRTK/blob/main/BVRTK/Docs/WorkPlan.md) - Current work items and the status of them.

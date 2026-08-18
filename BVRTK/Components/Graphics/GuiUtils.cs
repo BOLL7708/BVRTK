@@ -9,22 +9,22 @@ public static class GuiUtils
 {
     #region Settings
 
-    public static unsafe void PushFont(FontStyle font)
+    public static unsafe void PushFont(FontStyle font, float size = 0)
     {
         switch (font)
         {
             case FontStyle.Bold:
-                ImGui.PushFont(Session.GuiFonts.Bold, 0f);
+                ImGui.PushFont(Session.GuiFonts.Bold, size);
                 break;
             case FontStyle.Italic:
-                ImGui.PushFont(Session.GuiFonts.Italic, 0f);
+                ImGui.PushFont(Session.GuiFonts.Italic, size);
                 break;
             case FontStyle.BoldItalic:
-                ImGui.PushFont(Session.GuiFonts.BoldItalic, 0f);
+                ImGui.PushFont(Session.GuiFonts.BoldItalic, size);
                 break;
             case FontStyle.Regular:
             default:
-                ImGui.PushFont(Session.GuiFonts.Regular, 0f);
+                ImGui.PushFont(Session.GuiFonts.Regular, size);
                 break;
         }
     }
@@ -49,16 +49,18 @@ public static class GuiUtils
         { ImGuiCol.FrameBgHovered, 0.5f },
         { ImGuiCol.FrameBgActive, 0.75f },
 
+        // Collapsible header
+        { ImGuiCol.Header, 0.3f },
+        { ImGuiCol.HeaderHovered, 0.4f },
+        { ImGuiCol.HeaderActive, 0.5f },
+        
         // Unverified entries below
+        { ImGuiCol.SeparatorHovered, 1f },
         { ImGuiCol.SliderGrab, 1f },
         { ImGuiCol.SliderGrabActive, 1.2f },
         { ImGuiCol.Button, 1f },
         { ImGuiCol.ButtonHovered, 1.15f },
         { ImGuiCol.ButtonActive, 0.85f },
-        { ImGuiCol.Header, 1f },
-        { ImGuiCol.HeaderHovered, 1.15f },
-        { ImGuiCol.HeaderActive, 0.85f },
-        { ImGuiCol.SeparatorHovered, 1f },
         { ImGuiCol.TextSelectedBg, 0.5f },
     };
 
@@ -86,26 +88,67 @@ public static class GuiUtils
         image.Draw();
     }
 
-    public static void DrawCenteredText(string text, FontStyle font = FontStyle.Regular)
+    public static void DrawCenteredText(string text, FontStyle font = FontStyle.Regular, float size = 0)
     {
-        PushFont(font);
+        PushFont(font, size);
         ImGui.TextAligned(0.5f, ImGui.GetContentRegionAvail().X, text);
         ImGui.PopFont();
     }
 
     public static void DrawTooltip(string message)
     {
-        if (Settings.Current.Application.ShowTooltips && ImGui.IsItemHovered()) {
-            ImGui.BeginTooltip();
-            ImGui.PushTextWrapPos(ImGui.GetFontSize() * Constants.GuiTooltipWrap);
-            ImGui.TextUnformatted(message);
-            ImGui.PopTextWrapPos();
-            ImGui.EndTooltip();
-        }
+        if (!Settings.Current.Application.ShowTooltips || !ImGui.IsItemHovered()) return;
+
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, Constants.GuiGeneralRounding);
+        ImGui.BeginTooltip();
+        ImGui.PushTextWrapPos(ImGui.GetFontSize() * Constants.GuiTooltipWrap);
+        ImGui.TextUnformatted(message);
+        ImGui.PopTextWrapPos();
+        ImGui.EndTooltip();
+        ImGui.PopStyleVar();
+    }
+
+    private static readonly List<ImGuiStyleVar> RoundingVars = [
+        ImGuiStyleVar.WindowRounding,
+        ImGuiStyleVar.ChildRounding,
+        ImGuiStyleVar.FrameRounding,
+        ImGuiStyleVar.PopupRounding,
+        ImGuiStyleVar.ScrollbarRounding,
+        ImGuiStyleVar.GrabRounding,
+        ImGuiStyleVar.TabRounding
+    ];
+    
+    public static void PushRounding()
+    {
+        foreach (var rv in RoundingVars)
+        {
+            ImGui.PushStyleVar(rv, Constants.GuiGeneralRounding);
+        }        
+    }
+    
+    public static void PopRounding()
+    {
+        ImGui.PopStyleVar(RoundingVars.Count);
+    }
+
+    public static void DrawSeparator(float fade = 0.5f)
+    {
+        var section = GuiStructure.Sections[Settings.Current.Application.CurrentSection];
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.Fade(fade));
+        ImGui.BeginChild(GetNextSerialTag("HorizontalSeparator"), Vector2.Zero with { Y = Constants.GuiSeparatorGirth });
+        ImGui.EndChild();
+        ImGui.PopStyleColor();
     }
 
     #endregion
 
+    private static int _tagSerial = 0;
+    public static string GetNextSerialTag(string tag = "SerialTag")
+    {
+        _tagSerial++;
+        return $"##{tag}{_tagSerial}";
+    }
+    
     #region System
 
     /// <summary>

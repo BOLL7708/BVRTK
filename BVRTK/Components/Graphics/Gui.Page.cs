@@ -25,7 +25,7 @@ public static partial class Gui
         
         ImGui.BeginTabBar($"##Tabs{section.Title}");
 
-        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, Constants.GuiGlobalRounding);
+        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, Constants.GuiTabRounding);
         Settings.Current.Application.CurrentPageInSection.TryGetValue(sectionIndex, out var selectedTab);
         var alreadyRestored = _restoredSections.Contains(sectionIndex);
         
@@ -53,7 +53,7 @@ public static partial class Gui
 
                 // Drawing a custom separation line for the tab bar that matches the sidebar.
                 ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.TabActive());
-                ImGui.BeginChild($"##Separator{section.Title}", Vector2.Zero with { Y = Constants.GuiSeparatorGirth });
+                ImGui.BeginChild($"##Separator{section.Title}", Vector2.Zero with { Y = Constants.GuiMainSeparatorGirth });
                 ImGui.EndChild();
                 ImGui.PopStyleColor();
 
@@ -67,6 +67,7 @@ public static partial class Gui
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGui.GetStyle().ItemSpacing.Y);
 
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
+                GuiUtils.PushRounding();
                 GuiUtils.PushColorAccents(section.AccentColor);
                 
                 // Turns out window padding is ignored by default without a border.
@@ -76,6 +77,7 @@ public static partial class Gui
                 ImGui.EndChild();
                 
                 GuiUtils.PopColorAccents();
+                GuiUtils.PopRounding();
                 ImGui.PopStyleVar();
 
                 ImGui.EndTabItem();
