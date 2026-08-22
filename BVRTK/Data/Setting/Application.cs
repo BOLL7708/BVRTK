@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using BVRTKCG.Attributes;
 
 namespace BVRTK.Data.Setting;
@@ -23,8 +24,8 @@ public partial class Application
     private int _currentSection = 0;
     public partial int CurrentSection { get; set; }
     
-    private Dictionary<int, int> _currentPageInSection = new();
-    public partial Dictionary<int, int> CurrentPageInSection { get; set; }
+    private ConcurrentDictionary<int, int> _currentPageInSection = new();
+    public partial ConcurrentDictionary<int, int> CurrentPageInSection { get; set; }
 
     // [GuiDebug("Settings.Current.Application.ShowTooltips")] 
     // private object Debug { get; set; }

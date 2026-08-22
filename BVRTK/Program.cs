@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using BVRTK.Data;
 using BVRTK.Data.Setting;
+using EasyOpenVR;
 using Valve.VR;
 using Steamworks;
 
@@ -14,6 +15,7 @@ namespace BVRTK;
  */
 class Program
 {
+    static readonly CancellationTokenSource _cts = new();
     static async Task Main(string[] args)
     {
         Console.WriteLine("Hello, World!");
@@ -45,7 +47,14 @@ class Program
 
         #region Event Registration
 
-        vr.State += connected => Console.WriteLine("[STATE] " + (connected ? "Connected" : "Disconnected"));
+        vr.State += state =>
+        {
+            Console.WriteLine($"[STATE] {Enum.GetName(state)}");
+            if (state == EasyOpenVr.EState.ReadyToShutdown)
+            {
+                _cts.Cancel();
+            }
+        };
         vr.DebugMessage += (message, level) => Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
         // vr.PumpCycle += Services.ApplicationWindow.Render;
 
@@ -79,9 +88,15 @@ class Program
         
         uint[] indexArr = [];
         var launchServicesDone = false;
-        while (true)
+        var guiTask = Task.CompletedTask;
+        
+        while (!_cts.IsCancellationRequested)
         {
-            if (!vr.IsInitialized()) continue;
+            if (!vr.IsInitialized())
+            {
+                Thread.Sleep(1000);
+                continue;
+            }
             if (!launchServicesDone)
             {
                 launchServicesDone = true;
@@ -106,18 +121,29 @@ class Program
                 {
                     Services.GuiBackend.EnqueueOverlayEvent(in vrEvent);
                 });
-                Services.GuiBackend.Run(mainHandle);
-                Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
+                Services.GuiBackend.HasTerminated += (sender, e) =>
+                {
+                    vr.Overlay.DestroyOverlay(mainHandle);
+                    vr.Overlay.DestroyOverlay(thumbnailHandle);
+                    vr.Shutdown();
+                };
                 
                 vr.System.SetAutoLaunch(Constants.SystemApplicationKey, Settings.Current.Application.LaunchWithSteamVr);
                 SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (current, _) =>
                 {
                     vr.System.SetAutoLaunch(Constants.SystemApplicationKey, current);
                 };
+                
+                Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
+                guiTask = Task.Run(()=> Services.GuiBackend.Run(mainHandle), _cts.Token);
             }
             if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;
-            if (hmdIndex == uint.MaxValue) continue;
+            if (hmdIndex == uint.MaxValue)
+            {
+                Thread.Sleep(1000);
+                continue;
+            }
 
             // var poses = vr.Device.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding);
             // if (poses.Length <= 0) continue;
@@ -127,5 +153,9 @@ class Program
 
             Thread.Sleep(1000);
         }
+        Settings.WriteToDisk();
+        Services.Server.Stop();
+        Services.GuiBackend.Terminate(); // Will trigger HasTerminated when done, which in turn finishes the shutdown for SteamVR.
+        await guiTask; // We wait for that task to finish or else the GuiBackend doesn't have time to finish the termination event.
     }
 }

@@ -73,7 +73,6 @@ public static class Services
             .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
             .SetPumpInterval(EasyOpenVr.EPumpInterval.FractionOfHmdHz, 1)
             .SetDebug(true)
-            .QuitWithRuntime()
             .BuildAndInit();
     }
 

@@ -24,7 +24,7 @@ public static partial class Gui
         var i = 0;
         foreach (var section in GuiStructure.Sections)
         {
-            if (Session.isDebug && !section.IsPublic)
+            if (!Session.isDebug && !section.IsPublic)
             {
                 i++;
                 continue;

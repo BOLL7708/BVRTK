@@ -4,7 +4,6 @@ using BVRTK.Components.Server.Request.Params;
 using BVRTK.Components.Server.Response;
 using BVRTK.Data;
 using BVRTK.Resources;
-using NLog.Targets;
 using Valve.VR;
 using ParamsJsonSerializerContext = BVRTK.Components.Server.Request.ParamsJsonSerializerContext;
 
@@ -59,6 +58,18 @@ public class JsonRpcServer
 
     #region LifeTime
 
+    public async Task Start()
+    {
+        await StopWebSocket();
+        StopNamedPipe();
+    }
+
+    public async void Stop()
+    {
+        await StartWebSocket();
+        StartNamedPipe();
+    }
+
     private int _usedPort = 0;
     public async Task StartWebSocket()
     {
@@ -80,12 +91,12 @@ public class JsonRpcServer
 
     public void StartNamedPipe()
     {
-        throw new NotImplementedException();
+        // _pipeServer.StartOrRestart();
     }
 
     public void StopNamedPipe()
     {
-        throw new NotImplementedException();
+        // _pipeServer.Stop();
     }
 
     #endregion

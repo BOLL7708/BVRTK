@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -27,6 +28,9 @@ public class GuiBackend
     {
     }
 
+    public event EventHandler? HasTerminated;
+    protected virtual void OnTerminated() => HasTerminated?.Invoke(this, EventArgs.Empty);
+    
     private readonly ConcurrentQueue<VREvent_t> _overlayEvents = new();
 
     public void EnqueueOverlayEvent(in VREvent_t vrEvent)
@@ -458,6 +462,7 @@ public class GuiBackend
         // Clean up and terminate GLFW
         GLFW.DestroyWindow(window);
         GLFW.Terminate();
+        OnTerminated();
     }
 
     public void Terminate()

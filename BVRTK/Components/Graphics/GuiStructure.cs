@@ -7,17 +7,10 @@ namespace BVRTK.Components.Graphics;
 
 public static class GuiStructure
 {
-    // TODO: Temporary while building this out.
-    private static readonly Action PlaceholderRenderer = () =>
-    {
-        for (var i = 0; i < 100; i++) ImGui.Text($"PlaceHolder Renderer: Row #{i}");
-    };
-
     private static readonly Page PageWip = new Page("WIP", () => { ImGui.TextWrapped("Work in progress, this feature is not yet available."); });
 
     public static readonly List<Section> Sections =
     [
-        // TODO: Add "Live" flag that hides a section if not debugging
         new("Development", false, FontStyle.Bold, GuiColor.FromHue(0), [
             new Page("Component Zoo", Develop.RenderZooPage)
         ]),
@@ -30,12 +23,12 @@ public static class GuiStructure
             new Page("Options", GuiRenderers.RenderApplicationPage),
         ]),
         new("Server", true, FontStyle.Regular, GuiColor.Server, [PageWip]),
-        new("Keyboard Sim", true, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
-        new("Mouse Sim", true, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
-        new("Overlays", true, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
+        new("Keyboard Sim", false, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
+        new("Mouse Sim", false, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
+        new("Overlays", false, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
         new("Screenshots", true, FontStyle.Regular, GuiColor.Screenshots, [PageWip]),
-        new("Play Area", true, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),
-        new("Events", true, FontStyle.Regular, GuiColor.Events, [PageWip]),
+        new("Play Area", false, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),
+        new("Events", false, FontStyle.Regular, GuiColor.Events, [PageWip]),
     ];
 }
 
