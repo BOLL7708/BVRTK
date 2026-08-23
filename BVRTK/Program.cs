@@ -18,18 +18,16 @@ class Program
     static readonly CancellationTokenSource _cts = new();
     static async Task Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
-        
         #region Settings
-        Settings.ReadFromDisk();
-        Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
+        // Settings.ReadFromDisk();
+        // Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
         // Settings.ResetToDefaults(typeof(Server));
         // Console.WriteLine($"Port after reset: {Settings.Current.Server.Port}");
         // Settings.WriteToDisk(); // Does nothing
-        Settings.Current.Server.Port = 8077;
+        // Settings.Current.Server.Port = 8077;
         // Settings.Current.Server.__setDirty();
-        Settings.WriteToDisk(); // Writes the Server object to disk as it is dirty
-        Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
+        // Settings.WriteToDisk(); // Writes the Server object to disk as it is dirty
+        // Console.WriteLine($"Port after setting: {Settings.Current.Server.Port}");
 
         if (File.Exists("Build/version.txt"))
         {
@@ -41,7 +39,7 @@ class Program
         var server = Services.Server;
         await server.StartWebSocket();
         
-        // TODO: Setup NLog
+        // TODO: Setup Serilog
 
         var vr = Services.Vr;
 

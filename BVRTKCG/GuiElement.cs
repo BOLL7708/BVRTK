@@ -22,6 +22,10 @@ public class GuiElement
     public float SliderStep = 0;
     public float SliderStart = 0;
     
+    // Int
+    public float IntWidth = 0;
+    public int IntStep = 0;
+    
     // Debug
     public string DebugValuePath = "";
     public string TestLog = "";

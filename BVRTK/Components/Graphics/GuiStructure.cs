@@ -20,9 +20,11 @@ public static class GuiStructure
             new Page("Licenses", Root.RenderLicensesPage)
         ]),
         new("Preferences", true, FontStyle.Regular, GuiColor.Preferences, [
-            new Page("Options", GuiRenderers.RenderApplicationPage),
+            new Page("Options", GuiRenderers.RenderApplicationPage)
         ]),
-        new("Server", true, FontStyle.Regular, GuiColor.Server, [PageWip]),
+        new("Server", true, FontStyle.Regular, GuiColor.Server, [
+            new Page("Options", GuiRenderers.RenderServerPage)
+        ]),
         new("Keyboard Sim", false, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
         new("Mouse Sim", false, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
         new("Overlays", false, FontStyle.Regular, GuiColor.Overlays, [PageWip]),

@@ -67,17 +67,17 @@ public static partial class Gui
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGui.GetStyle().ItemSpacing.Y);
 
                 ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
-                GuiUtils.PushRounding();
                 GuiUtils.PushColorAccents(section.AccentColor);
                 
                 // Turns out window padding is ignored by default without a border.
                 ImGui.BeginChild($"##Content{section.Title}{page.Title}", ImGuiChildFlags.AlwaysUseWindowPadding);
+                GuiUtils.PushRounding();
                 ConvertDragToScroll();
                 page.Renderer();
+                GuiUtils.PopRounding();
                 ImGui.EndChild();
                 
                 GuiUtils.PopColorAccents();
-                GuiUtils.PopRounding();
                 ImGui.PopStyleVar();
 
                 ImGui.EndTabItem();

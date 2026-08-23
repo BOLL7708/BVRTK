@@ -27,6 +27,15 @@ public class GuiTextAttribute(string label, string tooltip): Attribute
     public string Tooltip = tooltip;
 }
 
+[AttributeUsage(AttributeTargets.Field)]
+public class GuiIntAttribute(string label, string tooltip, float width, int step) : Attribute
+{
+    public string Label = label;
+    public string Tooltip = tooltip;
+    public float Width = width;
+    public int Step = step;
+}
+
 [AttributeUsage(AttributeTargets.Property)]
 public class GuiDebugAttribute(string valuePath): Attribute
 {

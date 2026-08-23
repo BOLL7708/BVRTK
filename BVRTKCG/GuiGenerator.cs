@@ -17,6 +17,7 @@ public class GuiGenerator : IIncrementalGenerator
         Checkbox,
         Slider,
         Text,
+        Int,
         Debug,
         Test
     }
@@ -50,6 +51,21 @@ public class GuiGenerator : IIncrementalGenerator
                 e.SliderMax = FloatArg(a, 3);
                 e.SliderStep = FloatArg(a, 4);
                 e.SliderStart= FloatArg(a, 5);
+                return e;
+            }
+        );
+        
+        var ints = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiIntAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Int);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.Tooltip = StringArg(a, 1);
+                e.IntWidth = FloatArg(a, 2);
+                e.IntStep = IntArg(a, 3);
                 return e;
             }
         );
@@ -91,6 +107,7 @@ public class GuiGenerator : IIncrementalGenerator
         {
             checkboxes.Collect(),
             sliders.Collect(),
+            ints.Collect(),
             debugs.Collect(),
             tests.Collect()
         };
@@ -114,6 +131,7 @@ public class GuiGenerator : IIncrementalGenerator
             sb.AppendLine($"namespace {group.Key.Namespace};");
             sb.AppendLine("using BVRTKCG.Attributes;");
             sb.AppendLine("using System.Numerics;");
+            sb.AppendLine("using BVRTK;");
             sb.AppendLine("using BVRTK.Data;");
             sb.AppendLine("using Hexa.NET.ImGui;");
             sb.AppendLine("using BVRTK.Components.Graphics;");
@@ -134,6 +152,17 @@ public class GuiGenerator : IIncrementalGenerator
                         break;
                     case GuiElementKind.Slider:
                         // TODO: Implement
+                        break;
+                    case GuiElementKind.Text:
+                        // TODO: Implement
+                        break;
+                    case GuiElementKind.Int:
+                        sb.AppendLine($"""
+                                               var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
+                                               ImGui.SetNextItemWidth({e.IntWidth}f*Constants.OverlayGuiScale);
+                                               if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                       """);
+                        AppendTooltip(sb, e.Tooltip);
                         break;
                     case GuiElementKind.Debug:
                         sb.AppendLine($$"""
