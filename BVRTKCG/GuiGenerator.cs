@@ -205,7 +205,7 @@ public class GuiGenerator : IIncrementalGenerator
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
                                                ImGui.SetNextItemWidth({e.IntWidth}f*Constants.OverlayGuiScale);
-                                               if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                               if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep}, ImGuiInputTextFlags.CharsDecimal)) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
                                        """);
                         break;
                     case GuiElementKind.IntModal:
@@ -214,7 +214,6 @@ public class GuiGenerator : IIncrementalGenerator
                                                    "{e.IntModalTitle}##{e.ClassName}.{e.PropName}.{e.IntModalTitle}", 
                                                    "{e.Label}", 
                                                    "{e.IntModalTitle}", 
-                                                   "{e.Tooltip}",
                                                    {e.IntWidth}f,
                                                    Settings.Current.{e.ClassName}.{e.PropName}
                                                );

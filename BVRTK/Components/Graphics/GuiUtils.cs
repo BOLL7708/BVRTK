@@ -119,7 +119,7 @@ public static class GuiUtils
 
     private static readonly Dictionary<string, int> ModalDialogInts = new();
 
-    public static void OpenModalForInt(string tag, string label, string button, string tooltip, float size, int startValue)
+    public static void OpenModalForInt(string tag, string label, string button, float size, int startValue)
     {
         var temp = startValue;
         ImGui.BeginChild(tag + "Child", ImGuiChildFlags.AutoResizeY);
@@ -149,7 +149,7 @@ public static class GuiUtils
             if (ImGui.IsWindowAppearing()) ModalDialogInts[tag] = startValue;
             var temp = ModalDialogInts[tag];
             ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-            ImGui.InputInt(label, ref temp, 0);
+            ImGui.InputInt(label, ref temp, 0, ImGuiInputTextFlags.CharsDecimal);
             ModalDialogInts[tag] = temp;
             var popupWidth = ImGui.GetContentRegionAvail().X;
 
