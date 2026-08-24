@@ -14,15 +14,27 @@ public class GuiGenerator : IIncrementalGenerator
     public enum GuiElementKind
     {
         Unknown,
+
+        #region Inputs
+
         Checkbox,
         Slider,
-        Text,
         Int,
+        IntModal,
+        Text,
+
+        #endregion
+
+        #region Text
+
+        Title,
+
+        #endregion
+
         Debug,
         Test
     }
 
-    
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -50,11 +62,11 @@ public class GuiGenerator : IIncrementalGenerator
                 e.SliderMin = FloatArg(a, 2);
                 e.SliderMax = FloatArg(a, 3);
                 e.SliderStep = FloatArg(a, 4);
-                e.SliderStart= FloatArg(a, 5);
+                e.SliderStart = FloatArg(a, 5);
                 return e;
             }
         );
-        
+
         var ints = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiIntAttribute",
             static (n, _) => n is VariableDeclaratorSyntax,
@@ -69,8 +81,38 @@ public class GuiGenerator : IIncrementalGenerator
                 return e;
             }
         );
+        
+        var intModals = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiIntModalAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.IntModal);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.Tooltip = StringArg(a, 1);
+                e.IntWidth = FloatArg(a, 2);
+                e.IntStep = IntArg(a, 3);
+                e.IntModalTitle = StringArg(a, 4);
+                return e;
+            }
+        );
+
 
         // var texts = [];
+
+        var titles = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiTitleAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Title);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.Tooltip = StringArg(a, 1);
+                return e;
+            }
+        );
 
         var debugs = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiDebugAttribute",
@@ -102,12 +144,14 @@ public class GuiGenerator : IIncrementalGenerator
                 e.TestLog = sb.ToString();
                 return e;
             });
-        
+
         var providers = new[]
         {
+            titles.Collect(),
             checkboxes.Collect(),
             sliders.Collect(),
             ints.Collect(),
+            intModals.Collect(),
             debugs.Collect(),
             tests.Collect()
         };
@@ -126,15 +170,15 @@ public class GuiGenerator : IIncrementalGenerator
         foreach (var group in elements.GroupBy(e => (e.Namespace, e.ClassName)))
         {
             var ordered = group.OrderBy(e => e.Order).ToArray();
-            
+
             var sb = new StringBuilder();
             sb.AppendLine($"namespace {group.Key.Namespace};");
             sb.AppendLine("using BVRTKCG.Attributes;");
             sb.AppendLine("using System.Numerics;");
             sb.AppendLine("using BVRTK;");
             sb.AppendLine("using BVRTK.Data;");
-            sb.AppendLine("using Hexa.NET.ImGui;");
             sb.AppendLine("using BVRTK.Components.Graphics;");
+            sb.AppendLine("using Hexa.NET.ImGui;");
             sb.AppendLine("public partial class GuiRenderers");
             sb.AppendLine("{");
             sb.AppendLine($"    public static void Render{group.Key.ClassName}Page()");
@@ -145,15 +189,16 @@ public class GuiGenerator : IIncrementalGenerator
                 {
                     case GuiElementKind.Checkbox:
                         sb.AppendLine($"""
-                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                                if (ImGui.Checkbox("{e.Label}", ref {e.FieldName})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
-                                        """);
-                        AppendTooltip(sb, e.Tooltip);
+                                               var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
+                                               if (ImGui.Checkbox("{e.Label}", ref {e.FieldName})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                       """);
                         break;
                     case GuiElementKind.Slider:
-                        // TODO: Implement
-                        break;
-                    case GuiElementKind.Text:
+                        sb.AppendLine($"""
+                                               var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
+                                                                                       
+
+                                       """);
                         // TODO: Implement
                         break;
                     case GuiElementKind.Int:
@@ -162,21 +207,56 @@ public class GuiGenerator : IIncrementalGenerator
                                                ImGui.SetNextItemWidth({e.IntWidth}f*Constants.OverlayGuiScale);
                                                if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
                                        """);
-                        AppendTooltip(sb, e.Tooltip);
+                        break;
+                    case GuiElementKind.IntModal:
+                        sb.AppendLine($"""
+                                               GuiUtils.OpenModalForInt(
+                                                   "{e.IntModalTitle}##{e.ClassName}.{e.PropName}.{e.IntModalTitle}", 
+                                                   "{e.Label}", 
+                                                   "{e.IntModalTitle}", 
+                                                   "{e.Tooltip}",
+                                                   {e.IntWidth}f,
+                                                   Settings.Current.{e.ClassName}.{e.PropName}
+                                               );
+                                               GuiUtils.DrawModalForInt(
+                                                   "{e.IntModalTitle}##{e.ClassName}.{e.PropName}.{e.IntModalTitle}", 
+                                                   "{e.Label}", 
+                                                   {e.IntWidth}f,
+                                                   Settings.Current.{e.ClassName}.{e.PropName},
+                                                   value => Settings.Current.{e.ClassName}.{e.PropName} = value
+                                               );
+                                       """);
+                        break;
+                    case GuiElementKind.Text:
+                        sb.AppendLine($"""
+                                        
+
+                                       """);
+                        
+                        // TODO: Implement
+                        break;
+                    case GuiElementKind.Title:
+                        sb.AppendLine($"""
+                                               GuiUtils.DrawTitle("{e.Label}");
+                                       """);
                         break;
                     case GuiElementKind.Debug:
                         sb.AppendLine($$"""
-                                               ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"Debug Value: {{{e.DebugValuePath}}}");
-                                       """);
+                                                ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"Debug Value: {{{e.DebugValuePath}}}");
+                                        """);
                         break;
                     case GuiElementKind.Test:
                         sb.AppendLine($"ImGui.TextWrapped(\n\"\"\"\n{e.TestLog}\"\"\");");
                         break;
                 }
+
+                AppendTooltip(sb, e.Tooltip);
+                sb.AppendLine();
             }
+
             sb.AppendLine("    }");
             sb.AppendLine("}");
-            ctx.AddSource($"{group.Key.Namespace}.{group.Key.ClassName}.GuiRenderer.g.cs", sb.ToString());            
+            ctx.AddSource($"{group.Key.Namespace}.{group.Key.ClassName}.GuiRenderer.g.cs", sb.ToString());
         }
     }
 
@@ -184,7 +264,7 @@ public class GuiGenerator : IIncrementalGenerator
     {
         if (tooltip.Trim().Length == 0) return;
         sb.AppendLine($$"""
-                               GuiUtils.DrawTooltip("{{tooltip}}");
-                       """);
+                                GuiUtils.DrawTooltip("{{tooltip}}");
+                        """);
     }
 }

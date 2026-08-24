@@ -19,7 +19,7 @@ class Program
     static async Task Main(string[] args)
     {
         #region Settings
-        // Settings.ReadFromDisk();
+        Settings.ReadFromDisk();
         // Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
         // Settings.ResetToDefaults(typeof(Server));
         // Console.WriteLine($"Port after reset: {Settings.Current.Server.Port}");

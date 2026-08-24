@@ -102,7 +102,8 @@ public static partial class Gui
     private static void ConvertDragToScroll()
     {
         if (
-            !ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows)
+            ImGui.IsPopupOpen("", ImGuiPopupFlags.AnyPopup)
+            || !ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows)
             || !ImGui.IsMouseDragging(ImGuiMouseButton.Left)
         ) return;
         

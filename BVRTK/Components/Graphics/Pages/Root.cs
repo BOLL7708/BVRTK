@@ -16,7 +16,7 @@ public static class Root
         
         ImGui.Dummy(Vector2.Zero);
         
-        GuiUtils.DrawSeparator();
+        GuiUtils.DrawDivider();
         
         ImGui.Text("Links, opens in your default web browser.");
         

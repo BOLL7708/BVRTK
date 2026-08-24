@@ -25,6 +25,7 @@ public class GuiElement
     // Int
     public float IntWidth = 0;
     public int IntStep = 0;
+    public string IntModalTitle = "";
     
     // Debug
     public string DebugValuePath = "";

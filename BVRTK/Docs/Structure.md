@@ -17,7 +17,7 @@ BOLL's VR Toolkit
 ║       Overlays ║ OpenVROverlayPipe: Show overlays with various effects ║
 ║    Screenshots ║ SuperScreenShotterVR: Viewfinder and custom output    ║
 ║      Play Area ║ New: Walls around the play area that will pop up      ║
-║         Events ║ New: OpenVRStartup + more triggers and targets        ║
+║         Events ║ OpenVRStartup + more triggers and targets             ║
 ║                ║                                                       ║
 ║   About & Help ║ Link to website, Discord, Github                      ║
 ║        Version ║                                                       ║
@@ -34,6 +34,8 @@ Settings
 
 Server
 ------
+This will replicate functionality in OpenVR2WS.
+
 A shared server for all solutions.
 
 1. Allow clients to subscribe to topics that will get data to be piped to those clients, like device poses, input values, other more sporadic events.
@@ -46,10 +48,10 @@ A shared server for all solutions.
 
 Keyboard Sim
 ------------
+This will replicate functionality in OpenVR2Key.
 
 Mouse Sim
 ---------
-
 My personal motivation for this feature is:
 * The ability to aim in a first person desktop game while using Virtual Desktop as a display overlay that is attached to the HMD. 
   This means it is following head movements, and the mouse simulation will look around in the game to match the head motion.
@@ -73,16 +75,25 @@ Minimal viable product:
 
 Overlays
 --------
+This will replicate functionality in OpenVROverlayPipe.
 
-Screenshots
 -----------
+This will replicate functionality in SuperScreenShotterVR.
 
 Play Area
 ----------
 
-## Run Sripts
-Run system scripts on various events.
+Events
+------
+This will replicate functionality in OpenVRStartup.
+
+This will be a flexible system that can trigger various actions on various triggers.
+
+### Potential triggers
 1. On startup
 2. On shutdown
 3. On input action
 4. On headset moving outside of play area? Stuff like that, maybe.
+
+### Potential Actions
+

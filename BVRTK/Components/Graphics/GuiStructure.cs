@@ -28,7 +28,9 @@ public static class GuiStructure
         new("Keyboard Sim", false, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
         new("Mouse Sim", false, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
         new("Overlays", false, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
-        new("Screenshots", true, FontStyle.Regular, GuiColor.Screenshots, [PageWip]),
+        new("Screenshots", true, FontStyle.Regular, GuiColor.Screenshots, [
+            new Page("Options", GuiRenderers.RenderScreenshotsPage)
+        ]),
         new("Play Area", false, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),
         new("Events", false, FontStyle.Regular, GuiColor.Events, [PageWip]),
     ];

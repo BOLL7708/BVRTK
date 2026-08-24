@@ -42,8 +42,8 @@ public static partial class Gui
             );
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, section.AccentColor.TabActive());
             ImGui.PushStyleColor(ImGuiCol.Text, isActive
-                ? Vector4.Zero with { W = 1f }
-                : Vector4.One
+                ? GuiColor.Black
+                : GuiColor.White
             );
 
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.GuiTabRounding);
@@ -84,13 +84,16 @@ public static partial class Gui
         ImGui.Dummy(Vector2.Zero);
         GuiUtils.DrawCenteredText(Session.Version);
         
+        #region Debug
+        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{string.Join(Environment.NewLine, Settings.Current.Application.CurrentSection)}");
+        #endregion
+        
         ImGui.EndChild();
         ImGui.PopStyleVar(2);
         ImGui.PopStyleColor();
         GuiUtils.PopColorAccents();
         #endregion
         
-        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{string.Join(Environment.NewLine, Settings.Current.Application.CurrentPageInSection)}");
         ImGui.EndChild();
     }
 }

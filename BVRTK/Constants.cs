@@ -26,4 +26,5 @@ public static class Constants
     public static readonly Vector2 GuiItemSpacing = new (8f * OverlayGuiScale, 6f * OverlayGuiScale);
     public static readonly float GuiTooltipWrap = 16f;
     public static readonly float GuiSeparatorGirth = 3f * OverlayGuiScale;
+    public static readonly float GuiBorderWidth = 1.5f * OverlayGuiScale;
 }

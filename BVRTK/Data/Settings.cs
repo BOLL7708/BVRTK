@@ -16,6 +16,7 @@ public class Settings
     // TODO: Add more as needed
     public Application Application { get; set; } = new();
     public Server Server { get; set; } = new();
+    public Screenshots Screenshots { get; set; } = new();
 
     private static readonly Dictionary<Type, ISettingEntry> SettingsList = new()
     {
@@ -35,6 +36,15 @@ public class Settings
                 () => Defaults.Server,
                 it => Current.Server = it,
                 SettingsJsonSerializerContext.Default.Server
+            )
+        },
+        {
+            typeof(Screenshots),
+            new SettingEntry<Screenshots>(
+                () => Current.Screenshots,
+                () => Defaults.Screenshots,
+                it => Current.Screenshots = it,
+                SettingsJsonSerializerContext.Default.Screenshots
             )
         }
     };
@@ -56,7 +66,7 @@ public class Settings
     }
 
     /**
-     * 
+     *
      */
     public static bool ResetToDefaults(Type type)
     {
@@ -98,7 +108,7 @@ public class Settings
         }
         else
         {
-            Console.WriteLine($"Failed to write settings file {entry.Value.InternalName()}: {result.Exception}");
+            Console.WriteLine($"Failed to read settings file {entry.Value.InternalName()}: {result.Exception?.Message}");
             // TODO: Log problems
         }
     }

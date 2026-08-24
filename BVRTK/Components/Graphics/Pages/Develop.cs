@@ -1,4 +1,5 @@
 using System.Numerics;
+using BVRTK.Data;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Widgets.Dialogs;
 
@@ -6,6 +7,9 @@ namespace BVRTK.Components.Graphics.Pages;
 
 public static class Develop
 {
+    private static int modalTestValue = 0;
+    private static int modalTempValue = 0;
+
     private static float sliderAngle = 0f;
     private static float sliderFloatValue = 0f;
     private static Vector2 sliderFloatValue2 = Vector2.Zero;
@@ -15,7 +19,7 @@ public static class Develop
     private static int[] sliderInt2 = new int[2];
     private static int[] sliderInt3 = new int[3];
     private static int[] sliderInt4 = new int[4];
-    
+
     private static double inputDoubleValue = 0.0;
     private static float inputFloatValue = 0f;
     private static Vector2 inputFloatValue2 = Vector2.Zero;
@@ -25,35 +29,51 @@ public static class Develop
     private static int[] inputIntValue2 = new int[2];
     private static int[] inputIntValue3 = new int[3];
     private static int[] inputIntValue4 = new int[4];
-    
+
     private static string inputTextValue = "";
     private static string inputTextExValue = "";
 
     private static int radioButtonValue = 0;
-    
+
     private static bool checkboxValue = false;
     private static int comboValue = 0;
     private static OpenFileDialog openFileDialog = new();
     private static OpenFolderDialog openFolderDialog = new();
-    
+
     private static Vector3 colorEditValue3 = Vector3.Zero;
     private static Vector4 colorEditValue4 = Vector4.Zero;
     private static Vector3 colorPicker3 = Vector3.Zero;
     private static Vector4 colorPicker4 = Vector4.Zero;
-    
+
     public static void RenderZooPage()
     {
+        GuiUtils.OpenModalForInt(
+            "TheTestInt##thetestint",
+            "Please update this",
+            "Edit it",
+            "Additional instructions",
+            64f,
+            Settings.Current.Server.Port
+        );
+        GuiUtils.DrawModalForInt(
+            "TheTestInt##thetestint",
+            "A label",
+            64f,
+            Settings.Current.Server.Port,
+            value => Settings.Current.Server.Port = value
+        );
+
         ImGui.SeparatorText("Texts");
         ImGui.Text("Text");
         ImGui.TextUnformatted("Text Unformatted");
         ImGui.TextWrapped("Text Wrapped");
-        ImGui.TextAligned(0.5f,ImGui.GetContentRegionAvail().X,"Text Aligned");
+        ImGui.TextAligned(0.5f, ImGui.GetContentRegionAvail().X, "Text Aligned");
         ImGui.TextColored(GuiColor.Server, "Text Colored");
         ImGui.TextDisabled("Text Disabled");
         ImGui.TextDisabledV("Text Disabled V", 0);
         ImGui.TextLink("A link");
         ImGui.TextLinkOpenURL("A link that opens");
-        
+
         ImGui.SeparatorText("Sliders");
         ImGui.SliderAngle("Slider Angle##sa", ref sliderAngle);
         ImGui.SliderFloat("Slider Float##sa1", ref sliderFloatValue, -10f, 10f);
@@ -66,7 +86,7 @@ public static class Develop
         ImGui.SliderInt4("Slider Int 4##si4", ref sliderInt4[0], -10, 10);
         // ImGui.SliderScalar();
         // ImGui.SliderScalarN();
- 
+
         ImGui.SeparatorText("Inputs");
         ImGui.InputDouble("Input Double", ref inputDoubleValue);
         ImGui.InputFloat("Input Float", ref inputFloatValue);
@@ -79,7 +99,7 @@ public static class Develop
         ImGui.InputInt4("Input Int 4", ref inputIntValue4[0]);
         // ImGui.InputText("Input Text", ref inputTextValue);
         // ImGui.InputTextEx("Input Text Ex", ref inputTextExValue);
-        
+
         ImGui.SeparatorText("Buttons");
         ImGui.Button("Button");
         ImGui.ArrowButton("Arrow Button", ImGuiDir.Up);
@@ -96,7 +116,7 @@ public static class Develop
         ImGui.Checkbox("Checkbox", ref checkboxValue);
         string[] comboItems = { "One", "Two", "Three" };
         ImGui.Combo("Combo", ref comboValue, comboItems, comboItems.Length);
-        
+
         if (ImGui.Button("Open File Dialog"))
         {
             openFileDialog.Show();
@@ -111,7 +131,7 @@ public static class Develop
         openFolderDialog.Draw(ImGuiWindowFlags.Modal);
 
         // if (fileDialog.Draw(ImGuiWindowFlags.Modal)) {}        
-        
+
         ImGui.SeparatorText("Simple Color Edit");
         ImGui.ColorEdit3("Color Edit 3", ref colorEditValue3);
         ImGui.ColorEdit4("Color Edit 4", ref colorEditValue4);
@@ -120,7 +140,7 @@ public static class Develop
         ImGui.ColorPicker4("Color Picker 4", ref colorPicker4);
 
         // ImGui.ListBox();
-        
+
         ImGui.SeparatorText("More?");
     }
 }
