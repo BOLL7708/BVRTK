@@ -17,15 +17,19 @@ public class GuiElement
 
     // Specific
     // Slider
-    public float SliderMin = 0;
-    public float SliderMax = 0;
-    public float SliderStep = 0;
-    public float SliderStart = 0;
+    public float FloatSliderMin = 0;
+    public float FloatSliderMax = 0;
+    public string FloatSliderFormat = "";
+    public int IntSliderMin = 0;
+    public int IntSliderMax = 0;
     
     // Int
     public float IntWidth = 0;
     public int IntStep = 0;
     public string IntModalTitle = "";
+    
+    // General
+    public bool SameLine = false;
     
     // Debug
     public string DebugValuePath = "";

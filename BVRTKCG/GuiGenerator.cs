@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using BVRTKCG.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static BVRTKCG.GeneratorUtils;
@@ -18,7 +19,8 @@ public class GuiGenerator : IIncrementalGenerator
         #region Inputs
 
         Checkbox,
-        Slider,
+        FloatSlider,
+        IntSlider,
         Int,
         IntModal,
         Text,
@@ -28,9 +30,11 @@ public class GuiGenerator : IIncrementalGenerator
         #region Text
 
         Title,
+        Label,
 
         #endregion
 
+        SameLine,
         Debug,
         Test
     }
@@ -50,19 +54,33 @@ public class GuiGenerator : IIncrementalGenerator
                 return e;
             });
 
-        var sliders = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "BVRTKCG.Attributes.GuiSliderAttribute",
+        var floatSliders = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiFloatSliderAttribute",
             static (n, _) => n is VariableDeclaratorSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Slider);
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.FloatSlider);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
-                e.SliderMin = FloatArg(a, 2);
-                e.SliderMax = FloatArg(a, 3);
-                e.SliderStep = FloatArg(a, 4);
-                e.SliderStart = FloatArg(a, 5);
+                e.FloatSliderMin = FloatArg(a, 2);
+                e.FloatSliderMax = FloatArg(a, 3);
+                e.FloatSliderFormat = StringArg(a, 4);
+                return e;
+            }
+        );
+        
+        var intSliders = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiIntSliderAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.IntSlider);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.Tooltip = StringArg(a, 1);
+                e.IntSliderMin = IntArg(a, 2);
+                e.IntSliderMax = IntArg(a, 3);
                 return e;
             }
         );
@@ -114,6 +132,24 @@ public class GuiGenerator : IIncrementalGenerator
             }
         );
 
+        var labels = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiLabelAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Label);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.SameLine = BoolArg(a, 1);
+                return e;
+            }
+        );
+
+        var sameLines = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiSameLine",
+            static (n, _) => n is VariableDeclaratorSyntax, static (ctx, _)
+                => GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.SameLine));
+
         var debugs = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiDebugAttribute",
             static (n, _) => n is PropertyDeclarationSyntax,
@@ -148,10 +184,13 @@ public class GuiGenerator : IIncrementalGenerator
         var providers = new[]
         {
             titles.Collect(),
+            labels.Collect(),
             checkboxes.Collect(),
-            sliders.Collect(),
+            floatSliders.Collect(),
+            intSliders.Collect(),
             ints.Collect(),
             intModals.Collect(),
+            sameLines.Collect(),
             debugs.Collect(),
             tests.Collect()
         };
@@ -193,13 +232,17 @@ public class GuiGenerator : IIncrementalGenerator
                                                if (ImGui.Checkbox("{e.Label}", ref {e.FieldName})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
                                        """);
                         break;
-                    case GuiElementKind.Slider:
+                    case GuiElementKind.FloatSlider:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                                                                       
-
+                                               if (ImGui.SliderFloat("{e.Label}", ref {e.FieldName}, {e.FloatSliderMin}f, {e.FloatSliderMax}f, "{e.FloatSliderFormat}")) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
                                        """);
-                        // TODO: Implement
+                        break;                    
+                    case GuiElementKind.IntSlider:
+                        sb.AppendLine($"""
+                                               var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
+                                               if (ImGui.SliderInt("{e.Label}", ref {e.FieldName}, {e.IntSliderMin}, {e.IntSliderMax})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                       """);
                         break;
                     case GuiElementKind.Int:
                         sb.AppendLine($"""
@@ -236,8 +279,19 @@ public class GuiGenerator : IIncrementalGenerator
                         break;
                     case GuiElementKind.Title:
                         sb.AppendLine($"""
+                                               ImGui.Dummy(Vector2.Zero);
                                                GuiUtils.DrawTitle("{e.Label}");
                                        """);
+                        break;
+                    case GuiElementKind.Label:
+                        sb.AppendLine($"""
+                                               ImGui.AlignTextToFramePadding();
+                                               ImGui.TextUnformatted("{e.Label}");
+                                       """);
+                        if (e.SameLine) sb.AppendLine("        ImGui.SameLine();");
+                        break;
+                    case GuiElementKind.SameLine:
+                        sb.AppendLine("        ImGui.SameLine();");
                         break;
                     case GuiElementKind.Debug:
                         sb.AppendLine($$"""

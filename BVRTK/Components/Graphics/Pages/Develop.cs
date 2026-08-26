@@ -75,7 +75,7 @@ public static class Develop
 
         ImGui.SeparatorText("Sliders");
         ImGui.SliderAngle("Slider Angle##sa", ref sliderAngle);
-        ImGui.SliderFloat("Slider Float##sa1", ref sliderFloatValue, -10f, 10f);
+        ImGui.SliderFloat("Slider Float##sa1", ref sliderFloatValue, -10f, 10f, "%.2f");
         ImGui.SliderFloat2("Slider Float 2##sa2", ref sliderFloatValue2, -10f, 10f);
         ImGui.SliderFloat3("Slider Float 3##sa3", ref sliderFloatValue3, -10f, 10f);
         ImGui.SliderFloat4("Slider Float 4##sa4", ref sliderFloatValue4, -10f, 10f);
@@ -113,7 +113,7 @@ public static class Develop
 
         ImGui.SeparatorText("Misc");
         ImGui.Checkbox("Checkbox", ref checkboxValue);
-        string[] comboItems = { "One", "Two", "Three" };
+        string[] comboItems = ["One", "Two", "Three"];
         ImGui.Combo("Combo", ref comboValue, comboItems, comboItems.Length);
 
         if (ImGui.Button("Open File Dialog"))

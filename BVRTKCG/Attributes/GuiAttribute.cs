@@ -12,14 +12,22 @@ public class GuiCheckboxAttribute(string label, string tooltip) : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
-public class GuiSliderAttribute(string label, string tooltip, float min, float max, float step, float start) : Attribute
+public class GuiFloatSliderAttribute(string label, string tooltip, float min, float max, string format) : Attribute
 {
     public string Label = label;
     public string Tooltip = tooltip;
     public float Min = min;
     public float Max = max;
-    public float Step = step;
-    public float Start = start;
+    public string Format = format;
+}
+
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+public class GuiIntSliderAttribute(string label, string tooltip, int min, int max) : Attribute
+{
+    public string Label = label;
+    public string Tooltip = tooltip;
+    public int Min = min;
+    public int Max = max;
 }
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
@@ -60,7 +68,19 @@ public class GuiTitleAttribute(string label, string tooltip) : Attribute
     public string Tooltip = tooltip;
 }
 
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+public class GuiLabelAttribute(string label, bool sameLine) : Attribute
+{
+    public string Label = label;
+    public bool SameLine = sameLine;
+}
+
 #endregion
+
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+public class GuiSameLine() : Attribute
+{
+}
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiDebugAttribute(string valuePath) : Attribute
