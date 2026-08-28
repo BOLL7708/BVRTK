@@ -28,6 +28,10 @@ public class GuiElement
     public int IntStep = 0;
     public string IntModalTitle = "";
     
+    // Combo
+    public float ComboWidth = 0;
+    public string ComboValuesConstantPath = "";
+    
     // General
     public bool SameLine = false;
     

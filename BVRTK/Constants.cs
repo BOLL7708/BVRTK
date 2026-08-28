@@ -1,4 +1,5 @@
 using System.Numerics;
+using BVRTK.Components.KeyboardSimulator;
 
 namespace BVRTK;
 
@@ -27,4 +28,6 @@ public static class Constants
     public static readonly float GuiTooltipWrap = 16f;
     public static readonly float GuiSeparatorGirth = 3f * OverlayGuiScale;
     public static readonly float GuiBorderWidth = 1.5f * OverlayGuiScale;
+
+    public static readonly string[] KeyboardSimulatorKeyCodes = KeyboardSimulatorUtils.GetKeyValues();
 }

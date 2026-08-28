@@ -37,7 +37,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Components\KeyboardSimulator\"/>
         <Folder Include="Components\Overlays\"/>
         <Folder Include="Components\Scripts\"/>
     </ItemGroup>

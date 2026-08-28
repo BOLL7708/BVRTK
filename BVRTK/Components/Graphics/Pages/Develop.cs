@@ -113,9 +113,9 @@ public static class Develop
 
         ImGui.SeparatorText("Misc");
         ImGui.Checkbox("Checkbox", ref checkboxValue);
-        string[] comboItems = ["One", "Two", "Three"];
+        string[] comboItems = ["One##1", "Two##2", "Three##3"];
         ImGui.Combo("Combo", ref comboValue, comboItems, comboItems.Length);
-
+            
         if (ImGui.Button("Open File Dialog"))
         {
             openFileDialog.Show();

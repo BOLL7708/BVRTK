@@ -1,3 +1,5 @@
+using BVRTK.Components.Graphics;
+using BVRTK.Components.KeyboardSimulator;
 using BVRTKCG.Attributes;
 
 namespace BVRTK.Data.Setting;
@@ -6,59 +8,82 @@ namespace BVRTK.Data.Setting;
 public partial class Screenshots
 {
     #region Main
-    
+
     [GuiTitle("Hotkeys", "")]
     [GuiCheckbox("Enable", "Will enable global hotkeys to trigger the features below.")]
     private bool _enableGlobalHotkeys = false;
+
     public partial bool EnableGlobalHotkeys { get; set; }
-    
-    [GuiLabel("Take screenshot", true)]
+
+    [GuiLabel("Take screenshot", true)] 
     [GuiCheckbox("Alt##screenshot", "")]
     [GuiSameLine]
     private bool _takeScreenshotAltKey = false;
+
     public partial bool TakeScreenshotAltKey { get; set; }
-    
+
     [GuiCheckbox("Control##screenshot", "")]
     [GuiSameLine]
     private bool _takeScreenshotControlKey = false;
+
     public partial bool TakeScreenshotControlKey { get; set; }
-    
+
     [GuiCheckbox("Shift##screenshot", "")]
+    [GuiSameLine]
     private bool _takeScreenshotShiftKey = false;
+
     public partial bool TakeScreenshotShiftKey { get; set; }
-    
-    // TODO: [GuiCombo]
-    
+
+    [GuiCombo(
+        "Key##screenshot",
+        "Pick a key to be used with the modifiers to trigger this action.",
+        180f,
+        nameof(Constants) +"."+ nameof(Constants.KeyboardSimulatorKeyCodes)
+    )]
+    private string _takeScreenshotKey = "";
+    public partial string TakeScreenshotKey { get; set; }
+
     [GuiLabel("Show viewfinder", true)]
-    [GuiCheckbox("Alt##viewfinder", "")]
+    [GuiCheckbox("Alt##viewfinder", "")] 
     [GuiSameLine]
     private bool _showViewfinderAltKey = false;
+
     public partial bool ShowViewfinderAltKey { get; set; }
-    
-    [GuiCheckbox("Control##viewfinder", "")]
+
+    [GuiCheckbox("Control##viewfinder", "")] 
     [GuiSameLine]
     private bool _showViewfinderControlKey = false;
+
     public partial bool ShowViewfinderControlKey { get; set; }
-    
-    [GuiCheckbox("Shift##viewfinder", "")]
+
+    [GuiCheckbox("Shift##viewfinder", "")] 
+    [GuiSameLine]
     private bool _showViewfinderShiftKey = false;
     public partial bool ShowViewfinderShiftKey { get; set; }
     
-    [GuiTitle("Notifications & Audio", "")] 
-    
-    
+    [GuiCombo(
+      "Key##viewfinder",
+      "Pick a key to be used with the modifiers to trigger this action.",
+      180f,
+      nameof(Constants) +"."+ nameof(Constants.KeyboardSimulatorKeyCodes)
+    )]
+    private string _showViewfinderKey = "";
+    public partial string ShowViewfinderKey { get; set; }
+
+    [GuiTitle("Notifications & Audio", "")]
     [GuiTitle("Viewfinder", "")]
-    
     [GuiFloatSlider("Float Slider Test", "This is it!", -10f, 10f, "%.2f")]
     private float _testFloatSlider = 0f;
+
     public partial float TestFloatSlider { get; set; }
 
     [GuiIntSlider("Int Slider Test", "This is also it!", -5, 15)]
     private int _testIntSlider = 0;
+
     public partial int TestIntSlider { get; set; }
-    
+
     #endregion
-  
+
     #region Time-lapse
 
     [GuiTitle("Time-lapse", "")]

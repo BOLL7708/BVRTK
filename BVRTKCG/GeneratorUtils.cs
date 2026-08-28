@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace BVRTKCG;
 
@@ -98,5 +99,16 @@ public static class GeneratorUtils
             ? a.ConstructorArguments[i].Values
             : ImmutableArray<TypedConstant>.Empty;
 
+    #endregion
+    
+        
+    #region Formatting
+
+    public static string ArrayToString(string[] array)
+    {
+        return "["+string.Join(", ", array.Select<string, object>(s => 
+            SymbolDisplay.FormatLiteral(s, quote:true))
+        )+"]";
+    }    
     #endregion
 }

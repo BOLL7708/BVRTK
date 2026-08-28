@@ -49,6 +49,21 @@ public class GuiIntModalAttribute(string label, string tooltip, float width, int
     public string ModalTitle = modalTitle;
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="label"></param>
+/// <param name="tooltip"></param>
+/// <param name="width"></param>
+/// <param name="valuesConstantPath">The path to a readonly value that represents a string array.</param>
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+public class GuiComboAttribute(string label, string tooltip, float width, string valuesConstantPath) : Attribute
+{
+    public string Label = label;
+    public string Tooltip = tooltip;
+    public float Width = width;
+    public string ValuesConstantPath = valuesConstantPath;
+}
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
 public class GuiTextAttribute(string label, string tooltip) : Attribute

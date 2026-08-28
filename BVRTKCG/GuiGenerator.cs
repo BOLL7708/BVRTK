@@ -24,6 +24,7 @@ public class GuiGenerator : IIncrementalGenerator
         Int,
         IntModal,
         Text,
+        Combo,
 
         #endregion
 
@@ -36,7 +37,7 @@ public class GuiGenerator : IIncrementalGenerator
 
         SameLine,
         Debug,
-        Test
+        Test,
     }
 
 
@@ -116,6 +117,20 @@ public class GuiGenerator : IIncrementalGenerator
             }
         );
 
+        var combos = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiComboAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Combo);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.Tooltip = StringArg(a, 1);
+                e.ComboWidth = FloatArg(a, 2);
+                e.ComboValuesConstantPath = StringArg(a, 3);
+                return e;
+            }
+        );
 
         // var texts = [];
 
@@ -190,6 +205,7 @@ public class GuiGenerator : IIncrementalGenerator
             intSliders.Collect(),
             ints.Collect(),
             intModals.Collect(),
+            combos.Collect(),
             sameLines.Collect(),
             debugs.Collect(),
             tests.Collect()
@@ -267,6 +283,18 @@ public class GuiGenerator : IIncrementalGenerator
                                                    Settings.Current.{e.ClassName}.{e.PropName},
                                                    value => Settings.Current.{e.ClassName}.{e.PropName} = value
                                                );
+                                       """);
+                        break;
+                    case GuiElementKind.Combo:
+                        sb.AppendLine($$"""
+                                               var {{e.FieldName}} = Settings.Current.{{e.ClassName}}.{{e.PropName}};
+                                               var {{e.FieldName}}Index = GuiUtils.GetIndexOfTagInLabels({{e.ComboValuesConstantPath}}, {{e.FieldName}});
+                                               ImGui.SetNextItemWidth({{e.ComboWidth}}f * Constants.OverlayGuiScale);
+                                               if(ImGui.Combo("{{e.Label}}", ref {{e.FieldName}}Index, {{e.ComboValuesConstantPath}}, {{e.ComboValuesConstantPath}}.Length)) 
+                                               {
+                                                   var nameStr = {{e.ComboValuesConstantPath}}[{{e.FieldName}}Index];
+                                                   Settings.Current.{{e.ClassName}}.{{e.PropName}} = GuiUtils.GetTagFromLabel(nameStr);
+                                               };
                                        """);
                         break;
                     case GuiElementKind.Text:

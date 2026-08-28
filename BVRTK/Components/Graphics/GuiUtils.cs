@@ -229,6 +229,16 @@ public static class GuiUtils
         _tagSerial++;
         return $"##{tag}{_tagSerial}";
     }
+    
+    public static int GetIndexOfTagInLabels(string[] labels, string tag) {
+        
+        return Array.FindIndex(labels, label => GetTagFromLabel(label) == tag);
+    }
+
+    public static string GetTagFromLabel(string label)
+    {
+        return label.Split("##", StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries).Last();
+    }
 
     #region System
 
