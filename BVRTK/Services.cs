@@ -44,26 +44,21 @@ public static class Services
         #region Action Manifest
 
         const string actionManifestFilename = "software.boll.bvrtk.actions.json";
-        // TODO: This should support sections too, so we can have different input mappings per section.
         var actionManifestBuilder = new ActionManifestBuilder()
             .AddVersion(1, 1)
-            .AddAction(
-                "/actions/default/in/test",
-                ActionType.Boolean,
-                ActionRequirement.Suggested,
-                ActionSkeleton.SkeletonHandLeft
-            )
             .AddActionSet(
-                "/actions/default",
-                ActionSetUsage.Leftright
-            )
-            .AddLocalization(
-                "en-US",
-                new OrderedDictionary<string, string>
-                {
-                    ["/actions/default/in/test"] = "Test Input",
-                    ["/actions/default"] = "Default"
-                });
+                ["actions", "default"],
+                ActionSetUsage.Leftright,
+                set => set
+                    .AddLocalization("en-us", "Default")
+                    .AddAction(
+                        ["in", "test"],
+                        ActionType.Boolean,
+                        ActionRequirement.Suggested,
+                        ActionSkeleton.SkeletonHandLeft,
+                        action => action.AddLocalization("EN US", "Test Input")
+                    )
+            );
 
         #endregion
         

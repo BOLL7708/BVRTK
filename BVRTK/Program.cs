@@ -83,7 +83,7 @@ class Program
 
         #endregion
 
-        #region Termination handling
+        #region Termination signal handling
 
         PosixSignalRegistration.Create(PosixSignal.SIGINT, OnSignal);
         PosixSignalRegistration.Create(PosixSignal.SIGTERM, OnSignal);
