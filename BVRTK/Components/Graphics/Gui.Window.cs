@@ -39,13 +39,20 @@ public static partial class Gui
         GuiUtils.PushFont(FontStyle.Regular, Constants.GuiFontSize);
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.GuiItemSpacing);
 
-        RenderSidebar();
-        ImGui.SameLine(0, 0);
-        RenderSeparator();
-        ImGui.SameLine();
-        RenderPage();
-        if (Settings.Current.Application.EnableInterfaceGradient) RenderGradient();
+        if (Session.ExitPressed)
+        {
+            RenderExitPage();
+        } else {
 
+            RenderSidebar();
+            ImGui.SameLine(0, 0);
+            RenderSeparator();
+            ImGui.SameLine();
+            RenderPage();
+            if (Settings.Current.Application.EnableInterfaceGradient) RenderGradient();
+
+        }
+        
         ImGui.PopStyleVar();
         ImGui.PopFont();
 

@@ -14,8 +14,9 @@ public static partial class Gui
         // To add top space.
         ImGui.Dummy(Vector2.Zero);
 
-        // Section buttons, each colored by its accent
+        #region Tabs
 
+        // Section buttons, each colored by its accent
         ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiTabRounding);
         ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding with { X = Constants.GuiTabRounding * 2f });
         ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(1f, 0.5f)); // Horizontal and vertical alignment
@@ -29,7 +30,7 @@ public static partial class Gui
                 i++;
                 continue;
             }
-            
+
             GuiUtils.PushFont(section.Font);
             var isActive = i == Settings.Current.Application.CurrentSection;
             ImGui.PushStyleColor(ImGuiCol.Button, isActive
@@ -57,21 +58,26 @@ public static partial class Gui
             ImGui.PopFont();
             i++;
         }
+
         ImGui.PopStyleVar(3);
-        
+
+        #endregion
+
         #region Quick Settings
+
         GuiUtils.PushColorAccents(GuiColor.Root);
         ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
         ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiGeneralRounding);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
         ImGui.BeginChild("##QuickSettings", ImGuiChildFlags.AlwaysUseWindowPadding);
-        
+
         ImGui.Dummy(Vector2.Zero);
         var showTooltips = Settings.Current.Application.ShowTooltips;
         if (ImGui.Checkbox("Tooltips", ref showTooltips))
         {
             Settings.Current.Application.ShowTooltips = showTooltips;
         }
+
         GuiUtils.DrawTooltip("Toggle tooltips for all places where a tooltip exists.");
 
         var showOnDesktop = Services.GuiBackend.IsWindowVisible();
@@ -79,21 +85,38 @@ public static partial class Gui
         {
             Services.GuiBackend.SetWindowVisible(showOnDesktop);
         }
+
         GuiUtils.DrawTooltip("Display this application in a mirror window on the desktop.");
-        
+
         ImGui.Dummy(Vector2.Zero);
         GuiUtils.DrawCenteredText(Session.Version);
-        
+
+        ImGui.Dummy(Vector2.Zero);
+        ImGui.PushStyleColor(ImGuiCol.Button, GuiColor.Transparent);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, GuiColor.White with { W = 0.1f });
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, GuiColor.Transparent);
+        if (ImGui.Button("Exit", (availableSpace - Constants.GuiItemSpacing * 2) with { Y = 0 }))
+        {
+            // TODO: Add modal confirmation dialog for this!
+            Session.ExitPressed = true;
+            Session.ProgramCts.Cancel();
+        }
+
+        ImGui.PopStyleColor(3);
+
         #region Debug
+
         // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{string.Join(Environment.NewLine, Settings.Current.Application.CurrentSection)}");
+
         #endregion
-        
+
         ImGui.EndChild();
         ImGui.PopStyleVar(2);
         ImGui.PopStyleColor();
         GuiUtils.PopColorAccents();
+
         #endregion
-        
+
         ImGui.EndChild();
     }
 }

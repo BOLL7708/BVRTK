@@ -12,8 +12,8 @@ public static class Session
     public const bool isDebug = false;
 #endif
 
-    public static string Version = "v0.0.0";
-    
+    public static string Version { get; set; } = "v0.0.0";
+
     public static unsafe class GuiFonts
     {
         public static ImFont* Regular { get; set; }
@@ -26,4 +26,8 @@ public static class Session
     {
         public static GlImage Logo;
     }
+    
+    public static readonly CancellationTokenSource ProgramCts = new();
+
+    public static bool ExitPressed { get; set; }
 }
