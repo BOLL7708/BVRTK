@@ -1,9 +1,7 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using BVRTK.Data;
 using Hexa.NET.GLFW;
 using Hexa.NET.ImGui;
@@ -130,7 +128,7 @@ public class GuiBackend
         var io = ImGui.GetIO();
         io.DisplaySize = new Vector2(Constants.OverlayTextureWidth, Constants.OverlayTextureHeight); // match the FBO
         io.DisplayFramebufferScale = new Vector2(1, 1);
-        if (_overlayFocus)
+        if (Session.OverlayFocus)
         {
             // This is performed so that hover effects still work when the desktop cursor has left the window.
             // A side effect is that the overlay cursor now overrides the desktop one completely if active.
@@ -248,11 +246,11 @@ public class GuiBackend
                         io.AddKeyEvent(k, false);
                     }
                 case EVREventType.VREvent_FocusEnter:
-                    _overlayFocus = true;
+                    Session.OverlayFocus = true;
                     UpdateFocus();
                     break;
                 case EVREventType.VREvent_FocusLeave:
-                    _overlayFocus = false;
+                    Session.OverlayFocus = false;
                     UpdateFocus();
                     break;
                 case EVREventType.VREvent_OverlayShown:
@@ -271,21 +269,20 @@ public class GuiBackend
 
     #region Focus
 
-    private static bool _overlayFocus = false;
-    private static bool _desktopFocus = false;
+    
     private static bool _hasFocus = false;
     private static VREvent_Mouse_t _lastOverlayMouse = new();
 
     private static unsafe void OnWindowFocus(GLFWwindow* window, int focused)
     {
-        _desktopFocus = focused != 0;
+        Session.DesktopFocus = focused != 0;
         UpdateFocus();
     }
 
     private static void UpdateFocus()
     {
         var io = ImGui.GetIO();
-        var focus = _desktopFocus || _overlayFocus;
+        var focus = Session.DesktopFocus || Session.OverlayFocus;
         if (_hasFocus == focus) return;
         _hasFocus = focus;
         io.AddFocusEvent(focus);
@@ -389,6 +386,7 @@ public class GuiBackend
         // Replace the default window focus callback as it will disable all
         // input handling when the desktop mouse cursor leaves the window.
         GLFW.SetWindowFocusCallback(window, &OnWindowFocus);
+        Session.DesktopFocus = GLFW.GetWindowAttrib(window, GLFW.GLFW_FOCUSED) != 0;
         
         // Replace the default window close callback as it will terminate
         // the GL window which houses the texture the overlay is using.

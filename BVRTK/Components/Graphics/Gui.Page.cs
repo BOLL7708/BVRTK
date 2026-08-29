@@ -7,7 +7,7 @@ namespace BVRTK.Components.Graphics;
 public static partial class Gui
 {
     private static readonly HashSet<int> _restoredSections = [];
-
+    
     private static void RenderPage()
     {
         var sectionIndex = Settings.Current.Application.CurrentSection;
@@ -16,12 +16,14 @@ public static partial class Gui
 
         var i = 0;
         ImGui.BeginChild($"##Page{section.Title}", Vector2.Zero);
-        ImGui.Dummy(Vector2.Zero); // Simply adds the default spacing at the top.
+        ImGui.Dummy(Vector2.Zero); // Add the default spacing at the top.
         ImGui.GetStyle().TabBarBorderSize = 0;
 
         ImGui.PushStyleColor(ImGuiCol.TabSelected, section.AccentColor.TabActive());
         ImGui.PushStyleColor(ImGuiCol.Tab, section.AccentColor.Tab());
         ImGui.PushStyleColor(ImGuiCol.TabDimmed, section.AccentColor.Tab()); // Not really used but set just in case
+
+        var startPos = ImGui.GetCursorScreenPos(); // Used for floating text
         
         ImGui.BeginTabBar($"##Tabs{section.Title}");
 
@@ -93,6 +95,9 @@ public static partial class Gui
         ImGui.EndTabBar();
         ImGui.PopStyleColor(3);
         ImGui.EndChild();
+
+        var versionPos = startPos with { X = ImGui.GetWindowWidth() - ImGui.CalcTextSize(Session.Version).X - Constants.GuiItemSpacing.X};
+        ImGui.GetWindowDrawList().AddText(versionPos, ImGui.GetColorU32(GuiColor.Gray), Session.Version);
     }
     
     /// <summary>

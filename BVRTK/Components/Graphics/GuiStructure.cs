@@ -25,10 +25,12 @@ public static class GuiStructure
         new("Server", true, FontStyle.Regular, GuiColor.Server, [
             new Page("Options", GuiRenderers.RenderServerPage)
         ]),
-        new("Keyboard Sim", false, FontStyle.Regular, GuiColor.KeyboardSim, [PageWip]),
+        new("Keyboard Sim", true, FontStyle.Regular, GuiColor.KeyboardSim, [
+            new Page("Options", GuiRenderers.RenderKeyboardSimulatorPage)        
+        ]),
         new("Mouse Sim", false, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
         new("Overlays", false, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
-        new("Screenshots", true, FontStyle.Regular, GuiColor.Screenshots, [
+        new("Screenshots", false, FontStyle.Regular, GuiColor.Screenshots, [
             new Page("Options", GuiRenderers.RenderScreenshotsPage)
         ]),
         new("Play Area", false, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),

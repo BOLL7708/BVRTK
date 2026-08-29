@@ -1,6 +1,7 @@
 using System.Numerics;
 using BVRTK.Data;
 using Hexa.NET.ImGui;
+using Valve.VR;
 
 namespace BVRTK.Components.Graphics;
 
@@ -71,7 +72,6 @@ public static partial class Gui
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
         ImGui.BeginChild("##QuickSettings", ImGuiChildFlags.AlwaysUseWindowPadding);
 
-        ImGui.Dummy(Vector2.Zero);
         var showTooltips = Settings.Current.Application.ShowTooltips;
         if (ImGui.Checkbox("Tooltips", ref showTooltips))
         {
@@ -88,14 +88,19 @@ public static partial class Gui
 
         GuiUtils.DrawTooltip("Display this application in a mirror window on the desktop.");
 
-        ImGui.Dummy(Vector2.Zero);
-        GuiUtils.DrawCenteredText(Session.Version);
-
-        ImGui.Dummy(Vector2.Zero);
+        var buttonSize = (availableSpace - Constants.GuiItemSpacing * 2) with { Y = 0 };
         ImGui.PushStyleColor(ImGuiCol.Button, GuiColor.Transparent);
-        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, GuiColor.White with { W = 0.1f });
-        ImGui.PushStyleColor(ImGuiCol.ButtonActive, GuiColor.Transparent);
-        if (ImGui.Button("Exit", (availableSpace - Constants.GuiItemSpacing * 2) with { Y = 0 }))
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, GuiColor.White with { W = 0.25f });
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, GuiColor.White with { W = 0.5f });
+
+        if (ImGui.Button("Edit Bindings", buttonSize))
+        {
+            var steamVrError = OpenVR.Input.OpenBindingUI("", 0, 0, !Session.OverlayFocus && Session.DesktopFocus);
+            // TODO: Log error to logging output, possible pop an error modal?
+        }
+        GuiUtils.DrawTooltip("Launch or switch to the SteamVR bindings editor for this application.");
+        
+        if (ImGui.Button("Exit", buttonSize))
         {
             // TODO: Add modal confirmation dialog for this!
             Session.ExitPressed = true;

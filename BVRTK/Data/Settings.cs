@@ -17,6 +17,7 @@ public class Settings
     public Application Application { get; set; } = new();
     public Server Server { get; set; } = new();
     public Screenshots Screenshots { get; set; } = new();
+    public KeyboardSimulator KeyboardSimulator { get; set; } = new();
 
     private static readonly Dictionary<Type, ISettingEntry> SettingsList = new()
     {
@@ -45,6 +46,15 @@ public class Settings
                 () => Defaults.Screenshots,
                 it => Current.Screenshots = it,
                 SettingsJsonSerializerContext.Default.Screenshots
+            )
+        },
+        {
+            typeof(KeyboardSimulator),
+            new SettingEntry<KeyboardSimulator>(
+                () => Current.KeyboardSimulator,
+                () => Defaults.KeyboardSimulator,
+                it => Current.KeyboardSimulator = it,
+                SettingsJsonSerializerContext.Default.KeyboardSimulator
             )
         }
     };

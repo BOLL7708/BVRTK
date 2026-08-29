@@ -30,4 +30,7 @@ public static class Session
     public static readonly CancellationTokenSource ProgramCts = new();
 
     public static bool ExitPressed { get; set; }
+    
+    public static bool OverlayFocus { get; set; }
+    public static bool DesktopFocus { get; set; }
 }
