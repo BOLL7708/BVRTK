@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Numerics;
 using BVRTK.Components.KeyboardSimulator;
 
@@ -6,6 +7,7 @@ namespace BVRTK;
 public static class Constants
 {
     public static readonly string SystemApplicationKey = "software.boll.bvrtk";
+    public static readonly string SystemDefaultLanguage = "en-US";
     
     /// Forever-invite that applies the from-bvrtk role on the server.
     public static readonly string UrlDiscordInvite = "https://discord.gg/nuegP5CRXh";
@@ -29,5 +31,13 @@ public static class Constants
     public static readonly float GuiSeparatorGirth = 3f * OverlayGuiScale;
     public static readonly float GuiBorderWidth = 1.5f * OverlayGuiScale;
 
-    public static readonly string[] KeyboardSimulatorKeyCodes = KeyboardSimulatorUtils.GetKeyValues();
+    public static readonly string[] KeyboardSimulatorKeyCodeGuiTags = KeyboardSimulatorUtils.GetGuiTags();
+
+    public static readonly Dictionary<string, CultureInfo> SupportedLanguages = new()
+    {
+        { "en-US", CultureInfo.InvariantCulture },
+        { "sv-SE", new CultureInfo("sv-SE") },
+    };
+
+    public static readonly string[] SupportedLanguageGuiTags = Utils.GetSupportedLanguageGuiTags();
 }

@@ -175,7 +175,11 @@ public static class GuiUtils
 
     public static void DrawTooltip(string message)
     {
-        if (!Settings.Current.Application.ShowTooltips || !ImGui.IsItemHovered()) return;
+        if (
+            !Settings.Current.Application.ShowTooltips 
+            || !ImGui.IsItemHovered() 
+            || string.IsNullOrWhiteSpace(message)
+        ) return;
 
         ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, Constants.GuiGeneralRounding);
         ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, Constants.GuiBorderWidth);

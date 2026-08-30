@@ -38,7 +38,7 @@ public partial class Screenshots
         "Key##screenshot",
         "Pick a key to be used with the modifiers to trigger this action.",
         180f,
-        nameof(Constants) +"."+ nameof(Constants.KeyboardSimulatorKeyCodes)
+        nameof(Constants) +"."+ nameof(Constants.KeyboardSimulatorKeyCodeGuiTags)
     )]
     private string _takeScreenshotKey = "";
     public partial string TakeScreenshotKey { get; set; }
@@ -65,7 +65,7 @@ public partial class Screenshots
       "Key##viewfinder",
       "Pick a key to be used with the modifiers to trigger this action.",
       180f,
-      nameof(Constants) +"."+ nameof(Constants.KeyboardSimulatorKeyCodes)
+      nameof(Constants) +"."+ nameof(Constants.KeyboardSimulatorKeyCodeGuiTags)
     )]
     private string _showViewfinderKey = "";
     public partial string ShowViewfinderKey { get; set; }

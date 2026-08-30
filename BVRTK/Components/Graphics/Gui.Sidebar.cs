@@ -1,5 +1,6 @@
 using System.Numerics;
 using BVRTK.Data;
+using BVRTK.Resources;
 using Hexa.NET.ImGui;
 using Valve.VR;
 
@@ -49,14 +50,15 @@ public static partial class Gui
             );
 
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.GuiTabRounding);
-            ImGui.Button(section.Title, availableSpace with { Y = 0 });
+            ImGui.Button(section.Title(), availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
                 Settings.Current.Application.CurrentSection = i;
             }
-
-            ImGui.PopStyleColor(4);
             ImGui.PopFont();
+            ImGui.PopStyleColor(4);
+            
+            GuiUtils.DrawTooltip(section.Tooltip());
             i++;
         }
 

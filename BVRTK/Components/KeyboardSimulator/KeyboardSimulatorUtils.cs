@@ -20,7 +20,7 @@ public static class KeyboardSimulatorUtils
         KeyCode.VcRightMeta
     ];
 
-    public static string[] GetKeyValues()
+    public static string[] GetGuiTags()
     {
         var keycodes = Enum.GetValues<KeyCode>();
         var functionKeys = keycodes.Where(x => IsFunc(Enum.GetName(x)));

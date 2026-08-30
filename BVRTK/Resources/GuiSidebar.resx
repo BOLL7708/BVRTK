@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <data name="AppLabel" xml:space="preserve">
+        <value>BVRTK</value>
+    </data>
+    <data name="PreferencesLabel" xml:space="preserve">
+        <value>Preferences</value>
+    </data>
+    <data name="KeyboardSimLabel" xml:space="preserve">
+        <value>Keyboard Sim</value>
+    </data>
+    <data name="MouseSimLabel" xml:space="preserve">
+        <value>Mouse Sim</value>
+    </data>
+    <data name="OverlaysLabel" xml:space="preserve">
+        <value>Overlays</value>
+    </data>
+    <data name="ServerLabel" xml:space="preserve">
+        <value>Server</value>
+    </data>
+    <data name="ScreenshotsLabel" xml:space="preserve">
+        <value>Screenshots</value>
+    </data>
+    <data name="PlayAreaLabel" xml:space="preserve">
+        <value>Play Area</value>
+    </data>
+    <data name="EventsLabel" xml:space="preserve">
+        <value>Events</value>
+    </data>
+    <data name="AppTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="EventsTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="KeyboardSimTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="MouseSimTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="OverlaysTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="PlayAreaTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="PreferencesTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="ScreenshotsTooltip" xml:space="preserve">
+        <value/>
+    </data>
+    <data name="ServerTooltip" xml:space="preserve">
+        <value/>
+    </data>
+</root>

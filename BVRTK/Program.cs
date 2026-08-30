@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using BVRTK.Data;
 using EasyOpenVR;
 using Valve.VR;
@@ -43,6 +44,18 @@ class Program
 
         #region Event Registration
 
+        #region GUI
+
+        // Updates the application language when it has changed.
+        void SetLanguage(string language, string oldLanguage = "unused")
+        {
+            CultureInfo.CurrentUICulture = Constants.SupportedLanguages.GetValueOrDefault(language, CultureInfo.InvariantCulture);            
+        }
+        SetLanguage(Settings.Current.Application.Language);
+        SettingsChangeHandlers.OnApplicationLanguageChanged += SetLanguage;
+        #endregion
+        
+        #region VR
         vr.State += state =>
         {
             Console.WriteLine($"[STATE] {Enum.GetName(state)}");
@@ -80,6 +93,7 @@ class Program
                 // TODO: If enabled, send application data to WS.
             }
         );
+        #endregion
 
         #endregion
 

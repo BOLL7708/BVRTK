@@ -22,7 +22,6 @@ public static class Services
     private static JsonRpcServer BuildServer()
     {
         var server = new JsonRpcServer();
-        // TODO: Read settings and start the activated servers with proper initialized values
         return server;
     }
     
@@ -47,16 +46,14 @@ public static class Services
         var actionManifestBuilder = new ActionManifestBuilder()
             .AddVersion(1, 1)
             .AddActionSet(
-                ["actions", "default"],
+                "default",
                 ActionSetUsage.Leftright,
                 set => set
                     .AddLocalization("en-us", "Default")
                     .AddAction(
-                        ["in", "test"],
+                        "test",
                         ActionType.Boolean,
-                        ActionRequirement.Suggested,
-                        ActionSkeleton.SkeletonHandLeft,
-                        action => action.AddLocalization("EN US", "Test Input")
+                        configure: action => action.AddLocalization("EN US", "Test Input")
                     )
             );
 
