@@ -50,9 +50,13 @@
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>JsonRpcErrors.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-        <EmbeddedResource Update="Resources\GuiSidebar.resx">
+        <EmbeddedResource Update="Resources\GuiSidebarPrompts.resx">
           <Generator>ResXFileCodeGenerator</Generator>
-          <LastGenOutput>Gui.Designer.cs</LastGenOutput>
+          <LastGenOutput>GuiSidebarPrompts.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\HardwareInputPrompts.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>HardwareInputPrompts.Designer.cs</LastGenOutput>
         </EmbeddedResource>
     </ItemGroup>
 
@@ -67,10 +71,25 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>JsonRpcErrors.resx</DependentUpon>
         </Compile>
-        <Compile Update="Resources\GuiSidebar.Designer.cs">
+        <Compile Update="Resources\GuiSidebarPrompts.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>GuiSidebarPrompts.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\HardwareInputPrompts.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>HardwareInputPrompts.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\GuiSidebarPrompts.Designer.cs">
           <DesignTime>True</DesignTime>
           <AutoGen>True</AutoGen>
-          <DependentUpon>GuiSidebar.resx</DependentUpon>
+          <DependentUpon>GuiSidebarPrompts.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\HardwareInputPrompts.Designer.cs">
+          <DesignTime>True</DesignTime>
+          <AutoGen>True</AutoGen>
+          <DependentUpon>HardwareInputPrompts.resx</DependentUpon>
         </Compile>
     </ItemGroup>
 

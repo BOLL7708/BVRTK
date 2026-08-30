@@ -1,5 +1,8 @@
 using System.Globalization;
 using System.Reflection;
+using System.Resources;
+using EasyOpenVR.Data;
+using EasyOpenVR.Data.Manifest;
 
 namespace BVRTK;
 
@@ -28,5 +31,19 @@ public partial class Utils
         }
 
         return [.. tags];
+    }
+
+    public static ActionBuilder AddLocalizationsToAction(ActionBuilder actionBuilder, ResourceManager resourceManager, string promptName)
+    {
+        foreach (var language in Constants.SupportedLanguages)
+        {
+            var prompt = resourceManager.GetString(promptName, language.Value);
+            var code = SharedUtils.FixLanguageTag(language.Key, "");            
+            if (!string.IsNullOrEmpty(prompt) && !string.IsNullOrEmpty(code))
+            {
+                actionBuilder.AddLocalization(code, prompt);
+            }
+        }
+        return actionBuilder;
     }
 }

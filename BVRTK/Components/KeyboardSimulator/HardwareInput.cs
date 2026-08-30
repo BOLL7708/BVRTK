@@ -1,0 +1,65 @@
+namespace BVRTK.Components.KeyboardSimulator;
+
+public enum HardwareInput
+{
+    None,
+    
+    StickButton,
+    StickNorth,
+    StickWest,
+    StickSouth,
+    StickEast,
+    
+    TrackpadButton,
+    TrackpadNorth,
+    TrackpadWest,
+    TrackpadSouth,
+    TrackpadEast,
+    
+    FaceButtonNorth,
+    FaceButtonWest,
+    FaceButtonSouth,
+    FaceButtonEast,
+    
+    SystemButtonNorth,
+    SystemButtonSouth,
+    
+    TriggerPrimary,
+    TriggerSecondary,
+    GripTrigger,
+    GripButton,
+    
+    OtherButton1,
+    OtherButton2,
+    OtherButton3,
+    OtherButton4,
+    OtherButton5,
+    OtherButton6,
+    OtherButton7,
+    OtherButton8,
+    OtherButton9,
+    OtherButton10,
+    OtherButton11,
+    OtherButton12,
+    OtherButton13,
+    OtherButton14,
+    OtherButton15,
+    OtherButton16,
+    
+    Chord1,
+    Chord2,
+    Chord3,
+    Chord4,
+    Chord5,
+    Chord6,
+    Chord7,
+    Chord8,
+    Chord9,
+    Chord10,
+    Chord11,
+    Chord12,
+    Chord13,
+    Chord14,
+    Chord15,
+    Chord16,
+}

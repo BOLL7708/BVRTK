@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="StickButton" xml:space="preserve">
+        <value>Stick Button</value>
+    </data>
+    <data name="StickNorth" xml:space="preserve">
+        <value>Stick North</value>
+    </data>
+    <data name="StickWest" xml:space="preserve">
+        <value>Stick West</value>
+    </data>
+    <data name="StickSouth" xml:space="preserve">
+        <value>Stick South</value>
+    </data>
+    <data name="StickEast" xml:space="preserve">
+        <value>Stick East</value>
+    </data>
+    <data name="TrackpadButton" xml:space="preserve">
+        <value>Tackpad Button</value>
+    </data>
+    <data name="TrackpadNorth" xml:space="preserve">
+        <value>Trackpad North</value>
+    </data>
+    <data name="TrackpadWest" xml:space="preserve">
+        <value>Trackpad West</value>
+    </data>
+    <data name="TrackpadSouth" xml:space="preserve">
+        <value>Trackpad South</value>
+    </data>
+    <data name="TrackpadEast" xml:space="preserve">
+        <value>Trackpad East</value>
+    </data>
+    <data name="FaceButtonNorth" xml:space="preserve">
+        <value>Face Button North</value>
+    </data>
+    <data name="FaceButtonWest" xml:space="preserve">
+        <value>Face Button West</value>
+    </data>
+    <data name="FaceButtonSouth" xml:space="preserve">
+        <value>Face Button South</value>
+    </data>
+    <data name="FaceButtonEast" xml:space="preserve">
+        <value>Face Button East</value>
+    </data>
+    <data name="SystemButtonNorth" xml:space="preserve">
+        <value>System Button North</value>
+    </data>
+    <data name="SystemButtonSouth" xml:space="preserve">
+        <value>System Button South</value>
+    </data>
+    <data name="TriggerPrimary" xml:space="preserve">
+        <value>Trigger Primary</value>
+    </data>
+    <data name="TriggerSecondary" xml:space="preserve">
+        <value>Trigger Secondary</value>
+    </data>
+    <data name="GripTrigger" xml:space="preserve">
+        <value>Grip Trigger</value>
+    </data>
+    <data name="GripButton" xml:space="preserve">
+        <value>Grip Button</value>
+    </data>
+    <data name="None" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="OtherButton1" xml:space="preserve">
+        <value>Other Button 1</value>
+    </data>
+    <data name="OtherButton2" xml:space="preserve">
+        <value>Other Button 2</value>
+    </data>
+    <data name="OtherButton3" xml:space="preserve">
+        <value>Other Button 3</value>
+    </data>
+    <data name="OtherButton4" xml:space="preserve">
+        <value>Other Button 4</value>
+    </data>
+    <data name="OtherButton5" xml:space="preserve">
+        <value>Other Button 5</value>
+    </data>
+    <data name="OtherButton6" xml:space="preserve">
+        <value>Other Button 6</value>
+    </data>
+    <data name="OtherButton7" xml:space="preserve">
+        <value>Other Button 7</value>
+    </data>
+    <data name="OtherButton8" xml:space="preserve">
+        <value>Other Button 8</value>
+    </data>
+    <data name="OtherButton9" xml:space="preserve">
+        <value>Other Button 9</value>
+    </data>
+    <data name="OtherButton10" xml:space="preserve">
+        <value>Other Button 10</value>
+    </data>
+    <data name="OtherButton11" xml:space="preserve">
+        <value>Other Button 11</value>
+    </data>
+    <data name="OtherButton12" xml:space="preserve">
+        <value>Other Button 12</value>
+    </data>
+    <data name="OtherButton13" xml:space="preserve">
+        <value>Other Button 13</value>
+    </data>
+    <data name="OtherButton14" xml:space="preserve">
+        <value>Other Button 14</value>
+    </data>
+    <data name="OtherButton15" xml:space="preserve">
+        <value>Other Button 15</value>
+    </data>
+    <data name="OtherButton16" xml:space="preserve">
+        <value>Other Button 16</value>
+    </data>
+    <data name="Chord1" xml:space="preserve">
+        <value>Chord 1</value>
+    </data>
+    <data name="Chord2" xml:space="preserve">
+        <value>Chord 2</value>
+    </data>
+    <data name="Chord3" xml:space="preserve">
+        <value>Chord 3</value>
+    </data>
+    <data name="Chord4" xml:space="preserve">
+        <value>Chord 4</value>
+    </data>
+    <data name="Chord5" xml:space="preserve">
+        <value>Chord 5</value>
+    </data>
+    <data name="Chord6" xml:space="preserve">
+        <value>Chord 6</value>
+    </data>
+    <data name="Chord7" xml:space="preserve">
+        <value>Chord 7</value>
+    </data>
+    <data name="Chord8" xml:space="preserve">
+        <value>Chord 8</value>
+    </data>
+    <data name="Chord9" xml:space="preserve">
+        <value>Chord 9</value>
+    </data>
+    <data name="Chord10" xml:space="preserve">
+        <value>Chord 10</value>
+    </data>
+    <data name="Chord11" xml:space="preserve">
+        <value>Chord 11</value>
+    </data>
+    <data name="Chord12" xml:space="preserve">
+        <value>Chord 12</value>
+    </data>
+    <data name="Chord13" xml:space="preserve">
+        <value>Chord 13</value>
+    </data>
+    <data name="Chord14" xml:space="preserve">
+        <value>Chord 14</value>
+    </data>
+    <data name="Chord15" xml:space="preserve">
+        <value>Chord 15</value>
+    </data>
+    <data name="Chord16" xml:space="preserve">
+        <value>Chord 16</value>
+    </data>
+</root>

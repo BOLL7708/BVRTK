@@ -1,5 +1,7 @@
 using BVRTK.Components.Graphics;
+using BVRTK.Components.KeyboardSimulator;
 using BVRTK.Components.Server;
+using BVRTK.Resources;
 using EasyOpenVR;
 using EasyOpenVR.Data.Manifest;
 using Valve.VR;
@@ -55,7 +57,27 @@ public static class Services
                         ActionType.Boolean,
                         configure: action => action.AddLocalization("EN US", "Test Input")
                     )
-            );
+            )
+            .AddActionSet(
+                "keyboardsim",
+                ActionSetUsage.Leftright,
+                set =>
+                {
+                    set.AddLocalization("en_US", "Keyboard Simulator");
+                    var hwInputs = Enum.GetValues<HardwareInput>();
+                    foreach(var hwi in hwInputs)
+                    {
+                        var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInput(hwi);
+                        var name = Enum.GetName(hwi);
+                        if (string.IsNullOrWhiteSpace(name)) continue; 
+                        set.AddAction(
+                            name,
+                            configure: action =>
+                            {
+                                Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName);
+                            });
+                    }
+                });
 
         #endregion
         

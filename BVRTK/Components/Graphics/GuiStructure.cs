@@ -15,27 +15,27 @@ public static class GuiStructure
         new(()=>"Development", ()=>"Only for me!", false, FontStyle.Bold, GuiColor.FromHue(0), [
             new Page("Component Zoo", Develop.RenderZooPage)
         ]),
-        new(()=>GuiSidebar.AppLabel, ()=>GuiSidebar.AppTooltip, true, FontStyle.Bold, GuiColor.Root, [
+        new(()=>GuiSidebarPrompts.AppLabel, ()=>GuiSidebarPrompts.AppTooltip, true, FontStyle.Bold, GuiColor.Root, [
             new Page("About", Root.RenderAboutPage),
             new Page("Version History", Root.RenderVersionHistoryPage),
             new Page("Licenses", Root.RenderLicensesPage)
         ]),
-        new(()=>GuiSidebar.PreferencesLabel, ()=>GuiSidebar.PreferencesTooltip, true, FontStyle.Regular, GuiColor.Preferences, [
+        new(()=>GuiSidebarPrompts.PreferencesLabel, ()=>GuiSidebarPrompts.PreferencesTooltip, true, FontStyle.Regular, GuiColor.Preferences, [
             new Page("Options", GuiRenderers.RenderApplicationPage)
         ]),
-        new(()=>GuiSidebar.ServerLabel, ()=>GuiSidebar.ServerTooltip, true, FontStyle.Regular, GuiColor.Server, [
+        new(()=>GuiSidebarPrompts.ServerLabel, ()=>GuiSidebarPrompts.ServerTooltip, true, FontStyle.Regular, GuiColor.Server, [
             new Page("Options", GuiRenderers.RenderServerPage)
         ]),
-        new(()=>GuiSidebar.KeyboardSimLabel, ()=>GuiSidebar.KeyboardSimTooltip, true, FontStyle.Regular, GuiColor.KeyboardSim, [
+        new(()=>GuiSidebarPrompts.KeyboardSimLabel, ()=>GuiSidebarPrompts.KeyboardSimTooltip, true, FontStyle.Regular, GuiColor.KeyboardSim, [
             new Page("Options", GuiRenderers.RenderKeyboardSimulatorPage)        
         ]),
-        new(()=>GuiSidebar.MouseSimLabel, ()=>GuiSidebar.MouseSimTooltip, false, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
-        new(()=>GuiSidebar.OverlaysLabel, ()=>GuiSidebar.OverlaysTooltip, false, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
-        new(()=>GuiSidebar.ScreenshotsLabel, ()=>GuiSidebar.ScreenshotsTooltip, false, FontStyle.Regular, GuiColor.Screenshots, [
+        new(()=>GuiSidebarPrompts.MouseSimLabel, ()=>GuiSidebarPrompts.MouseSimTooltip, false, FontStyle.Regular, GuiColor.MouseSim, [PageWip]),
+        new(()=>GuiSidebarPrompts.OverlaysLabel, ()=>GuiSidebarPrompts.OverlaysTooltip, false, FontStyle.Regular, GuiColor.Overlays, [PageWip]),
+        new(()=>GuiSidebarPrompts.ScreenshotsLabel, ()=>GuiSidebarPrompts.ScreenshotsTooltip, false, FontStyle.Regular, GuiColor.Screenshots, [
             new Page("Options", GuiRenderers.RenderScreenshotsPage)
         ]),
-        new(()=>GuiSidebar.PlayAreaLabel, ()=>GuiSidebar.PlayAreaTooltip, false, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),
-        new(()=>GuiSidebar.EventsLabel, ()=>GuiSidebar.EventsTooltip, false, FontStyle.Regular, GuiColor.Events, [PageWip]),
+        new(()=>GuiSidebarPrompts.PlayAreaLabel, ()=>GuiSidebarPrompts.PlayAreaTooltip, false, FontStyle.Regular, GuiColor.PlayArea, [PageWip]),
+        new(()=>GuiSidebarPrompts.EventsLabel, ()=>GuiSidebarPrompts.EventsTooltip, false, FontStyle.Regular, GuiColor.Events, [PageWip]),
     ];
 }
 
