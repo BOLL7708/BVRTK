@@ -36,7 +36,7 @@ public static class GuiUtils
     private static readonly Dictionary<ImGuiCol, float> AccentComponents = new()
     {
         { ImGuiCol.ChildBg, 0.25f },
-        { ImGuiCol.CheckMark, 1f },
+        { ImGuiCol.CheckMark, -1f },
 
         // Used for any element with a scrollbar
         { ImGuiCol.ScrollbarBg, 0.1f },
@@ -77,7 +77,7 @@ public static class GuiUtils
     {
         foreach (var kv in AccentComponents)
         {
-            ImGui.PushStyleColor(kv.Key, a.Fade(kv.Value));
+            ImGui.PushStyleColor(kv.Key, kv.Value <= 0 ? GuiColor.White : a.Fade(kv.Value));
         }
     }
 

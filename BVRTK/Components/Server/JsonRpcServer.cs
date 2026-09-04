@@ -19,11 +19,8 @@ public class JsonRpcServer
         #region WebSocket
 
         _websocketServer = new WebsocketServer();
-        _websocketServer.ServerError += Console.WriteLine;
-        _websocketServer.StatusChanged += (status, value, port) =>
-        {
-            Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), value)} ({port})");
-        };
+        _websocketServer.ServerError += Console.WriteLine; // TODO: Serilog?
+        _websocketServer.StatusChanged += (status, value, port) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), value)} ({port})"); };
         _websocketServer.MessageReceived += async (sessionId, message) =>
         {
             Console.WriteLine($"MessageReceived: {sessionId} - {message}");
@@ -45,7 +42,20 @@ public class JsonRpcServer
                 ], false, sessionId, ESourceServer.Websocket);
             }
         };
+        
+        SettingsChangeHandlers.OnServerPortChanged += async (current, previous) =>
+        {
+            _usedPort = current;
+            _websocketServer.SetValues(current);
+            if(Settings.Current.Server.Enabled) await _websocketServer.StartOrRestart();
+        };
 
+        SettingsChangeHandlers.OnServerEnabledChanged += async (enabled, _) =>
+        {
+            if (enabled) await Start();
+            else await Stop();
+        };
+        
         #endregion
 
         #region NamedPipe
@@ -54,47 +64,79 @@ public class JsonRpcServer
         // TODO: Implement
 
         #endregion
+
+        _ = Init();
+    }
+
+    private async Task Init()
+    {
+        if (Settings.Current.Server.Enabled) await Start();
     }
 
     #region LifeTime
 
     public async Task Start()
     {
-        await StopWebSocket();
-        StopNamedPipe();
+        try
+        {
+            await StartWebSocket();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message); // TODO: Serilog
+        }
+
+        try
+        {
+            StartNamedPipe();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message); // TODO: Serilog
+        }
     }
 
-    public async void Stop()
+    public async Task Stop()
     {
-        await StartWebSocket();
-        StartNamedPipe();
+        try
+        {
+            await StopWebSocket();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message); // TODO: Serilog
+        }
+
+        try
+        {
+            StopNamedPipe();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message); // TODO: Serilog
+        }
     }
 
     private int _usedPort = 0;
-    public async Task StartWebSocket()
+
+    private async Task StartWebSocket()
     {
-        SettingsChangeHandlers.OnServerPortChanged += async (current, previous) =>
-        {
-            _websocketServer.SetValues(current);
-            await _websocketServer.StartOrRestart();
-        };
-        
         _usedPort = Settings.Current.Server.Port;
         _websocketServer.SetValues(_usedPort);
         await _websocketServer.StartOrRestart();
     }
 
-    public async Task StopWebSocket()
+    private async Task StopWebSocket()
     {
         await _websocketServer.Stop();
     }
 
-    public void StartNamedPipe()
+    private void StartNamedPipe()
     {
         // _pipeServer.StartOrRestart();
     }
 
-    public void StopNamedPipe()
+    private void StopNamedPipe()
     {
         // _pipeServer.Stop();
     }
@@ -194,9 +236,9 @@ public class JsonRpcServer
                     {
                         Console.WriteLine(ex.Message);
                     }
-                    
+
                     if (!item.IdExists) break; // Notification
-                    
+
                     responseList.Add(new ResponseBuilder(item.Result.Id).BuildStatus(true, $"Toggled the desktop window! {decodedParams.Result?.Visible}"));
                     break;
                 }

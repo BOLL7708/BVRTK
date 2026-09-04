@@ -45,8 +45,8 @@ public static partial class Gui
             );
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, section.AccentColor.TabActive());
             ImGui.PushStyleColor(ImGuiCol.Text, isActive
-                ? GuiColor.Black
-                : GuiColor.White
+                ? GuiColor.Black with { W = section.IsEnabled() ? 1: 0.5f }
+                : GuiColor.White with { W = section.IsEnabled() ? 1: 0.5f }
             );
 
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.GuiTabRounding);

@@ -30,14 +30,13 @@ class Program
 
         if (File.Exists("Build/version.txt"))
         {
-            Session.Version = File.ReadAllText("Build/version.txt").Trim();
+            Session.Version = (await File.ReadAllTextAsync("Build/version.txt")).Trim();
         }
 
         #endregion
-
-        var server = Services.Server;
-        await server.StartWebSocket();
-
+        
+        var server = Services.Server; // Lazy initialization means we need to access it to launch it
+        
         // TODO: Setup Serilog
 
         var vr = Services.Vr;
@@ -49,13 +48,16 @@ class Program
         // Updates the application language when it has changed.
         void SetLanguage(string language, string oldLanguage = "unused")
         {
-            CultureInfo.CurrentUICulture = Constants.SupportedLanguages.GetValueOrDefault(language, CultureInfo.InvariantCulture);            
+            CultureInfo.CurrentUICulture = Constants.SupportedLanguages.GetValueOrDefault(language, CultureInfo.InvariantCulture);
         }
+
         SetLanguage(Settings.Current.Application.Language);
         SettingsChangeHandlers.OnApplicationLanguageChanged += SetLanguage;
+
         #endregion
-        
+
         #region VR
+
         vr.State += state =>
         {
             Console.WriteLine($"[STATE] {Enum.GetName(state)}");
@@ -93,6 +95,7 @@ class Program
                 // TODO: If enabled, send application data to WS.
             }
         );
+
         #endregion
 
         #endregion

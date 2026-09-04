@@ -72,6 +72,7 @@ public static class Services
                         if (string.IsNullOrWhiteSpace(name)) continue; 
                         set.AddAction(
                             name,
+                            requirement: ActionRequirement.Optional,
                             configure: action =>
                             {
                                 Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName);

@@ -44,7 +44,7 @@ public sealed class WebsocketServer : AbstractServer
     public override async Task StartOrRestart()
     {
         // Stop in case of already running and not failed
-        if (_server?.State != ServerState.Failed)
+        if (_server is { State: not ServerState.Failed })
         {
             await Stop();
         }
@@ -65,7 +65,7 @@ public sealed class WebsocketServer : AbstractServer
 
     public override async Task Stop()
     {
-        if (_server != null)
+        if (_server is { State: not ServerState.Stopping or not ServerState.Stopped })
         {
             foreach (var sessionPair in _sessions)
             {
