@@ -24,9 +24,12 @@ public class GuiElement
     public int IntSliderMax = 0;
     
     // Int
-    public float IntWidth = 0;
+    public float InputWidth = 0;
     public int IntStep = 0;
-    public string IntModalTitle = "";
+    public string ModalTitle = "";
+    
+    // String
+    public uint StringMaxLength = 0; 
     
     // Combo
     public float ComboWidth = 0;

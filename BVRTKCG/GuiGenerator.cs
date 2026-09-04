@@ -23,6 +23,7 @@ public class GuiGenerator : IIncrementalGenerator
         IntSlider,
         Int,
         IntModal,
+        StringModal,
         Text,
         Combo,
 
@@ -95,7 +96,7 @@ public class GuiGenerator : IIncrementalGenerator
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
-                e.IntWidth = FloatArg(a, 2);
+                e.InputWidth = FloatArg(a, 2);
                 e.IntStep = IntArg(a, 3);
                 return e;
             }
@@ -110,9 +111,25 @@ public class GuiGenerator : IIncrementalGenerator
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
-                e.IntWidth = FloatArg(a, 2);
+                e.InputWidth = FloatArg(a, 2);
                 e.IntStep = IntArg(a, 3);
-                e.IntModalTitle = StringArg(a, 4);
+                e.ModalTitle = StringArg(a, 4);
+                return e;
+            }
+        );
+        
+        var stringModals = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "BVRTKCG.Attributes.GuiStringModalAttribute",
+            static (n, _) => n is VariableDeclaratorSyntax,
+            static (ctx, _) =>
+            {
+                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.IntModal);
+                var a = ctx.Attributes[0];
+                e.Label = StringArg(a, 0);
+                e.Tooltip = StringArg(a, 1);
+                e.InputWidth = FloatArg(a, 2);
+                e.StringMaxLength = UIntArg(a, 3);
+                e.ModalTitle = StringArg(a, 4);
                 return e;
             }
         );
@@ -205,6 +222,7 @@ public class GuiGenerator : IIncrementalGenerator
             intSliders.Collect(),
             ints.Collect(),
             intModals.Collect(),
+            stringModals.Collect(),
             combos.Collect(),
             sameLines.Collect(),
             debugs.Collect(),
@@ -263,24 +281,31 @@ public class GuiGenerator : IIncrementalGenerator
                     case GuiElementKind.Int:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                               ImGui.SetNextItemWidth({e.IntWidth}f*Constants.OverlayGuiScale);
+                                               ImGui.SetNextItemWidth({e.InputWidth}f*Constants.OverlayGuiScale);
                                                if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep}, ImGuiInputTextFlags.CharsDecimal)) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
                                        """);
                         break;
                     case GuiElementKind.IntModal:
                         sb.AppendLine($"""
-                                               GuiUtils.OpenModalForInt(
-                                                   "{e.IntModalTitle}##{e.ClassName}.{e.PropName}.{e.IntModalTitle}", 
+                                               GuiUtils.DoModalForInt(
+                                                   "{e.ModalTitle}##{e.ClassName}.{e.PropName}.{e.ModalTitle}", 
                                                    "{e.Label}", 
-                                                   "{e.IntModalTitle}", 
-                                                   {e.IntWidth}f,
-                                                   Settings.Current.{e.ClassName}.{e.PropName}
-                                               );
-                                               GuiUtils.DrawModalForInt(
-                                                   "{e.IntModalTitle}##{e.ClassName}.{e.PropName}.{e.IntModalTitle}", 
-                                                   "{e.Label}", 
-                                                   {e.IntWidth}f,
+                                                   "{e.ModalTitle}",
+                                                   {e.InputWidth}f,
                                                    Settings.Current.{e.ClassName}.{e.PropName},
+                                                   value => Settings.Current.{e.ClassName}.{e.PropName} = value
+                                               );
+                                       """);
+                        break;
+                    case GuiElementKind.StringModal:
+                        sb.AppendLine($"""
+                                               GuiUtils.DoModalForString(
+                                                   "{e.ModalTitle}##{e.ClassName}.{e.PropName}.{e.ModalTitle}", 
+                                                   "{e.Label}", 
+                                                   "{e.ModalTitle}", 
+                                                   {e.InputWidth}f,
+                                                   Settings.Current.{e.ClassName}.{e.PropName},
+                                                   {e.StringMaxLength},
                                                    value => Settings.Current.{e.ClassName}.{e.PropName} = value
                                                );
                                        """);

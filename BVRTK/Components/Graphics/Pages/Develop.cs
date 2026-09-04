@@ -47,19 +47,23 @@ public static class Develop
 
     public static void RenderZooPage()
     {
-        GuiUtils.OpenModalForInt(
+        GuiUtils.DoModalForInt(
             "TheTestInt##thetestint",
-            "Please update this",
-            "Edit it",
+            "Please update this INT",
+            "Edit",
             64f,
-            Settings.Current.Server.Port
+            100,
+            value => Console.WriteLine($"We got: {value}")
         );
-        GuiUtils.DrawModalForInt(
-            "TheTestInt##thetestint",
-            "A label",
+        
+        GuiUtils.DoModalForString(
+            "TheTestString##theteststring",
+            "Please update this STRING",
+            "Edit",
             64f,
-            Settings.Current.Server.Port,
-            value => Settings.Current.Server.Port = value
+            "Value",
+            8,
+            value => Console.WriteLine($"We got: {value}")
         );
 
         ImGui.SeparatorText("Texts");
@@ -116,19 +120,10 @@ public static class Develop
         string[] comboItems = ["One##1", "Two##2", "Three##3"];
         ImGui.Combo("Combo", ref comboValue, comboItems, comboItems.Length);
             
-        if (ImGui.Button("Open File Dialog"))
-        {
-            openFileDialog.Show();
-        }
-
-        openFileDialog.Draw(ImGuiWindowFlags.Modal);
-        if (ImGui.Button("Open Folder Dialog"))
-        {
-            openFolderDialog.Show();
-        }
-
-        openFolderDialog.Draw(ImGuiWindowFlags.Modal);
-
+        // if (ImGui.Button("Open File Dialog")) openFileDialog.Show();
+        // openFileDialog.Draw(ImGuiWindowFlags.Modal);
+        // if (ImGui.Button("Open Folder Dialog")) openFolderDialog.Show();
+        // openFolderDialog.Draw(ImGuiWindowFlags.Modal);
         // if (fileDialog.Draw(ImGuiWindowFlags.Modal)) {}        
 
         ImGui.SeparatorText("Simple Color Edit");

@@ -49,6 +49,16 @@ public class GuiIntModalAttribute(string label, string tooltip, float width, int
     public string ModalTitle = modalTitle;
 }
 
+[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+public class GuiStringModalAttribute(string label, string tooltip, float width, uint maxLength, string modalTitle) : Attribute
+{
+    public string Label = label;
+    public string Tooltip = tooltip;
+    public float Width = width;
+    public uint MaxLength = maxLength;
+    public string ModalTitle = modalTitle;
+}
+
 /// <summary>
 /// 
 /// </summary>

@@ -117,21 +117,26 @@ public static class GuiUtils
         DrawDivider();
     }
 
-    private static readonly Dictionary<string, int> ModalDialogInts = new();
+    #region Modals
+        
+    private static readonly Dictionary<string, object?> ModalDialogValues = new();
 
-    public static void OpenModalForInt(string tag, string label, string button, float size, int startValue)
+    /// Render optional interface and a button to open the modal.
+    public static void OpenModal<T>(string tag, string button, Action<T>? renderGui, T startValue)
     {
-        var temp = startValue;
         ImGui.BeginChild(tag + "Child", ImGuiChildFlags.AutoResizeY);
-        ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-        ImGui.InputInt(label, ref temp, 0, ImGuiInputTextFlags.ReadOnly);
-        ImGui.SameLine();
+        if(renderGui != null)
+        {
+            renderGui(startValue);
+            ImGui.SameLine();
+        }
         var open = ImGui.Button(button);
         ImGui.EndChild();
         if (open) ImGui.OpenPopup(tag);
     }
 
-    public static void DrawModalForInt(string tag, string label, float size, int startValue, Action<int> updateSetting)
+    // The modal itself: renders a custom interface and outputs the result.
+    public static void DrawModal<T>(string tag, Func<T, T> renderDialogGui, T startValue, Action<T> updateSetting)
     {
         var vp = ImGui.GetMainViewport();
         var center = vp.Pos + vp.Size * 0.5f;
@@ -146,11 +151,12 @@ public static class GuiUtils
         if (ImGui.BeginPopupModal(tag, ImGuiWindowFlags.AlwaysAutoResize))
         {
             ImGui.PushStyleColor(ImGuiCol.Text, GuiColor.White);
-            if (ImGui.IsWindowAppearing()) ModalDialogInts[tag] = startValue;
-            var temp = ModalDialogInts[tag];
-            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-            ImGui.InputInt(label, ref temp, 0, ImGuiInputTextFlags.CharsDecimal);
-            ModalDialogInts[tag] = temp;
+            if (ImGui.IsWindowAppearing()) ModalDialogValues[tag] = startValue;
+
+            var temp = (T)ModalDialogValues[tag]!;
+            temp = renderDialogGui(temp);
+            ModalDialogValues[tag] = temp;
+
             var popupWidth = ImGui.GetContentRegionAvail().X;
 
             var enter = ImGui.IsKeyPressed(ImGuiKey.Enter) || ImGui.IsKeyPressed(ImGuiKey.KeypadEnter);
@@ -172,7 +178,39 @@ public static class GuiUtils
         ImGui.PopStyleVar();
         ImGui.PopStyleColor(2);
     }
-
+    
+    public static void DoModalForInt(string tag, string label, string button, float size, int startValue, Action<int> updateSetting)
+    {
+        OpenModal(tag, button, value =>
+        {
+            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+            ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.ReadOnly);
+        }, startValue);
+        DrawModal(tag, value =>
+        {
+            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+            ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.CharsDecimal);
+            return value;
+        }, startValue, updateSetting);
+    }
+    
+    public static void DoModalForString(string tag, string label, string button, float size, string startValue, uint maxLength, Action<string> updateSetting)
+    {
+        OpenModal(tag, button, value =>
+        {
+            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+            ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.ReadOnly);
+        }, startValue);
+        DrawModal(tag, value =>
+        {
+            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+            ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.None);
+            return value;
+        }, startValue, updateSetting);
+    }
+    
+    #endregion
+    
     public static void DrawTooltip(string message)
     {
         if (

@@ -69,6 +69,9 @@ public static class GeneratorUtils
 
     public static int IntArg(AttributeData a, int i) =>
         a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Value is { } v ? Convert.ToInt32(v) : 0;
+    
+    public static uint UIntArg(AttributeData a, int i) =>
+        a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Value is { } v ? Convert.ToUInt32(v) : 0;
 
     public static float FloatArg(AttributeData a, int i) =>
         a.ConstructorArguments.Length > i && a.ConstructorArguments[i].Value is { } v ? Convert.ToSingle(v) : 0f;
@@ -81,7 +84,10 @@ public static class GeneratorUtils
 
     public static int[] IntArrayArg(AttributeData a, int i) =>
         ArrayValues(a, i).Select(v => v.Value is { } x ? Convert.ToInt32(x) : 0).ToArray();
-
+    
+    public static uint[] UIntArrayArg(AttributeData a, int i) =>
+        ArrayValues(a, i).Select(v => v.Value is { } x ? Convert.ToUInt32(x) : 0).ToArray();
+    
     public static float[] FloatArrayArg(AttributeData a, int i) =>
         ArrayValues(a, i).Select(v => v.Value is { } x ? Convert.ToSingle(x) : 0f).ToArray();
 
