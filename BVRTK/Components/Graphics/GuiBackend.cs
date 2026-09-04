@@ -415,6 +415,8 @@ public class GuiBackend
         gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
+        var hasSavedOnHidden = false;
+        
         // Main loop
         while (!_shouldTerminate)
         {
@@ -425,10 +427,12 @@ public class GuiBackend
             
             if (!(_overlayVisible || IsWindowVisible()))
             {
-                Settings.WriteToDisk();
+                if(!hasSavedOnHidden) Settings.WriteToDisk();
+                hasSavedOnHidden = true;
                 GLFW.WaitEventsTimeout(1); // Will interrupt on an event, which happens if the window is shown.
                 continue;
             }
+            hasSavedOnHidden = false;
 
             GLFW.MakeContextCurrent(window);
             RenderUiToFbo(gl, fbo);
