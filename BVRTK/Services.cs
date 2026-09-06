@@ -4,6 +4,7 @@ using BVRTK.Components.Server;
 using BVRTK.Resources;
 using EasyOpenVR;
 using EasyOpenVR.Data.Manifest;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Valve.VR;
 
 namespace BVRTK;
@@ -11,6 +12,7 @@ namespace BVRTK;
 public static class Services
 {
     #region Lazy Singletons
+
     private static readonly Lazy<JsonRpcServer> LazyServer = new(BuildServer);
     public static JsonRpcServer Server => LazyServer.Value;
 
@@ -19,6 +21,7 @@ public static class Services
 
     private static readonly Lazy<GuiBackend> LazyApplicationWindow = new(BuildApplicationWindow);
     public static GuiBackend GuiBackend => LazyApplicationWindow.Value;
+
     #endregion
 
     private static JsonRpcServer BuildServer()
@@ -26,7 +29,7 @@ public static class Services
         var server = new JsonRpcServer();
         return server;
     }
-    
+
     private static EasyOpenVr BuildVr()
     {
         #region App Manifest
@@ -64,24 +67,46 @@ public static class Services
                 set =>
                 {
                     set.AddLocalization("en_US", "Keyboard Simulator");
-                    var hwInputs = Enum.GetValues<HardwareInput>();
-                    foreach(var hwi in hwInputs)
+                    
+                    // We are duplicating the hardware inputs to represent the left and right controller.
+                    var hwInputsLr = Enum.GetValues<HardwareInputLeftRight>();
+                    string[] prefixNames = [nameof(GeneralPrompts.Left), nameof(GeneralPrompts.Right)];
+                    foreach (var prefixName in prefixNames)
                     {
-                        var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInput(hwi);
-                        var name = Enum.GetName(hwi);
-                        if (string.IsNullOrWhiteSpace(name)) continue; 
-                        set.AddAction(
+                        foreach (var hwilr in hwInputsLr)
+                        {
+                            var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputLeftRight(hwilr);
+                            var name = Enum.GetName(hwilr);
+                            if (string.IsNullOrWhiteSpace(name)) continue;
+                            var action = set.AddAction(
+                                $"{prefixName}_{name}",
+                                requirement: ActionRequirement.Optional,
+                                configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName); });
+                            
+                            // Register the actions for display in the GUI
+                            Session.GuiActionEntries.Add(new ActionGuiEntry(action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName)));
+                        }
+                    }
+
+                    var hwInputsShared = Enum.GetValues<HardwareInputShared>();
+                    foreach (var hwis in hwInputsShared)
+                    {
+                        var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputShared(hwis);
+                        var name = Enum.GetName(hwis);
+                        if (string.IsNullOrWhiteSpace(name)) continue;
+                        var action = set.AddAction(
                             name,
                             requirement: ActionRequirement.Optional,
-                            configure: action =>
-                            {
-                                Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName);
-                            });
+                            configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName); });
+                        
+                        // Register the actions for display in the GUI
+                        Session.GuiActionEntries.Add(new ActionGuiEntry(action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName)));
                     }
                 });
-
-        #endregion
         
+        
+        #endregion
+
         return new EasyOpenVrBuilder()
             .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, Session.isDebug)
             .SetActionManifest(actionManifestFilename, actionManifestBuilder, Session.isDebug) // TODO: Still not working

@@ -5,9 +5,9 @@ using Hexa.NET.ImGui;
 
 namespace BVRTK.Components.Graphics.Pages;
 
-public static class Root
+public static class ApplicationPages
 {
-    public static void RenderAboutPage()
+    public static void About()
     {
         ImGui.Dummy(Vector2.Zero);
         
@@ -34,12 +34,12 @@ public static class Root
         GuiUtils.DrawTooltip(Constants.UrlDeveloperWebsite);
     }
 
-    public static void RenderVersionHistoryPage()
+    public static void VersionHistory()
     {
         ImGui.TextUnformatted("Load some version file here, Markdown renderer maybe? Hmm.");
     }
 
-    public static void RenderLicensesPage()
+    public static void Licenses()
     {
         ImGui.TextUnformatted("Include the licenses for this project and dependencies and assets used in it.");
         if (ImGui.CollapsingHeader("First Party Licenses", ImGuiTreeNodeFlags.None))

@@ -33,4 +33,12 @@ public static class Session
     
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }
+    
+    public static readonly List<ActionGuiEntry> GuiActionEntries = [];
+}
+
+public class ActionGuiEntry(string path, Func<string> prompt)
+{
+    public string Path = path;
+    public Func<string> Prompt = prompt;
 }

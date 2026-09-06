@@ -53,6 +53,7 @@ public static partial class Gui
             ImGui.Button(section.Title(), availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
+                RestoredSectionsInPage.Clear();
                 Settings.Current.Application.CurrentSection = i;
             }
             ImGui.PopFont();
@@ -113,7 +114,7 @@ public static partial class Gui
 
         #region Debug
 
-        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{string.Join(Environment.NewLine, Settings.Current.Application.CurrentSection)}");
+        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{Settings.Current.Application.Language}={GuiSidebar.PlayAreaLabel}");
 
         #endregion
 

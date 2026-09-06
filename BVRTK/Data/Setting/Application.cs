@@ -26,13 +26,13 @@ public partial class Application
 
     private bool _showTooltips = true;
     public partial bool ShowTooltips { get; set; }
-
-    private int _currentSection = 0;
-    public partial int CurrentSection { get; set; }
-
+    
     #endregion
 
     #region Invisible dynamically updated values
+    
+    private int _currentSection = 0;
+    public partial int CurrentSection { get; set; }
 
     private ConcurrentDictionary<int, int> _currentPageInSection = new();
     public partial ConcurrentDictionary<int, int> CurrentPageInSection { get; set; }

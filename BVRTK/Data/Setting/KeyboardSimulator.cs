@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using BVRTKCG.Attributes;
 
 namespace BVRTK.Data.Setting;
@@ -17,5 +18,9 @@ public partial class KeyboardSimulator
     private bool _notificationOnKey = false;
     public partial bool NotificationOnKey { get; set; }
     
+    private string[] _entriesUniversal = [];
+    public partial string[] EntriesUniversal { get; set; }
     
+    private ConcurrentDictionary<string, string[]> _entriesPerGame = new();
+    public partial ConcurrentDictionary<string, string[]> EntriesPerGame { get; set; }
 }

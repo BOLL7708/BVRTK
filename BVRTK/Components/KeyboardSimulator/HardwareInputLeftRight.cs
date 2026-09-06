@@ -1,9 +1,7 @@
 namespace BVRTK.Components.KeyboardSimulator;
 
-public enum HardwareInput
+public enum HardwareInputLeftRight
 {
-    None,
-    
     StickButton,
     StickNorth,
     StickWest,
@@ -27,8 +25,11 @@ public enum HardwareInput
     TriggerPrimary,
     TriggerSecondary,
     GripTrigger,
-    GripButton,
-    
+    GripButton
+}
+
+public enum HardwareInputShared
+{
     OtherButton1,
     OtherButton2,
     OtherButton3,
@@ -61,5 +62,5 @@ public enum HardwareInput
     Chord13,
     Chord14,
     Chord15,
-    Chord16,
+    Chord16
 }

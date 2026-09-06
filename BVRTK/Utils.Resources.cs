@@ -19,6 +19,9 @@ public partial class Utils
         return memoryStream.ToArray();
     }
 
+    #region Translations
+
+    /// Used to provide values for the GUI
     public static string[] GetSupportedLanguageGuiTags()
     {
         List<string> tags = [];
@@ -33,17 +36,31 @@ public partial class Utils
         return [.. tags];
     }
 
-    public static ActionBuilder AddLocalizationsToAction(ActionBuilder actionBuilder, ResourceManager resourceManager, string promptName)
+    // Used to provide values for the action manifest builder
+    public static ActionBuilder AddLocalizationsToAction(ActionBuilder actionBuilder, ResourceManager resourceManager, string promptName, ResourceManager? prefixResourceManager = null, string? promptPrefixName = null)
     {
         foreach (var language in Constants.SupportedLanguages)
         {
             var prompt = resourceManager.GetString(promptName, language.Value);
-            var code = SharedUtils.FixLanguageTag(language.Key, "");            
-            if (!string.IsNullOrEmpty(prompt) && !string.IsNullOrEmpty(code))
-            {
-                actionBuilder.AddLocalization(code, prompt);
-            }
+            var code = SharedUtils.FixLanguageTag(language.Key, "");
+            if (string.IsNullOrEmpty(prompt) || string.IsNullOrEmpty(code)) continue;
+
+            var prefix = prefixResourceManager?.GetString(promptPrefixName ?? "", language.Value);
+            actionBuilder.AddLocalization(code, !string.IsNullOrEmpty(prefix) ? $"{prefix} {prompt}" : prompt);
         }
+
         return actionBuilder;
     }
+
+    public static Func<string> GetPromptWithPrefixFunc(ResourceManager resourceManager, string promptName, ResourceManager? prefixResourceManager = null, string? promptPrefixName = null)
+    {
+        return () =>
+        {
+            var prompt = resourceManager.GetString(promptName);
+            var prefix = prefixResourceManager?.GetString(promptPrefixName ?? "");
+            return !string.IsNullOrEmpty(prefix) ? $"{prefix} {prompt}" : prompt ?? "";
+        };
+    }
+
+    #endregion
 }

@@ -58,6 +58,16 @@
           <Generator>ResXFileCodeGenerator</Generator>
           <LastGenOutput>HardwareInputPrompts.Designer.cs</LastGenOutput>
         </EmbeddedResource>
+        <EmbeddedResource Update="Resources\GeneralPrompts.resx">
+          <Generator>ResXFileCodeGenerator</Generator>
+          <LastGenOutput>GeneralPrompts.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\JsonRpcErrors.sv.resx">
+          <DependentUpon>JsonRpcErrors.resx</DependentUpon>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Methods.sv.resx">
+          <DependentUpon>Methods.resx</DependentUpon>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -90,6 +100,11 @@
           <DesignTime>True</DesignTime>
           <AutoGen>True</AutoGen>
           <DependentUpon>HardwareInputPrompts.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\GeneralPrompts.Designer.cs">
+          <DesignTime>True</DesignTime>
+          <AutoGen>True</AutoGen>
+          <DependentUpon>GeneralPrompts.resx</DependentUpon>
         </Compile>
     </ItemGroup>
 

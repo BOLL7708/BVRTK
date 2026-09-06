@@ -179,14 +179,27 @@ public static class GuiUtils
         ImGui.PopStyleColor(2);
     }
     
+    public static void DoModal<T>(
+        string tag,
+        string button,
+        Action<T> renderGui,
+        Func<T, T> renderDialogGui,
+        T startValue,
+        Action<T> updateSetting)
+    {
+        OpenModal(tag, button, renderGui, startValue);
+        DrawModal(tag, renderDialogGui, startValue, updateSetting);
+    }
+    
     public static void DoModalForInt(string tag, string label, string button, float size, int startValue, Action<int> updateSetting)
     {
-        OpenModal(tag, button, value =>
+        DoModal(tag, button, 
+        value =>
         {
             ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
             ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.ReadOnly);
-        }, startValue);
-        DrawModal(tag, value =>
+        }, 
+        value =>
         {
             ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
             ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.CharsDecimal);
@@ -196,12 +209,13 @@ public static class GuiUtils
     
     public static void DoModalForString(string tag, string label, string button, float size, string startValue, uint maxLength, Action<string> updateSetting)
     {
-        OpenModal(tag, button, value =>
+        DoModal(tag, button, 
+        value =>
         {
             ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
             ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.ReadOnly);
-        }, startValue);
-        DrawModal(tag, value =>
+        }, 
+        value =>
         {
             ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
             ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.None);

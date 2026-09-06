@@ -6,6 +6,7 @@ namespace BVRTK.Components.KeyboardSimulator;
 
 public static class KeyboardSimulatorUtils
 {
+    #region Keys
     private static readonly Dictionary<KeyCode, string> KeyCodeDisplayValues = new()
     {
         [KeyCode.VcAccept] = "CUSTOM LABEL YO!"
@@ -66,66 +67,79 @@ public static class KeyboardSimulatorUtils
             return KeyCode.VcUndefined;
         }
     }
+    
+    #endregion
 
-    public static string GetPromptNameForHardwareInput(HardwareInput hwi)
+    #region VR Input
+    
+    public static string GetPromptNameForHardwareInputLeftRight(HardwareInputLeftRight hwi)
     {
         var promptName = hwi switch
         {
-            HardwareInput.None => nameof(HardwareInputPrompts.None),
-            HardwareInput.StickButton => nameof(HardwareInputPrompts.StickButton),
-            HardwareInput.StickNorth => nameof(HardwareInputPrompts.StickNorth),
-            HardwareInput.StickWest => nameof(HardwareInputPrompts.StickWest),
-            HardwareInput.StickSouth => nameof(HardwareInputPrompts.StickSouth),
-            HardwareInput.StickEast => nameof(HardwareInputPrompts.StickEast),
-            HardwareInput.TrackpadButton => nameof(HardwareInputPrompts.TrackpadButton),
-            HardwareInput.TrackpadNorth => nameof(HardwareInputPrompts.TrackpadNorth),
-            HardwareInput.TrackpadWest => nameof(HardwareInputPrompts.TrackpadWest),
-            HardwareInput.TrackpadSouth => nameof(HardwareInputPrompts.TrackpadSouth),
-            HardwareInput.TrackpadEast => nameof(HardwareInputPrompts.TrackpadEast),
-            HardwareInput.FaceButtonNorth => nameof(HardwareInputPrompts.FaceButtonNorth),
-            HardwareInput.FaceButtonWest => nameof(HardwareInputPrompts.FaceButtonWest),
-            HardwareInput.FaceButtonSouth => nameof(HardwareInputPrompts.FaceButtonSouth),
-            HardwareInput.FaceButtonEast => nameof(HardwareInputPrompts.FaceButtonEast),
-            HardwareInput.SystemButtonNorth => nameof(HardwareInputPrompts.SystemButtonNorth),
-            HardwareInput.SystemButtonSouth => nameof(HardwareInputPrompts.SystemButtonSouth),
-            HardwareInput.TriggerPrimary => nameof(HardwareInputPrompts.TriggerPrimary),
-            HardwareInput.TriggerSecondary => nameof(HardwareInputPrompts.TriggerSecondary),
-            HardwareInput.GripTrigger => nameof(HardwareInputPrompts.GripTrigger),
-            HardwareInput.GripButton => nameof(HardwareInputPrompts.GripButton),
-            HardwareInput.OtherButton1 => nameof(HardwareInputPrompts.OtherButton1),
-            HardwareInput.OtherButton2 => nameof(HardwareInputPrompts.OtherButton2),
-            HardwareInput.OtherButton3 => nameof(HardwareInputPrompts.OtherButton3),
-            HardwareInput.OtherButton4 => nameof(HardwareInputPrompts.OtherButton4),
-            HardwareInput.OtherButton5 => nameof(HardwareInputPrompts.OtherButton5),
-            HardwareInput.OtherButton6 => nameof(HardwareInputPrompts.OtherButton6),
-            HardwareInput.OtherButton7 => nameof(HardwareInputPrompts.OtherButton7),
-            HardwareInput.OtherButton8 => nameof(HardwareInputPrompts.OtherButton8),
-            HardwareInput.OtherButton9 => nameof(HardwareInputPrompts.OtherButton9),
-            HardwareInput.OtherButton10 => nameof(HardwareInputPrompts.OtherButton10),
-            HardwareInput.OtherButton11 => nameof(HardwareInputPrompts.OtherButton11),
-            HardwareInput.OtherButton12 => nameof(HardwareInputPrompts.OtherButton12),
-            HardwareInput.OtherButton13 => nameof(HardwareInputPrompts.OtherButton13),
-            HardwareInput.OtherButton14 => nameof(HardwareInputPrompts.OtherButton14),
-            HardwareInput.OtherButton15 => nameof(HardwareInputPrompts.OtherButton15),
-            HardwareInput.OtherButton16 => nameof(HardwareInputPrompts.OtherButton16),
-            HardwareInput.Chord1 => nameof(HardwareInputPrompts.Chord1),
-            HardwareInput.Chord2 => nameof(HardwareInputPrompts.Chord2),
-            HardwareInput.Chord3 => nameof(HardwareInputPrompts.Chord3),
-            HardwareInput.Chord4 => nameof(HardwareInputPrompts.Chord4),
-            HardwareInput.Chord5 => nameof(HardwareInputPrompts.Chord5),
-            HardwareInput.Chord6 => nameof(HardwareInputPrompts.Chord6),
-            HardwareInput.Chord7 => nameof(HardwareInputPrompts.Chord7),
-            HardwareInput.Chord8 => nameof(HardwareInputPrompts.Chord8),
-            HardwareInput.Chord9 => nameof(HardwareInputPrompts.Chord9),
-            HardwareInput.Chord10 => nameof(HardwareInputPrompts.Chord10),
-            HardwareInput.Chord11 => nameof(HardwareInputPrompts.Chord11),
-            HardwareInput.Chord12 => nameof(HardwareInputPrompts.Chord12),
-            HardwareInput.Chord13 => nameof(HardwareInputPrompts.Chord13),
-            HardwareInput.Chord14 => nameof(HardwareInputPrompts.Chord14),
-            HardwareInput.Chord15 => nameof(HardwareInputPrompts.Chord15),
-            HardwareInput.Chord16 => nameof(HardwareInputPrompts.Chord16),
+            HardwareInputLeftRight.StickButton => nameof(HardwareInputPrompts.StickButton),
+            HardwareInputLeftRight.StickNorth => nameof(HardwareInputPrompts.StickNorth),
+            HardwareInputLeftRight.StickWest => nameof(HardwareInputPrompts.StickWest),
+            HardwareInputLeftRight.StickSouth => nameof(HardwareInputPrompts.StickSouth),
+            HardwareInputLeftRight.StickEast => nameof(HardwareInputPrompts.StickEast),
+            HardwareInputLeftRight.TrackpadButton => nameof(HardwareInputPrompts.TrackpadButton),
+            HardwareInputLeftRight.TrackpadNorth => nameof(HardwareInputPrompts.TrackpadNorth),
+            HardwareInputLeftRight.TrackpadWest => nameof(HardwareInputPrompts.TrackpadWest),
+            HardwareInputLeftRight.TrackpadSouth => nameof(HardwareInputPrompts.TrackpadSouth),
+            HardwareInputLeftRight.TrackpadEast => nameof(HardwareInputPrompts.TrackpadEast),
+            HardwareInputLeftRight.FaceButtonNorth => nameof(HardwareInputPrompts.FaceButtonNorth),
+            HardwareInputLeftRight.FaceButtonWest => nameof(HardwareInputPrompts.FaceButtonWest),
+            HardwareInputLeftRight.FaceButtonSouth => nameof(HardwareInputPrompts.FaceButtonSouth),
+            HardwareInputLeftRight.FaceButtonEast => nameof(HardwareInputPrompts.FaceButtonEast),
+            HardwareInputLeftRight.SystemButtonNorth => nameof(HardwareInputPrompts.SystemButtonNorth),
+            HardwareInputLeftRight.SystemButtonSouth => nameof(HardwareInputPrompts.SystemButtonSouth),
+            HardwareInputLeftRight.TriggerPrimary => nameof(HardwareInputPrompts.TriggerPrimary),
+            HardwareInputLeftRight.TriggerSecondary => nameof(HardwareInputPrompts.TriggerSecondary),
+            HardwareInputLeftRight.GripTrigger => nameof(HardwareInputPrompts.GripTrigger),
+            HardwareInputLeftRight.GripButton => nameof(HardwareInputPrompts.GripButton),
             _ => throw new ArgumentOutOfRangeException(nameof(hwi), hwi, null)
         };
         return promptName;
     }
+    public static string GetPromptNameForHardwareInputShared(HardwareInputShared hwi)
+    {
+        var promptName = hwi switch
+        {
+            HardwareInputShared.OtherButton1 => nameof(HardwareInputPrompts.OtherButton1),
+            HardwareInputShared.OtherButton2 => nameof(HardwareInputPrompts.OtherButton2),
+            HardwareInputShared.OtherButton3 => nameof(HardwareInputPrompts.OtherButton3),
+            HardwareInputShared.OtherButton4 => nameof(HardwareInputPrompts.OtherButton4),
+            HardwareInputShared.OtherButton5 => nameof(HardwareInputPrompts.OtherButton5),
+            HardwareInputShared.OtherButton6 => nameof(HardwareInputPrompts.OtherButton6),
+            HardwareInputShared.OtherButton7 => nameof(HardwareInputPrompts.OtherButton7),
+            HardwareInputShared.OtherButton8 => nameof(HardwareInputPrompts.OtherButton8),
+            HardwareInputShared.OtherButton9 => nameof(HardwareInputPrompts.OtherButton9),
+            HardwareInputShared.OtherButton10 => nameof(HardwareInputPrompts.OtherButton10),
+            HardwareInputShared.OtherButton11 => nameof(HardwareInputPrompts.OtherButton11),
+            HardwareInputShared.OtherButton12 => nameof(HardwareInputPrompts.OtherButton12),
+            HardwareInputShared.OtherButton13 => nameof(HardwareInputPrompts.OtherButton13),
+            HardwareInputShared.OtherButton14 => nameof(HardwareInputPrompts.OtherButton14),
+            HardwareInputShared.OtherButton15 => nameof(HardwareInputPrompts.OtherButton15),
+            HardwareInputShared.OtherButton16 => nameof(HardwareInputPrompts.OtherButton16),
+            HardwareInputShared.Chord1 => nameof(HardwareInputPrompts.Chord1),
+            HardwareInputShared.Chord2 => nameof(HardwareInputPrompts.Chord2),
+            HardwareInputShared.Chord3 => nameof(HardwareInputPrompts.Chord3),
+            HardwareInputShared.Chord4 => nameof(HardwareInputPrompts.Chord4),
+            HardwareInputShared.Chord5 => nameof(HardwareInputPrompts.Chord5),
+            HardwareInputShared.Chord6 => nameof(HardwareInputPrompts.Chord6),
+            HardwareInputShared.Chord7 => nameof(HardwareInputPrompts.Chord7),
+            HardwareInputShared.Chord8 => nameof(HardwareInputPrompts.Chord8),
+            HardwareInputShared.Chord9 => nameof(HardwareInputPrompts.Chord9),
+            HardwareInputShared.Chord10 => nameof(HardwareInputPrompts.Chord10),
+            HardwareInputShared.Chord11 => nameof(HardwareInputPrompts.Chord11),
+            HardwareInputShared.Chord12 => nameof(HardwareInputPrompts.Chord12),
+            HardwareInputShared.Chord13 => nameof(HardwareInputPrompts.Chord13),
+            HardwareInputShared.Chord14 => nameof(HardwareInputPrompts.Chord14),
+            HardwareInputShared.Chord15 => nameof(HardwareInputPrompts.Chord15),
+            HardwareInputShared.Chord16 => nameof(HardwareInputPrompts.Chord16),
+            _ => throw new ArgumentOutOfRangeException(nameof(hwi), hwi, null)
+        };
+        return promptName;
+    }
+    
+    #endregion
 }

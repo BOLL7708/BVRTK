@@ -50,6 +50,21 @@ Keyboard Sim
 ------------
 This will replicate functionality in OpenVR2Key.
 
+Instead of the old interface that showed all inputs that could be mapped to a key combination, this version will be simplified.
+1. Add always on mappings that are active regardless of the running title.
+2. Add game specific mappings that are only active when that game is running.
+The above are two lists that start out empty, but that you can add entries to, and that is how you register mappings. It should be less overwhelming compared to the old application.
+
+The registration should happen through a modal dialog, that lets you build a mapping, then the mapping is stored as an encoded string.
+
+Required values for a mapping:
+* InputName
+* KeyCode
+* Modifier Keys
+
+InputName and KeyCode are fixed string values, they are exact matches.
+* Input names are what you see in the bindings editor in SteamVR, there will be default bindings for popular controllers.
+* Key codes are generated from the SharpHook key list, and currently all possible values are included, with predefined sorting: F-keys, numbers, characters, the rest. 
 Mouse Sim
 ---------
 My personal motivation for this feature is:

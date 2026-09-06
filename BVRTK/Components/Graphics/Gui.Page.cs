@@ -6,7 +6,7 @@ namespace BVRTK.Components.Graphics;
 
 public static partial class Gui
 {
-    private static readonly HashSet<int> _restoredSections = [];
+    private static readonly HashSet<int> RestoredSectionsInPage = [];
     
     private static void RenderPage()
     {
@@ -29,7 +29,7 @@ public static partial class Gui
 
         ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, Constants.GuiTabRounding);
         Settings.Current.Application.CurrentPageInSection.TryGetValue(sectionIndex, out var selectedTab);
-        var alreadyRestored = _restoredSections.Contains(sectionIndex);
+        var alreadyRestored = RestoredSectionsInPage.Contains(sectionIndex);
         
         foreach (var page in section.Pages)
         {
@@ -61,7 +61,7 @@ public static partial class Gui
 
                 if (alreadyRestored)
                 {
-                    // Store that this tab was selected, helps with color states.
+                    // Store that this tab was selected
                     Settings.Current.Application.InternalCurrentPageInSectionSet(sectionIndex, i);
                 }
                 
@@ -90,7 +90,7 @@ public static partial class Gui
             i++;
         }
 
-        _restoredSections.Add(sectionIndex);
+        RestoredSectionsInPage.Add(sectionIndex);
         ImGui.PopStyleVar();
         ImGui.EndTabBar();
         ImGui.PopStyleColor(3);
