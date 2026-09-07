@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,8 +20,7 @@ public class SettingsGenerator : IIncrementalGenerator
             {
                 var fields = classSymbol
                     .GetMembers()
-                    .OfType<IFieldSymbol>()
-                    .Where(f => !f.IsImplicitlyDeclared); // Will avoid auto-created backing fields so we can discretely use private properties as non-settings GUI generators.
+                    .OfType<IPropertySymbol>();
                 var fieldsArr = fields.ToArray();
                 GenerateSettingsHandlers(ctx, classSymbol, fieldsArr);
                 GenerateSettingsProps(ctx, classSymbol, fieldsArr);
@@ -30,23 +28,24 @@ public class SettingsGenerator : IIncrementalGenerator
         );
     }
 
-    private void GenerateSettingsHandlers(SourceProductionContext ctx, INamedTypeSymbol classSymbol, IFieldSymbol[] fields)
+    private void GenerateSettingsHandlers(SourceProductionContext ctx, INamedTypeSymbol classSymbol, IPropertySymbol[] properties)
     {
         var sb = new StringBuilder();
         sb.AppendLine("namespace BVRTK.Data;");
         sb.AppendLine($"public static partial class SettingsChangeHandlers");
         sb.AppendLine("{");
-        foreach (var field in fields)
+        foreach (var prop in properties)
         {
-            var propName = GeneratorUtils.GetPropName(field);
-            if (propName == null) continue;
+            var fieldName = GeneratorUtils.GetFieldName(prop);
+            if (fieldName == null) continue;
 
-            var typeName = field.Type.ToDisplayString();
-            // TODO: Add log handler 
+            var typeName = prop.Type.ToDisplayString();
+            // TODO: Add log handler
+
             sb.AppendLine($$"""
                                 #nullable enable
-                                public static event ValueChangeHandler<{{typeName}}>? On{{classSymbol.Name}}{{propName}}Changed;
-                                internal static void Notify{{classSymbol.Name}}{{propName}}Changed({{typeName}} current, {{typeName}} previous) => On{{classSymbol.Name}}{{propName}}Changed?.Invoke(current, previous);  
+                                public static event ValueChangeHandler<{{typeName}}>? On{{classSymbol.Name}}{{prop.Name}}Changed;
+                                internal static void Notify{{classSymbol.Name}}{{prop.Name}}Changed({{typeName}} newValue) => On{{classSymbol.Name}}{{prop.Name}}Changed?.Invoke(newValue);  
                             """);
         }
 
@@ -54,7 +53,7 @@ public class SettingsGenerator : IIncrementalGenerator
         ctx.AddSource($"{classSymbol.ContainingNamespace}.SettingsChangeHandler.{classSymbol.Name}.g.cs", sb.ToString());
     }
 
-    private void GenerateSettingsProps(SourceProductionContext ctx, INamedTypeSymbol classSymbol, IFieldSymbol[] fields)
+    private void GenerateSettingsProps(SourceProductionContext ctx, INamedTypeSymbol classSymbol, IPropertySymbol[] properties)
     {
         var sb = new StringBuilder();
         sb.AppendLine("namespace BVRTK.Data.Setting;");
@@ -62,31 +61,19 @@ public class SettingsGenerator : IIncrementalGenerator
         sb.AppendLine("using System.Collections.Generic;");
         sb.AppendLine($"public partial class {classSymbol.Name} : AbstractSetting");
         sb.AppendLine("{");
-        foreach (var field in fields)
+        foreach (var prop in properties)
         {
-            var propName = GeneratorUtils.GetPropName(field);
-            if (propName == null) continue;
+            var fieldName = GeneratorUtils.GetFieldName(prop);
+            if (fieldName == null) continue;
 
-            var typeName = field.Type.ToDisplayString();
+            var typeName = prop.Type.ToDisplayString();
             // TODO: Add log handler 
-            sb.AppendLine($$"""
-                                public partial {{typeName}} {{propName}}
-                                {
-                                    get => {{field.Name}};
-                                    set
-                                    {
-                                        if (!EqualityComparer<{{typeName}}>.Default.Equals({{field.Name}}, value)) 
-                                        {
-                                            Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{propName}}Changed(value, {{field.Name}});
-                                            {{field.Name}} = value;
-                                            InternalDirty = true;
-                                            Console.WriteLine("[{{typeName}}] {{propName}} updated, dirty state set.");
-                                        }
-                                        // TODO: Add log handler here to report failure to set.
-                                    }
-                                }
-                            """);
-            if (typeName.Contains("Dictionary"))
+
+//             sb.AppendLine($$"""
+//                                 private {{typeName}} {{fieldName}} = {{GetDefaultFor(prop, typeName)}}; 
+//                             """);
+
+            if (typeName.Contains("ImmutableDictionary"))
             {
                 var typePair = GeneratorUtils.GetTypeGenericPair(typeName);
                 if (typePair == null) continue;
@@ -94,18 +81,77 @@ public class SettingsGenerator : IIncrementalGenerator
                 var keyType = typePair.Value.Key;
                 var valueType = typePair.Value.Value;
                 sb.AppendLine($$"""
-                                     public void Internal{{propName}}Set({{keyType}} key, {{valueType}} value)
+                                    /// Generated Dictionary Setter for {{prop.Name}}
+                                    internal void Internal{{prop.Name}}Set({{keyType}} key, {{valueType}} value)
+                                    {
+                                        if (!{{prop.Name}}.TryGetValue(key, out var existing)
+                                            || !EqualityComparer<{{valueType}}>.Default.Equals(existing, value))
+                                        {
+                                            {{prop.Name}} = {{prop.Name}}.SetItem(key, value);
+                                            InternalDirty = true;
+                                            Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                            Console.WriteLine("Key [{{keyType}}] in [{{typeName}}] {{prop.Name}} updated with [{{valueType}}], dirty state set.");
+                                        }
+                                     }
+                                     
+                                     /// Generated Dictionary Remover for {{prop.Name}}
+                                     internal void Internal{{prop.Name}}Remove({{keyType}} key)
                                      {
-                                          if (!{{propName}}.TryGetValue(key, out var existing)
-                                              || !EqualityComparer<{{valueType}}>.Default.Equals(existing, value))
-                                          {
-                                              {{propName}}[key] = value;
-                                              InternalDirty = true;
-                                              Console.WriteLine("Key [{{keyType}}] in [{{typeName}}] {{propName}} updated with [{{valueType}}], dirty state set.");
-                                          }
+                                         if ({{prop.Name}}.TryGetValue(key, out var existing))
+                                         {
+                                             {{prop.Name}} = {{prop.Name}}.Remove(key);
+                                             InternalDirty = true;
+                                             Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                             Console.WriteLine("Key [{{keyType}}] in [{{typeName}}] {{prop.Name}} updated with [{{valueType}}], dirty state set.");
+                                         }
                                       }
-                                 """);
-                
+                                """);
+            }
+            else if (typeName.Contains("ImmutableList"))
+            {
+                var valueType = GeneratorUtils.GetTypeSingleGeneric(typeName);
+                if (valueType == null) continue;
+
+                sb.AppendLine($$"""
+                                    /// Generated List Adder for {{prop.Name}}
+                                    internal void Internal{{prop.Name}}Add({{valueType}} value)
+                                    {
+                                        // TODO: Should check if the item already exists to not add a duplicate.
+                                        
+                                        {{prop.Name}} = {{prop.Name}}.Add(value);
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine($"[{{typeName}}] {{prop.Name}} item added, dirty state set.");
+                                    }
+                                    
+                                    /// Generated List Remover for {{prop.Name}}
+                                    internal void Internal{{prop.Name}}Remove({{valueType}} value)
+                                    {
+                                        // TODO: Should check if the item exists before we try to remove it.
+                                        
+                                        {{prop.Name}} = {{prop.Name}}.Remove(value);
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine($"[{{typeName}}] {{prop.Name}} item removed, dirty state set.");
+                                    }                 
+                                """);
+            }
+            else
+            {
+                sb.AppendLine($$"""
+                                    /// Generated Value Setter for {{prop.Name}}
+                                    internal void Internal{{prop.Name}}Set({{typeName}} value)
+                                    {
+                                        if (!EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, value)) 
+                                        {
+                                            {{prop.Name}} = value;
+                                            InternalDirty = true;
+                                            Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                            Console.WriteLine("[{{typeName}}] {{prop.Name}} updated, dirty state set.");
+                                        }
+                                        // TODO: Add log handler here to report failure to set.
+                                    }
+                                """);
             }
         }
 

@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using BVRTKCG.Attributes;
 
 namespace BVRTK.Data.Setting;
@@ -7,35 +7,28 @@ namespace BVRTK.Data.Setting;
 public partial class Application
 {
     [GuiCheckbox("Launch with SteamVR", "Will register the application to automatically launch with SteamVR.")]
-    private bool _launchWithSteamVr = true;
-    public partial bool LaunchWithSteamVr { get; set; }
+    public bool LaunchWithSteamVr { get; set; } = true;
 
     [GuiCheckbox("Enable interface gradient", "Will render a gradient that shades the entire app, can be disabled for a flatter look, originally a test setting.")]
-    private bool _enableInterfaceGradient = true;
-    public partial bool EnableInterfaceGradient { get; set; }
+    public bool EnableInterfaceGradient { get; set; } = true;
 
     [GuiCheckbox("Show desktop window on launch", "Will show a mirror of the overlay on the desktop when the application launches.")]
-    private bool _showDesktopWindowOnLaunch = true;
-    public partial bool ShowDesktopWindowOnLaunch { get; set; }
+    public bool ShowDesktopWindowOnLaunch { get; set; } = true;
 
     [GuiCombo("Language", "Set the language of the application.", 256f, nameof(Constants) + "." + nameof(Constants.SupportedLanguageGuiTags))]
-    private string _language = Constants.SystemDefaultLanguage;
-    public partial string Language { get; set; }
-    
+    public string Language { get; set; } = Constants.SystemDefaultLanguage;
+
     #region Quick settings in sidebar
 
-    private bool _showTooltips = true;
-    public partial bool ShowTooltips { get; set; }
-    
+    public bool ShowTooltips { get; set; } = true;
+
     #endregion
 
     #region Invisible dynamically updated values
-    
-    private int _currentSection = 0;
-    public partial int CurrentSection { get; set; }
 
-    private ConcurrentDictionary<int, int> _currentPageInSection = new();
-    public partial ConcurrentDictionary<int, int> CurrentPageInSection { get; set; }
+    public int CurrentSection { get; set; } = 0;
+
+    public ImmutableDictionary<int, int> CurrentPageInSection { get; set; } = [];
 
     #endregion
 

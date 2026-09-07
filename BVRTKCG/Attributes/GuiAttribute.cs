@@ -4,14 +4,14 @@ namespace BVRTKCG.Attributes;
 
 #region Input
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiCheckboxAttribute(string label, string tooltip) : Attribute
 {
     public string Label = label;
     public string Tooltip = tooltip;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiFloatSliderAttribute(string label, string tooltip, float min, float max, string format) : Attribute
 {
     public string Label = label;
@@ -21,7 +21,7 @@ public class GuiFloatSliderAttribute(string label, string tooltip, float min, fl
     public string Format = format;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiIntSliderAttribute(string label, string tooltip, int min, int max) : Attribute
 {
     public string Label = label;
@@ -30,7 +30,7 @@ public class GuiIntSliderAttribute(string label, string tooltip, int min, int ma
     public int Max = max;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiIntAttribute(string label, string tooltip, float width, int step) : Attribute
 {
     public string Label = label;
@@ -39,7 +39,7 @@ public class GuiIntAttribute(string label, string tooltip, float width, int step
     public int Step = step;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiIntModalAttribute(string label, string tooltip, float width, int step, string modalTitle) : Attribute
 {
     public string Label = label;
@@ -49,7 +49,7 @@ public class GuiIntModalAttribute(string label, string tooltip, float width, int
     public string ModalTitle = modalTitle;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiStringModalAttribute(string label, string tooltip, float width, uint maxLength, string modalTitle) : Attribute
 {
     public string Label = label;
@@ -66,7 +66,7 @@ public class GuiStringModalAttribute(string label, string tooltip, float width, 
 /// <param name="tooltip"></param>
 /// <param name="width"></param>
 /// <param name="valuesConstantPath">The path to a readonly value that represents a string array.</param>
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiComboAttribute(string label, string tooltip, float width, string valuesConstantPath) : Attribute
 {
     public string Label = label;
@@ -75,7 +75,7 @@ public class GuiComboAttribute(string label, string tooltip, float width, string
     public string ValuesConstantPath = valuesConstantPath;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiTextAttribute(string label, string tooltip) : Attribute
 {
     public string Label = label;
@@ -86,14 +86,14 @@ public class GuiTextAttribute(string label, string tooltip) : Attribute
 
 #region Text
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiTitleAttribute(string label, string tooltip) : Attribute
 {
     public string Label = label;
     public string Tooltip = tooltip;
 }
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiLabelAttribute(string label, bool sameLine) : Attribute
 {
     public string Label = label;
@@ -102,7 +102,7 @@ public class GuiLabelAttribute(string label, bool sameLine) : Attribute
 
 #endregion
 
-[AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
 public class GuiSameLine() : Attribute
 {
 }

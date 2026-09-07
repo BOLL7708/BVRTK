@@ -4,7 +4,6 @@ using BVRTK.Components.Server;
 using BVRTK.Resources;
 using EasyOpenVR;
 using EasyOpenVR.Data.Manifest;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Valve.VR;
 
 namespace BVRTK;
@@ -73,26 +72,27 @@ public static class Services
                     string[] prefixNames = [nameof(GeneralPrompts.Left), nameof(GeneralPrompts.Right)];
                     foreach (var prefixName in prefixNames)
                     {
-                        foreach (var hwilr in hwInputsLr)
+                        foreach (var hardwareInputLeftRight in hwInputsLr)
                         {
-                            var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputLeftRight(hwilr);
-                            var name = Enum.GetName(hwilr);
+                            var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputLeftRight(hardwareInputLeftRight);
+                            var name = Enum.GetName(hardwareInputLeftRight);
                             if (string.IsNullOrWhiteSpace(name)) continue;
+                            var prefixedName = $"{prefixName}_{name}".ToLowerInvariant(); 
                             var action = set.AddAction(
-                                $"{prefixName}_{name}",
+                                prefixedName,
                                 requirement: ActionRequirement.Optional,
                                 configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName); });
                             
                             // Register the actions for display in the GUI
-                            Session.GuiActionEntries.Add(new ActionGuiEntry(action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName)));
+                            Session.GuiActionEntries.Add(new ActionGuiEntry(prefixedName, action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName)));
                         }
                     }
 
                     var hwInputsShared = Enum.GetValues<HardwareInputShared>();
-                    foreach (var hwis in hwInputsShared)
+                    foreach (var hardwareInputShared in hwInputsShared)
                     {
-                        var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputShared(hwis);
-                        var name = Enum.GetName(hwis);
+                        var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputShared(hardwareInputShared);
+                        var name = Enum.GetName(hardwareInputShared)?.ToLowerInvariant();
                         if (string.IsNullOrWhiteSpace(name)) continue;
                         var action = set.AddAction(
                             name,
@@ -100,7 +100,7 @@ public static class Services
                             configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName); });
                         
                         // Register the actions for display in the GUI
-                        Session.GuiActionEntries.Add(new ActionGuiEntry(action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName)));
+                        Session.GuiActionEntries.Add(new ActionGuiEntry(name, action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName)));
                     }
                 });
         

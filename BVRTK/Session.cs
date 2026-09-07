@@ -1,4 +1,3 @@
-using System.Numerics;
 using BVRTK.Components.Graphics;
 using Hexa.NET.ImGui;
 
@@ -37,8 +36,10 @@ public static class Session
     public static readonly List<ActionGuiEntry> GuiActionEntries = [];
 }
 
-public class ActionGuiEntry(string path, Func<string> prompt)
+public class ActionGuiEntry(string name, string path, Func<string> prompt)
 {
+    public string Name = name;
     public string Path = path;
     public Func<string> Prompt = prompt;
+    public string Tag => $"{prompt()}##{name}";
 }

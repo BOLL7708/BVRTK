@@ -118,25 +118,38 @@ public static class GuiUtils
     }
 
     #region Modals
-        
+
     private static readonly Dictionary<string, object?> ModalDialogValues = new();
 
     /// Render optional interface and a button to open the modal.
-    public static void OpenModal<T>(string tag, string button, Action<T>? renderGui, T startValue)
+    public static void OpenModal<T>(
+        string tag,
+        string button,
+        Action<T>? renderGui,
+        T startValue
+    )
     {
         ImGui.BeginChild(tag + "Child", ImGuiChildFlags.AutoResizeY);
-        if(renderGui != null)
+        if (renderGui != null)
         {
             renderGui(startValue);
             ImGui.SameLine();
         }
+
         var open = ImGui.Button(button);
         ImGui.EndChild();
         if (open) ImGui.OpenPopup(tag);
     }
 
     // The modal itself: renders a custom interface and outputs the result.
-    public static void DrawModal<T>(string tag, Func<T, T> renderDialogGui, T startValue, Action<T> updateSetting)
+    public static void DrawModal<T>(
+        string tag,
+        string okButtonLabel,
+        string cancelButtonLabel,
+        Func<T, T> renderDialogGui,
+        T startValue,
+        Action<T> updateSetting
+    )
     {
         var vp = ImGui.GetMainViewport();
         var center = vp.Pos + vp.Size * 0.5f;
@@ -160,7 +173,7 @@ public static class GuiUtils
             var popupWidth = ImGui.GetContentRegionAvail().X;
 
             var enter = ImGui.IsKeyPressed(ImGuiKey.Enter) || ImGui.IsKeyPressed(ImGuiKey.KeypadEnter);
-            if (ImGui.Button("Apply", buttonSize) || enter)
+            if (ImGui.Button(okButtonLabel, buttonSize) || enter)
             {
                 updateSetting(temp);
                 ImGui.CloseCurrentPopup();
@@ -169,7 +182,7 @@ public static class GuiUtils
             ImGui.SameLine();
             ImGui.SetCursorPosX(popupWidth - buttonSize.X + Constants.GuiItemSpacing.X);
             var escape = ImGui.IsKeyPressed(ImGuiKey.Escape);
-            if (ImGui.Button("Cancel", buttonSize) || escape) ImGui.CloseCurrentPopup();
+            if (ImGui.Button(cancelButtonLabel, buttonSize) || escape) ImGui.CloseCurrentPopup();
 
             ImGui.PopStyleColor();
             ImGui.EndPopup();
@@ -178,58 +191,62 @@ public static class GuiUtils
         ImGui.PopStyleVar();
         ImGui.PopStyleColor(2);
     }
-    
+
     public static void DoModal<T>(
         string tag,
-        string button,
+        string launchButtonLabel,
+        string okButtonLabel,
+        string cancelButtonLabel,
+        T startValue,
         Action<T> renderGui,
         Func<T, T> renderDialogGui,
-        T startValue,
         Action<T> updateSetting)
     {
-        OpenModal(tag, button, renderGui, startValue);
-        DrawModal(tag, renderDialogGui, startValue, updateSetting);
+        OpenModal(tag, launchButtonLabel, renderGui, startValue);
+        DrawModal(tag, okButtonLabel, cancelButtonLabel, renderDialogGui, startValue, updateSetting);
     }
-    
+
     public static void DoModalForInt(string tag, string label, string button, float size, int startValue, Action<int> updateSetting)
     {
-        DoModal(tag, button, 
-        value =>
-        {
-            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-            ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.ReadOnly);
-        }, 
-        value =>
-        {
-            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-            ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.CharsDecimal);
-            return value;
-        }, startValue, updateSetting);
+        DoModal(tag, button, "Apply", "Cancel", startValue,
+            value =>
+            {
+                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.ReadOnly);
+            },
+            value =>
+            {
+                if (ImGui.IsWindowAppearing()) ImGui.SetKeyboardFocusHere(0);
+                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.CharsDecimal);
+                return value;
+            }, updateSetting);
     }
-    
+
     public static void DoModalForString(string tag, string label, string button, float size, string startValue, uint maxLength, Action<string> updateSetting)
     {
-        DoModal(tag, button, 
-        value =>
-        {
-            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-            ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.ReadOnly);
-        }, 
-        value =>
-        {
-            ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
-            ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.None);
-            return value;
-        }, startValue, updateSetting);
+        DoModal(tag, button, "Apply", "Cancel", startValue,
+            value =>
+            {
+                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.ReadOnly);
+            },
+            value =>
+            {
+                if (ImGui.IsWindowAppearing()) ImGui.SetKeyboardFocusHere(0);
+                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.None);
+                return value;
+            }, updateSetting);
     }
-    
+
     #endregion
-    
+
     public static void DrawTooltip(string message)
     {
         if (
-            !Settings.Current.Application.ShowTooltips 
-            || !ImGui.IsItemHovered() 
+            !Settings.Current.Application.ShowTooltips
+            || !ImGui.IsItemHovered()
             || string.IsNullOrWhiteSpace(message)
         ) return;
 
@@ -285,15 +302,15 @@ public static class GuiUtils
         _tagSerial++;
         return $"##{tag}{_tagSerial}";
     }
-    
-    public static int GetIndexOfTagInLabels(string[] labels, string tag) {
-        
+
+    public static int GetIndexOfTagInLabels(string[] labels, string tag)
+    {
         return Array.FindIndex(labels, label => GetTagFromLabel(label) == tag);
     }
 
     public static string GetTagFromLabel(string label)
     {
-        return label.Split("##", StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries).Last();
+        return label.Split("##", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
     }
 
     #region System

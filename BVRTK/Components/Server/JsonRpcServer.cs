@@ -42,20 +42,20 @@ public class JsonRpcServer
                 ], false, sessionId, ESourceServer.Websocket);
             }
         };
-        
-        SettingsChangeHandlers.OnServerPortChanged += async (current, previous) =>
+
+        SettingsChangeHandlers.OnServerPortChanged += async (port) =>
         {
-            _usedPort = current;
-            _websocketServer.SetValues(current);
-            if(Settings.Current.Server.Enabled) await _websocketServer.StartOrRestart();
+            _usedPort = port;
+            _websocketServer.SetValues(port);
+            if (Settings.Current.Server.Enabled) await _websocketServer.StartOrRestart();
         };
 
-        SettingsChangeHandlers.OnServerEnabledChanged += async (enabled, _) =>
+        SettingsChangeHandlers.OnServerEnabledChanged += async (enabled) =>
         {
             if (enabled) await Start();
             else await Stop();
         };
-        
+
         #endregion
 
         #region NamedPipe

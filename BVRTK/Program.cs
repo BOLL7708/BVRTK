@@ -19,6 +19,7 @@ class Program
         #region Settings & Version
 
         Settings.ReadFromDisk();
+
         // Console.WriteLine($"Port from disk: {Settings.Current.Server.Port}");
         // Settings.ResetToDefaults(typeof(Server));
         // Console.WriteLine($"Port after reset: {Settings.Current.Server.Port}");
@@ -34,9 +35,9 @@ class Program
         }
 
         #endregion
-        
+
         var server = Services.Server; // Lazy initialization means we need to access it to launch it
-        
+
         // TODO: Setup Serilog
 
         var vr = Services.Vr;
@@ -46,13 +47,15 @@ class Program
         #region GUI
 
         // Updates the application language when it has changed.
-        void SetLanguage(string language, string oldLanguage = "unused")
+        void SetLanguage(string language)
         {
             CultureInfo.CurrentUICulture = Constants.SupportedLanguages.GetValueOrDefault(language, CultureInfo.InvariantCulture);
         }
 
         SetLanguage(Settings.Current.Application.Language);
         SettingsChangeHandlers.OnApplicationLanguageChanged += SetLanguage;
+
+        SettingsChangeHandlers.OnKeyboardSimulatorEntriesGeneralChanged += newValue => Console.WriteLine($"EntriesGeneral was updated: {newValue.ToArray()}");
 
         #endregion
 
@@ -155,7 +158,7 @@ class Program
                 };
 
                 vr.System.SetAutoLaunch(Constants.SystemApplicationKey, Settings.Current.Application.LaunchWithSteamVr);
-                SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (current, _) => { vr.System.SetAutoLaunch(Constants.SystemApplicationKey, current); };
+                SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (autoLaunch) => { vr.System.SetAutoLaunch(Constants.SystemApplicationKey, autoLaunch); };
 
                 Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
                 guiTask = Task.Run(() => Services.GuiBackend.Run(mainHandle), Session.ProgramCts.Token);

@@ -23,9 +23,23 @@ public static class GeneratorUtils
                 : null
             );
     }
+    
+    /// <summary>
+    /// Parse out a single generic type from a collection (e.g., List<T>)
+    /// </summary>
+    /// <param name="collectionType"></param>
+    /// <returns></returns>
+    public static string? GetTypeSingleGeneric(string collectionType)
+    {
+        var start = collectionType.IndexOf('<');
+        var end = collectionType.LastIndexOf('>'); // Use LastIndexOf to support nested generics
+        if (start < 0 || end <= start) return null;
+
+        return collectionType.Substring(start + 1, end - start - 1).Trim();
+    }
 
     /// <summary>
-    /// Parse out generic types of a collection that has two generics (key, value)
+    /// Parse out generic types of a collection that has two generics (e.g. Dictionary<X, Y>)
     /// </summary>
     /// <param name="collectionType"></param>
     /// <returns></returns>

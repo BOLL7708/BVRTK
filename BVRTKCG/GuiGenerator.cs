@@ -1,8 +1,6 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using BVRTKCG.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static BVRTKCG.GeneratorUtils;
@@ -46,10 +44,10 @@ public class GuiGenerator : IIncrementalGenerator
     {
         var checkboxes = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiCheckboxAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Checkbox);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.Checkbox);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -58,10 +56,10 @@ public class GuiGenerator : IIncrementalGenerator
 
         var floatSliders = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiFloatSliderAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.FloatSlider);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.FloatSlider);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -74,10 +72,10 @@ public class GuiGenerator : IIncrementalGenerator
         
         var intSliders = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiIntSliderAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.IntSlider);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.IntSlider);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -89,10 +87,10 @@ public class GuiGenerator : IIncrementalGenerator
 
         var ints = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiIntAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Int);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.Int);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -104,10 +102,10 @@ public class GuiGenerator : IIncrementalGenerator
         
         var intModals = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiIntModalAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.IntModal);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.IntModal);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -120,10 +118,10 @@ public class GuiGenerator : IIncrementalGenerator
         
         var stringModals = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiStringModalAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.IntModal);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.IntModal);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -136,10 +134,10 @@ public class GuiGenerator : IIncrementalGenerator
 
         var combos = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiComboAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Combo);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.Combo);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -153,10 +151,10 @@ public class GuiGenerator : IIncrementalGenerator
 
         var titles = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiTitleAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Title);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.Title);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.Tooltip = StringArg(a, 1);
@@ -166,10 +164,10 @@ public class GuiGenerator : IIncrementalGenerator
 
         var labels = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiLabelAttribute",
-            static (n, _) => n is VariableDeclaratorSyntax,
+            static (n, _) => n is PropertyDeclarationSyntax,
             static (ctx, _) =>
             {
-                var e = GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.Label);
+                var e = GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.Label);
                 var a = ctx.Attributes[0];
                 e.Label = StringArg(a, 0);
                 e.SameLine = BoolArg(a, 1);
@@ -179,8 +177,8 @@ public class GuiGenerator : IIncrementalGenerator
 
         var sameLines = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiSameLine",
-            static (n, _) => n is VariableDeclaratorSyntax, static (ctx, _)
-                => GuiElementFactory.FromField((IFieldSymbol)ctx.TargetSymbol, GuiElementKind.SameLine));
+            static (n, _) => n is PropertyDeclarationSyntax, static (ctx, _)
+                => GuiElementFactory.FromProperty((IPropertySymbol)ctx.TargetSymbol, GuiElementKind.SameLine));
 
         var debugs = context.SyntaxProvider.ForAttributeWithMetadataName(
             "BVRTKCG.Attributes.GuiDebugAttribute",
