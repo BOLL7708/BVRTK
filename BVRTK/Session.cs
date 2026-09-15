@@ -38,8 +38,8 @@ public static class Session
 
 public class ActionGuiEntry(string name, string path, Func<string> prompt)
 {
-    public string Name = name;
-    public string Path = path;
-    public Func<string> Prompt = prompt;
-    public string Tag => $"{prompt()}##{name}";
+    public readonly string Name = name;
+    public readonly string Path = path;
+    public readonly Func<string> Prompt = prompt;
+    public string Tag => $"{Prompt()}##{Name}";
 }

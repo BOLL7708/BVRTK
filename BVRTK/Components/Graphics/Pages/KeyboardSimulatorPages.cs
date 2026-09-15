@@ -21,7 +21,7 @@ public static class KeyboardSimulatorPages
             RenderDialog,
             (value) =>
             {
-                Settings.Current.KeyboardSimulator.InternalEntriesGeneralAdd(value);
+                Settings.Current.KeyboardSimulator.AddToEntriesGeneral(value);
             }
         );
         

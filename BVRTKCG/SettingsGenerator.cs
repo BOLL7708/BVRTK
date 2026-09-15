@@ -82,7 +82,7 @@ public class SettingsGenerator : IIncrementalGenerator
                 var valueType = typePair.Value.Value;
                 sb.AppendLine($$"""
                                     /// Generated Dictionary Setter for {{prop.Name}}
-                                    internal void Internal{{prop.Name}}Set({{keyType}} key, {{valueType}} value)
+                                    internal void SetIn{{prop.Name}}({{keyType}} key, {{valueType}} value)
                                     {
                                         if (!{{prop.Name}}.TryGetValue(key, out var existing)
                                             || !EqualityComparer<{{valueType}}>.Default.Equals(existing, value))
@@ -95,7 +95,7 @@ public class SettingsGenerator : IIncrementalGenerator
                                      }
                                      
                                      /// Generated Dictionary Remover for {{prop.Name}}
-                                     internal void Internal{{prop.Name}}Remove({{keyType}} key)
+                                     internal void RemoveFrom{{prop.Name}}({{keyType}} key)
                                      {
                                          if ({{prop.Name}}.TryGetValue(key, out var existing))
                                          {
@@ -114,7 +114,7 @@ public class SettingsGenerator : IIncrementalGenerator
 
                 sb.AppendLine($$"""
                                     /// Generated List Adder for {{prop.Name}}
-                                    internal void Internal{{prop.Name}}Add({{valueType}} value)
+                                    internal void AddTo{{prop.Name}}({{valueType}} value)
                                     {
                                         // TODO: Should check if the item already exists to not add a duplicate.
                                         
@@ -125,7 +125,7 @@ public class SettingsGenerator : IIncrementalGenerator
                                     }
                                     
                                     /// Generated List Remover for {{prop.Name}}
-                                    internal void Internal{{prop.Name}}Remove({{valueType}} value)
+                                    internal void RemoveFrom{{prop.Name}}({{valueType}} value)
                                     {
                                         // TODO: Should check if the item exists before we try to remove it.
                                         
@@ -140,7 +140,7 @@ public class SettingsGenerator : IIncrementalGenerator
             {
                 sb.AppendLine($$"""
                                     /// Generated Value Setter for {{prop.Name}}
-                                    internal void Internal{{prop.Name}}Set({{typeName}} value)
+                                    internal void Set{{prop.Name}}({{typeName}} value)
                                     {
                                         if (!EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, value)) 
                                         {

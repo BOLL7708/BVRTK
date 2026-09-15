@@ -182,7 +182,7 @@ class Program
         }
 
         Settings.WriteToDisk();
-        Services.Server.Stop();
+        await Services.Server.Stop();
         Services.GuiBackend.Terminate(); // Will trigger HasTerminated when done, which in turn finishes the shutdown for SteamVR.
         await guiTask; // We wait for that task to finish or else the GuiBackend doesn't have time to finish the termination event.
     }

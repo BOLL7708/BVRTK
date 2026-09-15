@@ -62,7 +62,7 @@ public static partial class Gui
                 if (alreadyRestored)
                 {
                     // Store that this tab was selected
-                    Settings.Current.Application.InternalCurrentPageInSectionSet(sectionIndex, i);
+                    Settings.Current.Application.SetInCurrentPageInSection(sectionIndex, i);
                 }
                 
                 // Also skip the automatic spacing below the custom line.

@@ -54,7 +54,7 @@ public static partial class Gui
             if (ImGui.IsItemActivated())
             {
                 RestoredSectionsInPage.Clear();
-                Settings.Current.Application.CurrentSection = i;
+                Settings.Current.Application.SetCurrentSection(i);
             }
             ImGui.PopFont();
             ImGui.PopStyleColor(4);
@@ -78,7 +78,7 @@ public static partial class Gui
         var showTooltips = Settings.Current.Application.ShowTooltips;
         if (ImGui.Checkbox("Tooltips", ref showTooltips))
         {
-            Settings.Current.Application.ShowTooltips = showTooltips;
+            Settings.Current.Application.SetShowTooltips(showTooltips);
         }
 
         GuiUtils.DrawTooltip("Toggle tooltips for all places where a tooltip exists.");

@@ -261,26 +261,26 @@ public class GuiGenerator : IIncrementalGenerator
                     case GuiElementKind.Checkbox:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                               if (ImGui.Checkbox("{e.Label}", ref {e.FieldName})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                               if (ImGui.Checkbox("{e.Label}", ref {e.FieldName})) Settings.Current.{e.ClassName}.Set{e.PropName}({e.FieldName});
                                        """);
                         break;
                     case GuiElementKind.FloatSlider:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                               if (ImGui.SliderFloat("{e.Label}", ref {e.FieldName}, {e.FloatSliderMin}f, {e.FloatSliderMax}f, "{e.FloatSliderFormat}")) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                               if (ImGui.SliderFloat("{e.Label}", ref {e.FieldName}, {e.FloatSliderMin}f, {e.FloatSliderMax}f, "{e.FloatSliderFormat}")) Settings.Current.{e.ClassName}.Set{e.PropName}({e.FieldName});
                                        """);
                         break;                    
                     case GuiElementKind.IntSlider:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                               if (ImGui.SliderInt("{e.Label}", ref {e.FieldName}, {e.IntSliderMin}, {e.IntSliderMax})) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                               if (ImGui.SliderInt("{e.Label}", ref {e.FieldName}, {e.IntSliderMin}, {e.IntSliderMax})) Settings.Current.{e.ClassName}.Set{e.PropName}({e.FieldName});
                                        """);
                         break;
                     case GuiElementKind.Int:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
                                                ImGui.SetNextItemWidth({e.InputWidth}f*Constants.OverlayGuiScale);
-                                               if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep}, ImGuiInputTextFlags.CharsDecimal)) Settings.Current.{e.ClassName}.{e.PropName} = {e.FieldName};
+                                               if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep}, ImGuiInputTextFlags.CharsDecimal)) Settings.Current.{e.ClassName}.Set{e.PropName}({e.FieldName});
                                        """);
                         break;
                     case GuiElementKind.IntModal:
@@ -291,7 +291,7 @@ public class GuiGenerator : IIncrementalGenerator
                                                    "{e.ModalTitle}",
                                                    {e.InputWidth}f,
                                                    Settings.Current.{e.ClassName}.{e.PropName},
-                                                   value => Settings.Current.{e.ClassName}.{e.PropName} = value
+                                                   value => Settings.Current.{e.ClassName}.Set{e.PropName}(value)
                                                );
                                        """);
                         break;
@@ -304,7 +304,7 @@ public class GuiGenerator : IIncrementalGenerator
                                                    {e.InputWidth}f,
                                                    Settings.Current.{e.ClassName}.{e.PropName},
                                                    {e.StringMaxLength},
-                                                   value => Settings.Current.{e.ClassName}.{e.PropName} = value
+                                                   value => Settings.Current.{e.ClassName}.Set{e.PropName}(value)
                                                );
                                        """);
                         break;
@@ -316,7 +316,7 @@ public class GuiGenerator : IIncrementalGenerator
                                                if(ImGui.Combo("{{e.Label}}", ref {{e.FieldName}}Index, {{e.ComboValuesConstantPath}}, {{e.ComboValuesConstantPath}}.Length)) 
                                                {
                                                    var nameStr = {{e.ComboValuesConstantPath}}[{{e.FieldName}}Index];
-                                                   Settings.Current.{{e.ClassName}}.{{e.PropName}} = GuiUtils.GetTagFromLabel(nameStr);
+                                                   Settings.Current.{{e.ClassName}}.Set{{e.PropName}}(GuiUtils.GetTagFromLabel(nameStr));
                                                };
                                        """);
                         break;
