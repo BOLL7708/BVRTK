@@ -287,10 +287,11 @@ public static class GuiUtils
     public static void DrawDivider(float fade = 0.5f)
     {
         var section = GuiStructure.Sections[Settings.Current.Application.CurrentSection];
-        ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.Fade(fade));
-        ImGui.BeginChild(GetNextSerialTag("HorizontalSeparator"), Vector2.Zero with { Y = Constants.GuiSeparatorGirth });
-        ImGui.EndChild();
-        ImGui.PopStyleColor();
+        var color = ImGui.ColorConvertFloat4ToU32(section.AccentColor.Fade(fade));
+        var pos = ImGui.GetCursorScreenPos();
+        var size = new Vector2(ImGui.GetContentRegionAvail().X, Constants.GuiSeparatorGirth);
+        ImGui.GetWindowDrawList().AddRectFilled(pos, pos + size, color, Constants.GuiGeneralRounding);
+        ImGui.Dummy(size);
     }
 
     #endregion

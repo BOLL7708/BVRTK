@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using BVRTK.Components.Graphics;
 using Hexa.NET.ImGui;
 
@@ -33,7 +34,7 @@ public static class Session
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }
     
-    public static readonly List<ActionGuiEntry> GuiActionEntries = [];
+    public static ImmutableList<ActionGuiEntry> GuiActionEntries { get; set; } = [];
 }
 
 public class ActionGuiEntry(string name, string path, Func<string> prompt)
