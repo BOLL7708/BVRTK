@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using BVRTK.Components.Graphics;
+using BVRTK.Components.KeyboardSimulator;
 using Hexa.NET.ImGui;
 
 namespace BVRTK;
@@ -34,7 +35,9 @@ public static class Session
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }
     
-    public static ImmutableList<ActionGuiEntry> GuiActionEntries { get; set; } = [];
+    public static ImmutableList<ActionGuiEntry> GuiActionEntries { get; set; } = []; // Filled at manifest registration
+    public static volatile string[] KeyboardSimulatorKeyCodeGuiTags = KeyboardSimulatorUtils.GetGuiTags();
+    public static volatile string[] SupportedLanguageGuiTags = Utils.GetSupportedLanguageGuiTags();
 }
 
 public class ActionGuiEntry(string name, string path, Func<string> prompt)

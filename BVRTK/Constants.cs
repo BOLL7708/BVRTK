@@ -30,14 +30,10 @@ public static class Constants
     public static readonly float GuiTooltipWrap = 16f;
     public static readonly float GuiSeparatorGirth = 3f * OverlayGuiScale;
     public static readonly float GuiBorderWidth = 1.5f * OverlayGuiScale;
-
-    public static readonly string[] KeyboardSimulatorKeyCodeGuiTags = KeyboardSimulatorUtils.GetGuiTags();
-
+    
     public static readonly Dictionary<string, CultureInfo> SupportedLanguages = new()
     {
         { "en-US", CultureInfo.InvariantCulture },
         { "sv-SE", new CultureInfo("sv-SE") },
     };
-
-    public static readonly string[] SupportedLanguageGuiTags = Utils.GetSupportedLanguageGuiTags();
 }

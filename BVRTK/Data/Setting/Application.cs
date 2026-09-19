@@ -15,7 +15,7 @@ public partial class Application
     [GuiCheckbox("Show desktop window on launch", "Will show a mirror of the overlay on the desktop when the application launches.")]
     public bool ShowDesktopWindowOnLaunch { get; set; } = true;
 
-    [GuiCombo("Language", "Set the language of the application.", 256f, nameof(Constants) + "." + nameof(Constants.SupportedLanguageGuiTags))]
+    [GuiCombo("Language", "Set the language of the application.", 256f, nameof(Session) + "." + nameof(Session.SupportedLanguageGuiTags))]
     public string Language { get; set; } = Constants.SystemDefaultLanguage;
 
     #region Quick settings in sidebar
