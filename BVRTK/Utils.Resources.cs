@@ -1,3 +1,4 @@
+using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
@@ -22,18 +23,29 @@ public partial class Utils
     #region Translations
 
     /// Used to provide values for the GUI
-    public static string[] GetSupportedLanguageGuiTags()
+    public static Dictionary<string, string> GetSupportedLanguageGuiIdPairs()
     {
-        List<string> tags = [];
+        var values = new Dictionary<string, string>();
         foreach (var entry in Constants.SupportedLanguages)
         {
             var value = entry.Value.Equals(CultureInfo.InvariantCulture)
                 ? new CultureInfo(Constants.SystemDefaultLanguage)
                 : entry.Value;
-            tags.Add($"{value.NativeName}##{entry.Key}");
+            values.Add(entry.Key, value.NativeName);
+        }
+        return values;
+    }
+
+    public static string[] GetSupportedLanguageGuiIds()
+    {
+        var ids = new List<string>();
+        var pairs = GetSupportedLanguageGuiIdPairs();
+        foreach (var pair in pairs)
+        {
+            ids.Add($"{pair.Value}##{pair.Key}");
         }
 
-        return [.. tags];
+        return [.. ids];
     }
 
     // Used to provide values for the action manifest builder

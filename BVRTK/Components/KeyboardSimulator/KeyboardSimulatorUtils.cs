@@ -23,7 +23,7 @@ public static class KeyboardSimulatorUtils
         KeyCode.VcRightMeta
     ];
 
-    public static string[] GetGuiTags()
+    public static Dictionary<string, string> GetGuiIdPairs()
     {
         var keycodes = Enum.GetValues<KeyCode>();
         var functionKeys = keycodes.Where(x => IsFunc(Enum.GetName(x)));
@@ -32,27 +32,37 @@ public static class KeyboardSimulatorUtils
         keycodes = [.. functionKeys, .. singleKeys, .. rest];
         
         // Check if we have a value, otherwise take the name and remove Vc prefix.
-        var values = new List<string>();
+        var values = new Dictionary<string, string>();
         foreach (var keycode in keycodes)
         {
             if ((int)keycode == 0 || KeyCodeIgnored.Contains(keycode)) continue;
             KeyCodeDisplayValues.TryGetValue(keycode, out var displayOverride);
 
-            // According to [official docs](https://sharphook.tolik.io/articles/keycodes.html) the enum VALUE is flexible between versions and the NAME is the only static reference and what should be used.
-            var reference = Enum.GetName(keycode);
+            // According to [official docs](https://sharphook.tolik.io/articles/keycodes.html) the enum VALUE is
+            // flexible between versions and the NAME is the only static reference and what should be used.
+            var reference = Enum.GetName(keycode) ?? "";
+            if (reference.IsWhiteSpace()) continue;
 
-            var displayName = reference?[2..] ?? reference;
-            values.Add(
-                displayOverride.IsWhiteSpace()
-                    ? $"{displayName}##{reference}"
-                    : $"{displayOverride}##{reference}"
-            );
+            var displayName = reference[2..];
+            values.Add(reference, displayOverride.IsWhiteSpace() ? displayName : displayOverride ?? "N/A");
         }
 
-        return [.. values];
+        return values;
         
         static bool IsFunc(string? n) => n?.Length > 3 && n[2] == 'F' && n[3..].All(char.IsDigit); // Function keys
         static bool IsSingle(string? n) => n?.Length == 3; // Letters & digits
+    }
+
+    public static string[] GetGuiIds()
+    {
+        var ids = new List<string>();
+        var pairs = GetGuiIdPairs();
+        foreach(var pair in pairs)
+        {
+            ids.Add($"{pair.Value}##{pair.Key}");
+        }
+
+        return [.. ids];
     }
     
     public static KeyCode TagToEnum(string tag)

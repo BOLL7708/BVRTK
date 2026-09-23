@@ -104,6 +104,13 @@ public static class GuiUtils
         ImGui.PopFont();
     }
 
+    public static void DrawRightAlignedText(string text, FontStyle font = FontStyle.Regular, float size = 0)
+    {
+        PushFont(font, size);
+        ImGui.TextAligned(1f, ImGui.GetContentRegionAvail().X, text);
+        ImGui.PopFont();
+    }
+
     public static void DrawText(string text, FontStyle font = FontStyle.Regular, float size = 0)
     {
         PushFont(font, size);
@@ -113,6 +120,7 @@ public static class GuiUtils
 
     public static void DrawTitle(string title)
     {
+        ImGui.Dummy(Vector2.Zero);
         DrawCenteredText(title, FontStyle.Bold, Constants.GuiFontSize * 1.25f);
         DrawDivider();
     }
@@ -121,38 +129,58 @@ public static class GuiUtils
 
     private static readonly Dictionary<string, object?> ModalDialogValues = new();
 
+    /// <summary>
     /// Render optional interface and a button to open the modal.
+    /// Will run the preparatory step once on button click if provided.
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="button"></param>
+    /// <param name="prepare"></param>
+    /// <param name="renderGui"></param>
+    /// <param name="startValue"></param>
+    /// <typeparam name="T"></typeparam>
     public static void OpenModal<T>(
         string tag,
         string button,
+        Action? prepare,
         Action<T>? renderGui,
         T startValue
     )
     {
-        ImGui.BeginChild(tag + "Child", ImGuiChildFlags.AutoResizeY);
         if (renderGui != null)
         {
             renderGui(startValue);
             ImGui.SameLine();
         }
+        var open = ImGui.Button($"{button}##{tag}Button");
+        
+        if (!open) return;
 
-        var open = ImGui.Button(button);
-        ImGui.EndChild();
-        if (open) ImGui.OpenPopup(tag);
+        prepare?.Invoke();
+        ImGui.OpenPopup(tag);
     }
 
-    // The modal itself: renders a custom interface and outputs the result.
+    /// <summary>
+    /// The modal itself, : renders a custom interface and outputs the result.
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="okButtonLabel"></param>
+    /// <param name="cancelButtonLabel"></param>
+    /// <param name="renderDialogGui"></param>
+    /// <param name="startValue"></param>
+    /// <param name="updateSetting"></param>
+    /// <typeparam name="T"></typeparam>
     public static void DrawModal<T>(
         string tag,
         string okButtonLabel,
         string cancelButtonLabel,
-        Func<T, T> renderDialogGui,
+        Func<T, T>? renderDialogGui,
         T startValue,
         Action<T> updateSetting
     )
     {
         var vp = ImGui.GetMainViewport();
-        var center = vp.Pos + vp.Size * 0.5f;
+        var center = vp.Pos + (vp.Size + new Vector2(Constants.GuiSidebarWidth + Constants.GuiMainSeparatorGirth, 0)) * 0.5f;
         var buttonSize = new Vector2(128f * Constants.OverlayGuiScale, 0);
 
         ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
@@ -167,7 +195,7 @@ public static class GuiUtils
             if (ImGui.IsWindowAppearing()) ModalDialogValues[tag] = startValue;
 
             var temp = (T)ModalDialogValues[tag]!;
-            temp = renderDialogGui(temp);
+            if(renderDialogGui != null) temp = renderDialogGui(temp);
             ModalDialogValues[tag] = temp;
 
             var popupWidth = ImGui.GetContentRegionAvail().X;
@@ -192,23 +220,40 @@ public static class GuiUtils
         ImGui.PopStyleColor(2);
     }
 
+    /// <summary>
+    /// The full modal  function that renders the GUI that will launch the model dialog,
+    /// and the modal dialog itself when triggered.
+    /// Will also run a preparation step if it was provided, as well as an update step.
+    /// </summary>
+    /// <param name="tag"></param>
+    /// <param name="launchButtonLabel"></param>
+    /// <param name="okButtonLabel"></param>
+    /// <param name="cancelButtonLabel"></param>
+    /// <param name="startValue"></param>
+    /// <param name="prepareSetting"></param>
+    /// <param name="renderGui"></param>
+    /// <param name="renderDialogGui"></param>
+    /// <param name="updateSetting"></param>
+    /// <typeparam name="T"></typeparam>
     public static void DoModal<T>(
         string tag,
         string launchButtonLabel,
         string okButtonLabel,
         string cancelButtonLabel,
         T startValue,
-        Action<T> renderGui,
-        Func<T, T> renderDialogGui,
+        Action? prepareSetting,
+        Action<T>? renderGui,
+        Func<T, T>? renderDialogGui,
         Action<T> updateSetting)
     {
-        OpenModal(tag, launchButtonLabel, renderGui, startValue);
+        OpenModal(tag, launchButtonLabel, prepareSetting, renderGui, startValue);
         DrawModal(tag, okButtonLabel, cancelButtonLabel, renderDialogGui, startValue, updateSetting);
     }
 
     public static void DoModalForInt(string tag, string label, string button, float size, int startValue, Action<int> updateSetting)
     {
         DoModal(tag, button, "Apply", "Cancel", startValue,
+            null,
             value =>
             {
                 ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
@@ -226,6 +271,7 @@ public static class GuiUtils
     public static void DoModalForString(string tag, string label, string button, float size, string startValue, uint maxLength, Action<string> updateSetting)
     {
         DoModal(tag, button, "Apply", "Cancel", startValue,
+            null,
             value =>
             {
                 ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
@@ -238,6 +284,27 @@ public static class GuiUtils
                 ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.None);
                 return value;
             }, updateSetting);
+    }
+
+    public static void DoModalToConfirm(
+        string tag,
+        string button,
+        string positiveButton,
+        string negativeButton,
+        Action onConfirmed
+    )
+    {
+        DoModal(
+            tag,
+            button,
+            positiveButton,
+            negativeButton,
+            false,
+            null,
+            null,
+            null,
+            _ => onConfirmed()
+        );
     }
 
     #endregion
@@ -301,17 +368,24 @@ public static class GuiUtils
     public static string GetNextSerialTag(string tag = "SerialTag")
     {
         _tagSerial++;
-        return $"##{tag}{_tagSerial}";
+        var generated = $"##{tag}{_tagSerial}";
+        Console.WriteLine($"Generated Gui Tag: {generated}, if this message spams, you are using GetNextSerialTag wrong.");
+        return generated;
     }
 
-    public static int GetIndexOfTagInLabels(string[] labels, string tag)
+    public static int GetIndexOfTagInIds(string[] ids, string tag)
     {
-        return Array.FindIndex(labels, label => GetTagFromLabel(label) == tag);
+        return Array.FindIndex(ids, id => GetTagFromId(id) == tag);
     }
 
-    public static string GetTagFromLabel(string label)
+    public static string GetTagFromId(string id)
     {
-        return label.Split("##", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+        return id.Split("##", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+    }
+    
+    public static string GetLabelFromId(string id)
+    {
+        return id.Split("##", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First();
     }
 
     #region System

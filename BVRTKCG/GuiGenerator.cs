@@ -311,12 +311,12 @@ public class GuiGenerator : IIncrementalGenerator
                     case GuiElementKind.Combo:
                         sb.AppendLine($$"""
                                                var {{e.FieldName}} = Settings.Current.{{e.ClassName}}.{{e.PropName}};
-                                               var {{e.FieldName}}Index = GuiUtils.GetIndexOfTagInLabels({{e.ComboValuesConstantPath}}, {{e.FieldName}});
+                                               var {{e.FieldName}}Index = GuiUtils.GetIndexOfTagInIds({{e.ComboValuesConstantPath}}, {{e.FieldName}});
                                                ImGui.SetNextItemWidth({{e.ComboWidth}}f * Constants.OverlayGuiScale);
                                                if(ImGui.Combo("{{e.Label}}", ref {{e.FieldName}}Index, {{e.ComboValuesConstantPath}}, {{e.ComboValuesConstantPath}}.Length)) 
                                                {
                                                    var nameStr = {{e.ComboValuesConstantPath}}[{{e.FieldName}}Index];
-                                                   Settings.Current.{{e.ClassName}}.Set{{e.PropName}}(GuiUtils.GetTagFromLabel(nameStr));
+                                                   Settings.Current.{{e.ClassName}}.Set{{e.PropName}}(GuiUtils.GetTagFromId(nameStr));
                                                };
                                        """);
                         break;
@@ -325,12 +325,10 @@ public class GuiGenerator : IIncrementalGenerator
                                         
 
                                        """);
-                        
                         // TODO: Implement
                         break;
                     case GuiElementKind.Title:
                         sb.AppendLine($"""
-                                               ImGui.Dummy(Vector2.Zero);
                                                GuiUtils.DrawTitle("{e.Label}");
                                        """);
                         break;

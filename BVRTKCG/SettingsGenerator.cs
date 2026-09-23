@@ -113,21 +113,25 @@ public class SettingsGenerator : IIncrementalGenerator
                 if (valueType == null) continue;
 
                 sb.AppendLine($$"""
-                                    /// Generated List Adder for {{prop.Name}}
+                                    /// Generated List Adder for {{prop.Name}}, will only add if new.
+                                    internal void AddIfNewTo{{prop.Name}}({{valueType}} value)
+                                    {
+                                        if(!{{prop.Name}}.Contains(value)) AddTo{{prop.Name}}(value);
+                                    }
+                                    
+                                    /// Generated List Adder for {{prop.Name}}.
                                     internal void AddTo{{prop.Name}}({{valueType}} value)
                                     {
-                                        // TODO: Should check if the item already exists to not add a duplicate.
-                                        
                                         {{prop.Name}} = {{prop.Name}}.Add(value);
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} item added, dirty state set.");
                                     }
                                     
-                                    /// Generated List Remover for {{prop.Name}}
+                                    /// Generated List Remover for {{prop.Name}}.
                                     internal void RemoveFrom{{prop.Name}}({{valueType}} value)
                                     {
-                                        // TODO: Should check if the item exists before we try to remove it.
+                                        if(!{{prop.Name}}.Contains(value)) return;
                                         
                                         {{prop.Name}} = {{prop.Name}}.Remove(value);
                                         InternalDirty = true;

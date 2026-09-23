@@ -90,14 +90,24 @@ class Program
                 // TODO: If enabled, output play area data to WS.
             }
         );
+
+        void UpdateGame()
+        {
+            Session.SteamSceneAppId = vr.System.GetRunningApplicationId();
+            Session.SteamSceneAppName = vr.System.GetApplicationPropertyString(Session.SteamSceneAppId, EVRApplicationProperty.Name_String);
+        }
+
         vr.Event.Register([
                 EVREventType.VREvent_SceneApplicationChanged,
                 EVREventType.VREvent_SceneApplicationStateChanged
             ], (in vrEvent) =>
             {
                 // TODO: If enabled, send application data to WS.
+                UpdateGame();
             }
         );
+        UpdateGame();
+
 
         #endregion
 
