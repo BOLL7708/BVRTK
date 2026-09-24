@@ -97,7 +97,7 @@ public static partial class Gui
         ImGui.EndChild();
 
         var versionPos = startPos with { X = ImGui.GetWindowWidth() - ImGui.CalcTextSize(Session.Version).X - Constants.GuiItemSpacing.X};
-        ImGui.GetWindowDrawList().AddText(versionPos, ImGui.GetColorU32(GuiColor.Gray), Session.Version);
+        ImGui.GetWindowDrawList().AddText(versionPos, ImGui.GetColorU32(section.AccentColor.Fade(0.5f)), Session.Version);
     }
     
     /// <summary>

@@ -1,7 +1,5 @@
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Numerics;
-using System.Text;
 using BVRTK.Data;
 using Hexa.NET.ImGui;
 
@@ -29,7 +27,7 @@ public static class KeyboardSimulatorPages
                 // No additional GUI needed as we are just displaying the add button.
             },
             RenderDialog,
-            value => Settings.Current.KeyboardSimulator.AddIfNewToEntriesGeneral(GuiUtils.GetTagFromId(value))
+            value => Settings.Current.KeyboardSimulator.AddIfNewToEntriesGeneral(value)
         );
 
         var generalIndex = 0;
@@ -50,7 +48,7 @@ public static class KeyboardSimulatorPages
                 "Add game specific entry",
                 "Add", "Cancel",
                 "", // Empty as we start from nothing
-                null,
+                () => { ParseEntry(""); },
                 (value) =>
                 {
                     ImGui.AlignTextToFramePadding();
@@ -112,21 +110,24 @@ public static class KeyboardSimulatorPages
     private static bool _shiftRight = false;
     private static bool _metaLeft = false;
     private static bool _metaRight = false;
+    private static string _label = "";
 
     private static void ParseEntry(string value)
     {
-        var parts = value.Split("|");
-        if (parts.Length != 3)
+        var parts = value.Split("|", 4);
+        if (parts.Length < 3)
         {
             // Reset current values as we are likely registering a new entry.
             _vrInputActionIndex = 0;
             _keyIndex = 0;
+            _label = "";
             SetModifierFlags(ModifierFlags.None);
             return;
         }
 
         _vrInputActionIndex = Session.VrInputActionGuiIds.ToList().FindIndex(it => it.EndsWith($"##{parts[0]}"));
         _keyIndex = Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{parts[1]}"));
+        _label = parts.Length >= 4 ? parts[3] : "";
 
         if (byte.TryParse(
                 parts[2],
@@ -148,19 +149,20 @@ public static class KeyboardSimulatorPages
         var action = GuiUtils.GetTagFromId(Session.VrInputActionGuiIds[_vrInputActionIndex < 0 ? 0 : _vrInputActionIndex]);
         var key = GuiUtils.GetTagFromId(Session.KeyboardSimulatorKeyCodeGuiIds[_keyIndex < 0 ? 0 : _keyIndex]);
         var modifiers = GetModifierFlags();
-        return $"{action}|{key}|{(byte)modifiers:X2}";
+        return $"{action}|{key}|{(byte)modifiers:X2}|{_label}";
     }
-    
-    private static string DisplayEntry(string value)
+
+    private static string[] DisplayEntry(string value)
     {
-        var parts = value.Split("|");
-        if (parts.Length != 3) return "N/A";
+        var parts = value.Split("|", 4);
+        if (parts.Length < 3) return ["N/A"];
 
         Session.VrInputActionGuiTagToLabel.TryGetValue(parts[0], out var action);
         Session.KeyboardSimulatorKeyCodeGuiTagToLabel.TryGetValue(parts[1], out var key);
         byte.TryParse(parts[2], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var modifierByte);
-        
-        return $"{action} => [{DisplayFlags((ModifierFlags)modifierByte)}] {key}";
+        var label = parts.Length >= 4 ? parts[3] : "";
+        var description = $"{action} => {DisplayFlags((ModifierFlags)modifierByte)}{key}";
+        return label.Length > 0 ? [label, description] : [description];
     }
 
     private static string RenderDialog(string startValue)
@@ -171,37 +173,41 @@ public static class KeyboardSimulatorPages
         ImGui.Combo("Simulated Key", ref _keyIndex, Session.KeyboardSimulatorKeyCodeGuiIds, Session.KeyboardSimulatorKeyCodeGuiIds.Length);
         GuiUtils.DrawTooltip("Key that will be simulated on the selected VR input action.");
 
-        ImGui.BeginTable(SubTableTag, 3);
-
+        ImGui.BeginTable(SubTableTag, 5);
         ImGui.TableNextColumn();
         GuiUtils.DrawRightAlignedText("Modifier", FontStyle.Bold);
         GuiUtils.DrawTooltip("Which modifier keys to hold down when simulating the key.");
         ImGui.TableNextColumn();
-        GuiUtils.DrawText("Left", FontStyle.Bold);
-        GuiUtils.DrawTooltip("Use the left side modifier key.");
+        GuiUtils.DrawText("Alt", FontStyle.Bold);
         ImGui.TableNextColumn();
-        GuiUtils.DrawText("Right", FontStyle.Bold);
-        GuiUtils.DrawTooltip("Use the right side modifier key.");
-
-        DrawRow("Alt", ref _altLeft, ref _altRight);
-        DrawRow("Ctrl", ref _ctrlLeft, ref _ctrlRight);
-        DrawRow("Shift", ref _shiftLeft, ref _shiftRight);
-        DrawRow("OS", ref _metaLeft, ref _metaRight, "The Windows/Super/Option key, depending on platform.");
-
+        GuiUtils.DrawText("Ctrl", FontStyle.Bold);
+        ImGui.TableNextColumn();
+        GuiUtils.DrawText("Shift", FontStyle.Bold);
+        ImGui.TableNextColumn();
+        GuiUtils.DrawText("OS", FontStyle.Bold);
+        GuiUtils.DrawTooltip("The Windows/Super/Option key, depending on platform.");
+        DrawRow("Left", ref _altLeft, ref _ctrlLeft, ref _shiftLeft, ref _metaLeft, "Use the left side modifier key(s).");
+        DrawRow("Right", ref _altRight, ref _ctrlRight, ref _shiftRight, ref _metaRight, "Use the right side modifier key(s).");
         ImGui.EndTable();
+
+        ImGui.InputText("Optional name", ref _label, 32, ImGuiInputTextFlags.None);
 
         return EncodeEntry();
 
-        void DrawRow(string label, ref bool left, ref bool right, string tooltip = "")
+        void DrawRow(string label, ref bool alt, ref bool ctrl, ref bool shift, ref bool meta, string tooltip = "")
         {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             GuiUtils.DrawRightAlignedText(label);
             GuiUtils.DrawTooltip(tooltip);
             ImGui.TableNextColumn();
-            ImGui.Checkbox($"##{label}Left", ref left);
+            ImGui.Checkbox($"##{label}Alt", ref alt);
             ImGui.TableNextColumn();
-            ImGui.Checkbox($"##{label}Right", ref right);
+            ImGui.Checkbox($"##{label}Ctrl", ref ctrl);
+            ImGui.TableNextColumn();
+            ImGui.Checkbox($"##{label}Shift", ref shift);
+            ImGui.TableNextColumn();
+            ImGui.Checkbox($"##{label}OS", ref meta);
         }
     }
 
@@ -209,41 +215,63 @@ public static class KeyboardSimulatorPages
     {
         var sectionIndex = Settings.Current.Application.CurrentSection;
         var section = GuiStructure.Sections[sectionIndex];
-        ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.Fade(0.375f));
-        ImGui.BeginChild($"##keyboardSimulator{tag}Background", Vector2.Zero, ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.AlwaysUseWindowPadding);
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.Fade(0.30f));
+        ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.35f));
+        ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, section.AccentColor.Fade(0.25f));
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Constants.GuiItemSpacing);
+        ImGui.BeginChild($"##keyboardSimulator{tag}Child", Vector2.Zero, ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AutoResizeY);
 
-        foreach (var universalEntry in entries)
+        if (ImGui.BeginTable($"##keyboardSimulator{tag}Background", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
         {
-            GuiUtils.DoModal(
-                $"Edit Entry##keyboardSimulator{tag}Edit{index}",
-                "Edit",
-                "Apply", "Cancel",
-                universalEntry,
-                () => ParseEntry(universalEntry),
-                null,
-                RenderDialog,
-                value =>
-                {
-                    remove(universalEntry);
-                    add(value);
-                });
+            ImGui.TableSetupColumn($"##keyboardSimulator{tag}LeftCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn($"##keyboardSimulator{tag}MiddleCol", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn($"##keyboardSimulator{tag}RightCol", ImGuiTableColumnFlags.WidthFixed);
+            foreach (var universalEntry in entries)
+            {
+                ImGui.TableNextRow();
 
-            ImGui.SameLine();
-            ImGui.TextUnformatted(DisplayEntry(universalEntry));
+                ImGui.TableNextColumn();
+                ImGui.Dummy(Vector2.Zero);
+                ImGui.SameLine();
+                GuiUtils.DoModal(
+                    $"Edit Entry##keyboardSimulator{tag}Edit{index}",
+                    "Edit",
+                    "Apply", "Cancel",
+                    universalEntry,
+                    () => ParseEntry(universalEntry),
+                    null,
+                    RenderDialog,
+                    value =>
+                    {
+                        remove(universalEntry);
+                        add(value);
+                    });
 
-            ImGui.SameLine();
-            GuiUtils.DoModalToConfirm(
-                $"Remove this entry?##keyboardSimulator{tag}Delete{index}",
-                "Remove",
-                "Yes",
-                "No",
-                () => { remove(universalEntry); }
-            );
-            index++;
+                ImGui.TableNextColumn();
+                var description = DisplayEntry(universalEntry);
+                ImGui.Text(description[0]);
+                if (description.Length == 2) GuiUtils.DrawTooltip(description[1]);
+
+                ImGui.TableNextColumn();
+                GuiUtils.DoModalToConfirm(
+                    $"Remove this entry?##keyboardSimulator{tag}Delete{index}",
+                    "Delete",
+                    "Yes",
+                    "No",
+                    () => { remove(universalEntry); }
+                );
+                ImGui.SameLine();
+                ImGui.Dummy(Vector2.Zero);
+                
+                index++;
+            }
+
+            ImGui.EndTable();
         }
 
         ImGui.EndChild();
-        ImGui.PopStyleColor();
+        ImGui.PopStyleVar();
+        ImGui.PopStyleColor(3);
     }
 
     [Flags]
@@ -304,6 +332,7 @@ public static class KeyboardSimulatorPages
         var ctrl = flags.HasFlag(ModifierFlags.CtrlLeft) | flags.HasFlag(ModifierFlags.CtrlRight) ? "^" : "";
         var shift = flags.HasFlag(ModifierFlags.ShiftLeft) | flags.HasFlag(ModifierFlags.ShiftRight) ? "+" : "";
         var meta = flags.HasFlag(ModifierFlags.MetaLeft) | flags.HasFlag(ModifierFlags.MetaRight) ? "#" : "";
-        return $"{alt}{ctrl}{shift}{meta}";
+        var all = $"{alt}{ctrl}{shift}{meta}";
+        return all.IsWhiteSpace() ? "" : $"[{all}] ";
     }
 }
