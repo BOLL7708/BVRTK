@@ -137,7 +137,32 @@ public class SettingsGenerator : IIncrementalGenerator
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} item removed, dirty state set.");
-                                    }                 
+                                    }
+                                    
+                                    /// Generated List Replaced for {{prop.Name}}. Nulling an argument will make for add or remove.
+                                    #nullable enable
+                                    internal void ReplaceIn{{prop.Name}}({{valueType}}? currentValue, {{valueType}}? newValue)
+                                    {
+                                        if(currentValue == null && newValue == null) return;
+                                        
+                                        if(currentValue != null && newValue != null) {
+                                            var index = {{prop.Name}}.IndexOf(currentValue);
+                                            if(index >= 0) {
+                                                {{prop.Name}} = {{prop.Name}}.SetItem(index, newValue);
+                                            }
+                                        }
+                                        if(currentValue != null && newValue == null) {
+                                            {{prop.Name}} = {{prop.Name}}.Remove(currentValue);
+                                        }
+                                        if(currentValue == null && newValue != null) {
+                                            {{prop.Name}} = {{prop.Name}}.Add(newValue);
+                                        }
+                                        
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine($"[{{typeName}}] {{prop.Name}} item replaced, dirty state set.");
+                                    }               
+                                    #nullable disable
                                 """);
             }
             else

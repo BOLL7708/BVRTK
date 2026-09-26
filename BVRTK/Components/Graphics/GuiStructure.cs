@@ -29,7 +29,7 @@ public static class GuiStructure
         ]),
         new(() => GuiSidebarPrompts.KeyboardSimLabel, () => GuiSidebarPrompts.KeyboardSimTooltip, ()=>Settings.Current.KeyboardSimulator.Enabled, accentColor: GuiColor.KeyboardSim, pages: [
             new Page("Options", GuiRenderers.RenderKeyboardSimulatorPage),
-            new Page("Mappings", KeyboardSimulatorPages.Entries)
+            new Page("Entries", KeyboardSimulatorPages.Entries)
         ]),
         new(() => GuiSidebarPrompts.MouseSimLabel, () => GuiSidebarPrompts.MouseSimTooltip, isPublic: false, accentColor: GuiColor.MouseSim, pages: [PageWip]),
         new(() => GuiSidebarPrompts.OverlaysLabel, () => GuiSidebarPrompts.OverlaysTooltip, isPublic: false, accentColor: GuiColor.Overlays, pages: [PageWip]),

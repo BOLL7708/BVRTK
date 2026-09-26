@@ -35,8 +35,7 @@ public static class KeyboardSimulatorPages
             "general",
             [.. Settings.Current.KeyboardSimulator.EntriesGeneral],
             ref generalIndex,
-            Settings.Current.KeyboardSimulator.AddIfNewToEntriesGeneral,
-            Settings.Current.KeyboardSimulator.RemoveFromEntriesGeneral
+            Settings.Current.KeyboardSimulator.ReplaceInEntriesGeneral
         );
 
         if (Session.SteamSceneAppId.Length > 0)
@@ -48,11 +47,14 @@ public static class KeyboardSimulatorPages
                 "Add game specific entry",
                 "Add", "Cancel",
                 "", // Empty as we start from nothing
-                () => { ParseEntry(""); },
+                () =>
+                {
+                    ParseEntry(""); // Will reset the entry values
+                },
                 (value) =>
                 {
                     ImGui.AlignTextToFramePadding();
-                    ImGui.TextUnformatted("For use regardless of which game is running:");
+                    ImGui.TextUnformatted("Will be used when a specific game is running:");
                     // No additional GUI needed as we are just displaying the add button.
                 },
                 RenderDialog,
@@ -67,8 +69,7 @@ public static class KeyboardSimulatorPages
                     "game",
                     entries,
                     ref gameIndex,
-                    AddGameEntry,
-                    RemoveGameEntry
+                    ReplaceGameEntry
                 );
         }
         else
@@ -78,22 +79,31 @@ public static class KeyboardSimulatorPages
         }
     }
 
-    private static void AddGameEntry(string label)
+    private static void ReplaceGameEntry(string? currentEntry, string? newEntry)
     {
-        var entry = GuiUtils.GetTagFromId(label);
+        Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var existingItems);
+        var list = existingItems?.ToList() ?? [];
+
+        if (currentEntry == null && newEntry == null) return;
+        if (currentEntry != null && newEntry != null)
+        {
+            var index = list.IndexOf(currentEntry);
+            if (index >= 0)
+            {
+                list[index] = newEntry;
+            }
+        }
+        if (currentEntry == null && newEntry != null) list.Add(newEntry);
+        if (currentEntry != null && newEntry == null) list.Remove(currentEntry);
+        
+        Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list]);
+    }
+    
+    private static void AddGameEntry(string entry)
+    {
         Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var existingItems);
         if (existingItems != null && existingItems.Contains(entry)) return;
         var list = existingItems ?? [];
-        Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list, entry]);
-    }
-
-    private static void RemoveGameEntry(string label)
-    {
-        var entry = GuiUtils.GetTagFromId(label);
-        Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var existingItems);
-        if (existingItems == null || !existingItems.Contains(entry)) return;
-        var list = existingItems.ToList();
-        list.Remove(entry);
         Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list, entry]);
     }
 
@@ -211,7 +221,7 @@ public static class KeyboardSimulatorPages
         }
     }
 
-    private static void RenderList(string tag, string[] entries, ref int index, Action<string> add, Action<string> remove)
+    private static void RenderList(string tag, string[] entries, ref int index, Action<string?, string?> replace)
     {
         var sectionIndex = Settings.Current.Application.CurrentSection;
         var section = GuiStructure.Sections[sectionIndex];
@@ -243,8 +253,7 @@ public static class KeyboardSimulatorPages
                     RenderDialog,
                     value =>
                     {
-                        remove(universalEntry);
-                        add(value);
+                        replace(universalEntry, value);
                     });
 
                 ImGui.TableNextColumn();
@@ -256,9 +265,10 @@ public static class KeyboardSimulatorPages
                 GuiUtils.DoModalToConfirm(
                     $"Remove this entry?##keyboardSimulator{tag}Delete{index}",
                     "Delete",
+                    string.Join("\n", description),
                     "Yes",
                     "No",
-                    () => { remove(universalEntry); }
+                    () => { replace(universalEntry, null); }
                 );
                 ImGui.SameLine();
                 ImGui.Dummy(Vector2.Zero);

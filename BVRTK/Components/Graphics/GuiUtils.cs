@@ -127,7 +127,7 @@ public static class GuiUtils
 
     #region Modals
 
-    private static readonly Dictionary<string, object?> ModalDialogValues = new();
+    private static object? _modalDialogValue = null;
 
     /// <summary>
     /// Render optional interface and a button to open the modal.
@@ -152,8 +152,9 @@ public static class GuiUtils
             renderGui(startValue);
             ImGui.SameLine();
         }
+
         var open = ImGui.Button($"{button}##{tag}Button");
-        
+
         if (!open) return;
 
         prepare?.Invoke();
@@ -192,11 +193,11 @@ public static class GuiUtils
         if (ImGui.BeginPopupModal(tag, ImGuiWindowFlags.AlwaysAutoResize))
         {
             ImGui.PushStyleColor(ImGuiCol.Text, GuiColor.White);
-            if (ImGui.IsWindowAppearing()) ModalDialogValues[tag] = startValue;
+            if (ImGui.IsWindowAppearing()) _modalDialogValue = startValue;
 
-            var temp = (T)ModalDialogValues[tag]!;
-            if(renderDialogGui != null) temp = renderDialogGui(temp);
-            ModalDialogValues[tag] = temp;
+            var temp = (T)_modalDialogValue!;
+            if (renderDialogGui != null) temp = renderDialogGui(temp);
+            _modalDialogValue = temp;
 
             var popupWidth = ImGui.GetContentRegionAvail().X;
 
@@ -289,6 +290,7 @@ public static class GuiUtils
     public static void DoModalToConfirm(
         string tag,
         string button,
+        string message,
         string positiveButton,
         string negativeButton,
         Action onConfirmed
@@ -302,7 +304,11 @@ public static class GuiUtils
             false,
             null,
             null,
-            null,
+            message.IsWhiteSpace() ? null : value =>
+            {
+                ImGui.Text(message);
+                return value;
+            },
             _ => onConfirmed()
         );
     }
@@ -382,7 +388,7 @@ public static class GuiUtils
     {
         return id.Split("##", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
     }
-    
+
     public static string GetLabelFromId(string id)
     {
         return id.Split("##", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First();
