@@ -163,6 +163,30 @@ public class SettingsGenerator : IIncrementalGenerator
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} item replaced, dirty state set.");
                                     }               
                                     #nullable disable
+                                    
+                                    internal void MoveUpIn{{prop.Name}}(int index) {
+                                        if(index <= 0) return;
+                                        
+                                        var item = {{prop.Name}}[index];
+                                        {{prop.Name}} = {{prop.Name}}.RemoveAt(index);
+                                        {{prop.Name}} = {{prop.Name}}.Insert(index-1, item);
+                                        
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine($"[{{typeName}}] {{prop.Name}} was reordered, dirty state set."); 
+                                    }
+                                    
+                                    internal void MoveDownIn{{prop.Name}}(int index) {
+                                        if(index >= {{prop.Name}}.Count -1) return;                                    
+                                    
+                                        var item = {{prop.Name}}[index];
+                                        {{prop.Name}} = {{prop.Name}}.RemoveAt(index);
+                                        {{prop.Name}} = {{prop.Name}}.Insert(index+1, item);
+                                        
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine($"[{{typeName}}] {{prop.Name}} was reordered, dirty state set.");
+                                    }
                                 """);
             }
             else

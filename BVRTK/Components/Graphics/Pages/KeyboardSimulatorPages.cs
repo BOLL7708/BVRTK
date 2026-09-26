@@ -35,7 +35,9 @@ public static class KeyboardSimulatorPages
             "general",
             [.. Settings.Current.KeyboardSimulator.EntriesGeneral],
             ref generalIndex,
-            Settings.Current.KeyboardSimulator.ReplaceInEntriesGeneral
+            Settings.Current.KeyboardSimulator.ReplaceInEntriesGeneral,
+            Settings.Current.KeyboardSimulator.MoveUpInEntriesGeneral,
+            Settings.Current.KeyboardSimulator.MoveDownInEntriesGeneral
         );
 
         if (Session.SteamSceneAppId.Length > 0)
@@ -61,7 +63,6 @@ public static class KeyboardSimulatorPages
                 AddGameEntry
             );
 
-            // TODO: A list of editable and deletable items that can be reordered, base it on general entries.
             var gameIndex = 0;
             Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var entries);
             if (entries != null)
@@ -69,7 +70,9 @@ public static class KeyboardSimulatorPages
                     "game",
                     entries,
                     ref gameIndex,
-                    ReplaceGameEntry
+                    ReplaceGameEntry,
+                    MoveGameEntryUp,
+                    MoveGameEntryDown
                 );
         }
         else
@@ -77,6 +80,15 @@ public static class KeyboardSimulatorPages
             GuiUtils.DrawTitle("Game Specific Entries");
             GuiUtils.DrawCenteredText("No game detected.");
         }
+    }
+
+
+    private static void AddGameEntry(string entry)
+    {
+        Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var existingItems);
+        if (existingItems != null && existingItems.Contains(entry)) return;
+        var list = existingItems ?? [];
+        Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list, entry]);
     }
 
     private static void ReplaceGameEntry(string? currentEntry, string? newEntry)
@@ -93,18 +105,38 @@ public static class KeyboardSimulatorPages
                 list[index] = newEntry;
             }
         }
+
         if (currentEntry == null && newEntry != null) list.Add(newEntry);
         if (currentEntry != null && newEntry == null) list.Remove(currentEntry);
+
+        Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list]);
+    }
+
+    private static void MoveGameEntryUp(int index)
+    {
+        if (index < 0) return;
+
+        Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var existingItems);
+        var list = existingItems?.ToList() ?? [];
+        var item = list[index];
+        list.RemoveAt(index);
+        list.Insert(index - 1, item);
         
         Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list]);
     }
-    
-    private static void AddGameEntry(string entry)
+
+    private static void MoveGameEntryDown(int index)
     {
         Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var existingItems);
-        if (existingItems != null && existingItems.Contains(entry)) return;
-        var list = existingItems ?? [];
-        Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list, entry]);
+        var list = existingItems?.ToList() ?? [];
+
+        if (index >= list.Count - 1) return;
+
+        var item = list[index];
+        list.RemoveAt(index);
+        list.Insert(index + 1, item);
+        
+        Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list]);
     }
 
     private static readonly string TableTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogTable");
@@ -221,7 +253,9 @@ public static class KeyboardSimulatorPages
         }
     }
 
-    private static void RenderList(string tag, string[] entries, ref int index, Action<string?, string?> replace)
+    private static int _listDraggedIndex = -1;
+
+    private static void RenderList(string tag, string[] entries, ref int index, Action<string?, string?> replace, Action<int> moveUp, Action<int> moveDown)
     {
         var sectionIndex = Settings.Current.Application.CurrentSection;
         var section = GuiStructure.Sections[sectionIndex];
@@ -251,20 +285,28 @@ public static class KeyboardSimulatorPages
                     () => ParseEntry(universalEntry),
                     null,
                     RenderDialog,
-                    value =>
-                    {
-                        replace(universalEntry, value);
-                    });
+                    value => { replace(universalEntry, value); });
 
                 ImGui.TableNextColumn();
                 var description = DisplayEntry(universalEntry);
+
                 ImGui.Text(description[0]);
                 if (description.Length == 2) GuiUtils.DrawTooltip(description[1]);
 
                 ImGui.TableNextColumn();
+                ImGui.BeginDisabled(index == 0);
+                if (ImGui.ArrowButton($"##keyboardSimulator{tag}MoveUp{index}", ImGuiDir.Up)) moveUp(index);
+                ImGui.EndDisabled();
+                ImGui.SameLine();
+                ImGui.BeginDisabled(index == entries.Length - 1);
+                if (ImGui.ArrowButton($"##keyboardSimulator{tag}MoveDown{index}", ImGuiDir.Down)) moveDown(index);
+                ImGui.EndDisabled();
+                ImGui.SameLine();
+                ImGui.Dummy(Vector2.Zero);
+                ImGui.SameLine();
                 GuiUtils.DoModalToConfirm(
                     $"Remove this entry?##keyboardSimulator{tag}Delete{index}",
-                    "Delete",
+                    "X",
                     string.Join("\n", description),
                     "Yes",
                     "No",
@@ -272,7 +314,7 @@ public static class KeyboardSimulatorPages
                 );
                 ImGui.SameLine();
                 ImGui.Dummy(Vector2.Zero);
-                
+
                 index++;
             }
 
