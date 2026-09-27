@@ -138,20 +138,19 @@ public static class KeyboardSimulatorPages
         
         Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list]);
     }
-
-    private static readonly string TableTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogTable");
+    
     private static readonly string SubTableTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogSubTable");
 
-    private static int _vrInputActionIndex = 0;
-    private static int _keyIndex = 0;
-    private static bool _altLeft = false;
-    private static bool _altRight = false;
-    private static bool _ctrlLeft = false;
-    private static bool _ctrlRight = false;
-    private static bool _shiftLeft = false;
-    private static bool _shiftRight = false;
-    private static bool _metaLeft = false;
-    private static bool _metaRight = false;
+    private static int _vrInputActionIndex;
+    private static int _keyIndex;
+    private static bool _altLeft;
+    private static bool _altRight;
+    private static bool _ctrlLeft;
+    private static bool _ctrlRight;
+    private static bool _shiftLeft;
+    private static bool _shiftRight;
+    private static bool _metaLeft;
+    private static bool _metaRight;
     private static string _label = "";
 
     private static void ParseEntry(string value)
@@ -253,7 +252,6 @@ public static class KeyboardSimulatorPages
         }
     }
 
-    private static int _listDraggedIndex = -1;
 
     private static void RenderList(string tag, string[] entries, ref int index, Action<string?, string?> replace, Action<int> moveUp, Action<int> moveDown)
     {
@@ -273,10 +271,11 @@ public static class KeyboardSimulatorPages
             foreach (var universalEntry in entries)
             {
                 ImGui.TableNextRow();
-
                 ImGui.TableNextColumn();
                 ImGui.Dummy(Vector2.Zero);
                 ImGui.SameLine();
+                
+                // Edit button
                 GuiUtils.DoModal(
                     $"Edit Entry##keyboardSimulator{tag}Edit{index}",
                     "Edit",
@@ -288,12 +287,15 @@ public static class KeyboardSimulatorPages
                     value => { replace(universalEntry, value); });
 
                 ImGui.TableNextColumn();
+                
+                // Text with tooltip
                 var description = DisplayEntry(universalEntry);
-
                 ImGui.Text(description[0]);
                 if (description.Length == 2) GuiUtils.DrawTooltip(description[1]);
 
                 ImGui.TableNextColumn();
+                
+                // Up & down buttons
                 ImGui.BeginDisabled(index == 0);
                 if (ImGui.ArrowButton($"##keyboardSimulator{tag}MoveUp{index}", ImGuiDir.Up)) moveUp(index);
                 ImGui.EndDisabled();
@@ -301,9 +303,12 @@ public static class KeyboardSimulatorPages
                 ImGui.BeginDisabled(index == entries.Length - 1);
                 if (ImGui.ArrowButton($"##keyboardSimulator{tag}MoveDown{index}", ImGuiDir.Down)) moveDown(index);
                 ImGui.EndDisabled();
+                
                 ImGui.SameLine();
                 ImGui.Dummy(Vector2.Zero);
                 ImGui.SameLine();
+                
+                // Delete button
                 GuiUtils.DoModalToConfirm(
                     $"Remove this entry?##keyboardSimulator{tag}Delete{index}",
                     "X",
@@ -312,6 +317,7 @@ public static class KeyboardSimulatorPages
                     "No",
                     () => { replace(universalEntry, null); }
                 );
+                
                 ImGui.SameLine();
                 ImGui.Dummy(Vector2.Zero);
 

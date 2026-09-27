@@ -162,8 +162,6 @@ class Program
                 vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) => { Services.GuiBackend.EnqueueOverlayEvent(in vrEvent); });
                 Services.GuiBackend.HasTerminated += (sender, e) =>
                 {
-                    vr.Overlay.DestroyOverlay(mainHandle);
-                    vr.Overlay.DestroyOverlay(thumbnailHandle);
                     vr.Shutdown();
                 };
 
@@ -174,6 +172,7 @@ class Program
                 guiTask = Task.Run(() => Services.GuiBackend.Run(mainHandle), Session.ProgramCts.Token);
             }
 
+            // TODO: Is the below just test code?
             if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
             var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;
             if (hmdIndex == uint.MaxValue)
