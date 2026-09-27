@@ -2,22 +2,22 @@ namespace BVRTK.Components.KeyboardSimulator;
 
 public enum HardwareInputLeftRight
 {
-    StickButton,
     StickNorth,
-    StickWest,
-    StickSouth,
     StickEast,
+    StickSouth,
+    StickWest,
+    StickButton,
     
-    TrackpadButton,
     TrackpadNorth,
-    TrackpadWest,
-    TrackpadSouth,
     TrackpadEast,
+    TrackpadSouth,
+    TrackpadWest,
+    TrackpadCenter,
     
     FaceButtonNorth,
-    FaceButtonWest,
-    FaceButtonSouth,
     FaceButtonEast,
+    FaceButtonSouth,
+    FaceButtonWest,
     
     SystemButtonNorth,
     SystemButtonSouth,

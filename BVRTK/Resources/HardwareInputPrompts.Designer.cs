@@ -474,11 +474,11 @@ namespace BVRTK.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tackpad Button.
+        ///   Looks up a localized string similar to Tackpad Center.
         /// </summary>
-        internal static string TrackpadButton {
+        internal static string TrackpadCenter {
             get {
-                return ResourceManager.GetString("TrackpadButton", resourceCulture);
+                return ResourceManager.GetString("TrackpadCenter", resourceCulture);
             }
         }
         

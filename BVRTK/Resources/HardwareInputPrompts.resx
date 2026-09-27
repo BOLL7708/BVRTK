@@ -33,8 +33,8 @@
     <data name="StickEast" xml:space="preserve">
         <value>Stick East</value>
     </data>
-    <data name="TrackpadButton" xml:space="preserve">
-        <value>Tackpad Button</value>
+    <data name="TrackpadCenter" xml:space="preserve">
+        <value>Tackpad Center</value>
     </data>
     <data name="TrackpadNorth" xml:space="preserve">
         <value>Trackpad North</value>

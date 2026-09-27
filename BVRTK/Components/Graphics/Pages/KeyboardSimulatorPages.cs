@@ -268,7 +268,15 @@ public static class KeyboardSimulatorPages
             ImGui.TableSetupColumn($"##keyboardSimulator{tag}LeftCol", ImGuiTableColumnFlags.WidthFixed);
             ImGui.TableSetupColumn($"##keyboardSimulator{tag}MiddleCol", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn($"##keyboardSimulator{tag}RightCol", ImGuiTableColumnFlags.WidthFixed);
-            foreach (var universalEntry in entries)
+            if (entries.Length == 0)
+            {
+                ImGui.TableNextRow();
+                ImGui.TableNextColumn();
+                ImGui.Dummy(Vector2.Zero);
+                ImGui.SameLine();
+                ImGui.TextUnformatted("No entries found.");
+            }
+            else foreach (var universalEntry in entries)
             {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();

@@ -126,6 +126,9 @@
         <None Update="Build\version.txt">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="_steamvr\software.boll.bvrtk.bindings.knuckles.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     
     <Target Name="GenerateVersionFile" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true'">

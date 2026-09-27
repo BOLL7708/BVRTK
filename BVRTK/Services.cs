@@ -5,6 +5,7 @@ using BVRTK.Components.Server;
 using BVRTK.Resources;
 using EasyOpenVR;
 using EasyOpenVR.Data.Manifest;
+using Software.Boll.EasyUtils;
 using Valve.VR;
 
 namespace BVRTK;
@@ -32,12 +33,16 @@ public static class Services
 
     private static EasyOpenVr BuildVr()
     {
+        const string dir = "_steamvr";
+        
+        FileUtils.EnsureDirectoryExists(dir);
+        
         #region App Manifest
 
-        const string vrManifestFilename = "software.boll.bvrtk.vrmanifest";
+        const string vrManifestFilename = $"{dir}/software.boll.bvrtk.vrmanifest";
         var application = new ApplicationBuilder(Constants.SystemApplicationKey)
             .IsDashboardOverlay()
-            .SetBinaryPathWindows("D:/Google Drive/-= BOLL7708 =-/Rider/BVRTK/BVRTK/bin/Debug/net10.0/BVRTK.exe") // TODO: Figure out what this should be.
+            .SetBinaryPathWindows("../BVRTK.exe")
             .AddStrings("en_us", new Strings("BOLL's VR Toolkit", "Suite of tools and extensions for SteamVR."))
             .Build();
         var vrManifestBuilder = new VrManifestBuilder()
@@ -47,9 +52,10 @@ public static class Services
 
         #region Action Manifest
 
-        const string actionManifestFilename = "software.boll.bvrtk.actions.json";
+        const string actionManifestFilename = $"{dir}/software.boll.bvrtk.actions.json";
         var actionManifestBuilder = new ActionManifestBuilder()
             .AddVersion(1, 1)
+            .AddDefaultBindings(ControllerType.Knuckles, $"software.boll.bvrtk.bindings.knuckles.json")
             .AddActionSet(
                 "default",
                 ActionSetUsage.Leftright,
@@ -113,7 +119,7 @@ public static class Services
 
         return new EasyOpenVrBuilder()
             .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, Session.isDebug)
-            .SetActionManifest(actionManifestFilename, actionManifestBuilder, Session.isDebug) // TODO: Still not working
+            .SetActionManifest(actionManifestFilename, actionManifestBuilder, Session.isDebug)
             .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
             .SetPumpInterval(EasyOpenVr.EPumpInterval.FractionOfHmdHz, 1)
             .SetDebug(true)
