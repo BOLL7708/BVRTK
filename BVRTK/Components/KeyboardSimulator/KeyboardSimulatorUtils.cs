@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Globalization;
+using BVRTK.Components.Graphics;
 using BVRTK.Resources;
 using SharpHook.Data;
 
@@ -7,12 +9,14 @@ namespace BVRTK.Components.KeyboardSimulator;
 public static class KeyboardSimulatorUtils
 {
     #region Keys
+
     private static readonly Dictionary<KeyCode, string> KeyCodeDisplayValues = new()
     {
         [KeyCode.VcAccept] = "CUSTOM LABEL YO!"
     };
 
-    private static readonly List<KeyCode> KeyCodeIgnored = [
+    private static readonly List<KeyCode> KeyCodeIgnored =
+    [
         KeyCode.VcLeftAlt,
         KeyCode.VcRightAlt,
         KeyCode.VcLeftControl,
@@ -30,7 +34,7 @@ public static class KeyboardSimulatorUtils
         var singleKeys = keycodes.Where(x => IsSingle(Enum.GetName(x)));
         var rest = keycodes.Where(x => !IsSingle(Enum.GetName(x)) && !IsFunc(Enum.GetName(x)));
         keycodes = [.. functionKeys, .. singleKeys, .. rest];
-        
+
         // Check if we have a value, otherwise take the name and remove Vc prefix.
         var values = new Dictionary<string, string>();
         foreach (var keycode in keycodes)
@@ -48,7 +52,7 @@ public static class KeyboardSimulatorUtils
         }
 
         return values;
-        
+
         static bool IsFunc(string? n) => n?.Length > 3 && n[2] == 'F' && n[3..].All(char.IsDigit); // Function keys
         static bool IsSingle(string? n) => n?.Length == 3; // Letters & digits
     }
@@ -57,15 +61,15 @@ public static class KeyboardSimulatorUtils
     {
         var ids = new List<string>();
         var pairs = GetGuiIdPairs();
-        foreach(var pair in pairs)
+        foreach (var pair in pairs)
         {
             ids.Add($"{pair.Value}##{pair.Key}");
         }
 
         return [.. ids];
     }
-    
-    public static KeyCode TagToEnum(string tag)
+
+    private static KeyCode NameToEnum(string tag)
     {
         try
         {
@@ -77,39 +81,131 @@ public static class KeyboardSimulatorUtils
             return KeyCode.VcUndefined;
         }
     }
-    
+
+    internal static SimEntry ParseEntry(string value)
+    {
+        // Split on the label, which is the first space, then the label can contain anything.
+        var firstSpace = value.IndexOf(' ');
+        var settings = firstSpace >= 0 ? value[..firstSpace] : value;
+        var label = firstSpace >= 0 ? value[(firstSpace + 1)..] : string.Empty;
+
+        // Split on the settings divider
+        var parts = settings.Split("|");
+        var actionStr = parts.ElementAtOrDefault(0) ?? string.Empty;
+        var keyCodeStr = parts.ElementAtOrDefault(1) ?? string.Empty;
+        var modifierStr = parts.ElementAtOrDefault(2) ?? "00";
+        // TODO: New settings values here later
+
+        // Parse strings and derive indices
+        var actionIndex = Math.Max(0, Session.VrInputActionGuiIds.ToList().FindIndex(it => it.EndsWith($"##{actionStr}")));
+        var actionEntry = Session.GuiActionEntries[actionIndex];
+        var keyCodeIndex = Math.Max(0, Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{keyCodeStr}")));
+        var keyCode = NameToEnum(keyCodeStr);
+        var modifierFlags = (ModifierFlags)ParseByteFromHexStr(modifierStr);
+        // TODO: Use same parser for other checkboxes
+
+        return new SimEntry(actionEntry, actionIndex, keyCode, keyCodeIndex, modifierFlags, label);
+
+        byte ParseByteFromHexStr(string hexStr)
+        {
+            if (byte.TryParse(
+                    hexStr,
+                    NumberStyles.HexNumber,
+                    CultureInfo.InvariantCulture,
+                    out var result)
+               )
+            {
+                return result;
+            }
+
+            return 0;
+        }
+    }
+
+    internal static string EncodeEntry(SimEntry entry)
+    {
+        var action = GuiUtils.GetTagFromId(Session.VrInputActionGuiIds[entry.ActionIndex]);
+        var key = GuiUtils.GetTagFromId(Session.KeyboardSimulatorKeyCodeGuiIds[entry.KeyCodeIndex]);
+        return $"{action}|{key}|{(byte)entry.Modifiers:X2} {entry.Label}".Trim();
+    }
+
+
+    internal record struct SimEntry(
+        ActionGuiEntry Action,
+        int ActionIndex,
+        KeyCode KeyCode,
+        int KeyCodeIndex,
+        ModifierFlags Modifiers,
+        string Label
+    );
+
+    [Flags]
+    public enum ModifierFlags : byte
+    {
+        None = 0,
+
+        AltLeft = 1 << 0,
+        AltRight = 1 << 1,
+
+        CtrlLeft = 1 << 2,
+        CtrlRight = 1 << 3,
+
+        ShiftLeft = 1 << 4,
+        ShiftRight = 1 << 5,
+
+        MetaLeft = 1 << 6,
+        MetaRight = 1 << 7
+    }
+
+    public static KeyCode[] ToKeyCodes(this ModifierFlags modifiers)
+    {
+        var result = new List<KeyCode>(8);
+
+        if (modifiers.HasFlag(ModifierFlags.AltLeft)) result.Add(KeyCode.VcLeftAlt);
+        if (modifiers.HasFlag(ModifierFlags.AltRight)) result.Add(KeyCode.VcRightAlt);
+        if (modifiers.HasFlag(ModifierFlags.CtrlLeft)) result.Add(KeyCode.VcLeftControl);
+        if (modifiers.HasFlag(ModifierFlags.CtrlRight)) result.Add(KeyCode.VcRightControl);
+        if (modifiers.HasFlag(ModifierFlags.ShiftLeft)) result.Add(KeyCode.VcLeftShift);
+        if (modifiers.HasFlag(ModifierFlags.ShiftRight)) result.Add(KeyCode.VcRightShift);
+        if (modifiers.HasFlag(ModifierFlags.MetaLeft)) result.Add(KeyCode.VcLeftMeta);
+        if (modifiers.HasFlag(ModifierFlags.MetaRight)) result.Add(KeyCode.VcRightMeta);
+
+        return [.. result];
+    }
+
     #endregion
 
     #region VR Input
-    
-    public static string GetPromptNameForHardwareInputLeftRight(HardwareInputLeftRight hwi)
+
+    public static string GetPromptNameForHardwareInputLeftRight(HardwareInputEnums hwi)
     {
         var promptName = hwi switch
         {
-            HardwareInputLeftRight.StickNorth => nameof(HardwareInputPrompts.StickNorth),
-            HardwareInputLeftRight.StickEast => nameof(HardwareInputPrompts.StickEast),
-            HardwareInputLeftRight.StickSouth => nameof(HardwareInputPrompts.StickSouth),
-            HardwareInputLeftRight.StickWest => nameof(HardwareInputPrompts.StickWest),
-            HardwareInputLeftRight.StickButton => nameof(HardwareInputPrompts.StickButton),
-            HardwareInputLeftRight.TrackpadNorth => nameof(HardwareInputPrompts.TrackpadNorth),
-            HardwareInputLeftRight.TrackpadEast => nameof(HardwareInputPrompts.TrackpadEast),
-            HardwareInputLeftRight.TrackpadSouth => nameof(HardwareInputPrompts.TrackpadSouth),
-            HardwareInputLeftRight.TrackpadWest => nameof(HardwareInputPrompts.TrackpadWest),
-            HardwareInputLeftRight.TrackpadCenter => nameof(HardwareInputPrompts.TrackpadCenter),
-            HardwareInputLeftRight.FaceButtonNorth => nameof(HardwareInputPrompts.FaceButtonNorth),
-            HardwareInputLeftRight.FaceButtonEast => nameof(HardwareInputPrompts.FaceButtonEast),
-            HardwareInputLeftRight.FaceButtonSouth => nameof(HardwareInputPrompts.FaceButtonSouth),
-            HardwareInputLeftRight.FaceButtonWest => nameof(HardwareInputPrompts.FaceButtonWest),
-            HardwareInputLeftRight.SystemButtonNorth => nameof(HardwareInputPrompts.SystemButtonNorth),
-            HardwareInputLeftRight.SystemButtonSouth => nameof(HardwareInputPrompts.SystemButtonSouth),
-            HardwareInputLeftRight.TriggerPrimary => nameof(HardwareInputPrompts.TriggerPrimary),
-            HardwareInputLeftRight.TriggerSecondary => nameof(HardwareInputPrompts.TriggerSecondary),
-            HardwareInputLeftRight.GripTrigger => nameof(HardwareInputPrompts.GripTrigger),
-            HardwareInputLeftRight.GripButton => nameof(HardwareInputPrompts.GripButton),
+            HardwareInputEnums.StickNorth => nameof(HardwareInputPrompts.StickNorth),
+            HardwareInputEnums.StickEast => nameof(HardwareInputPrompts.StickEast),
+            HardwareInputEnums.StickSouth => nameof(HardwareInputPrompts.StickSouth),
+            HardwareInputEnums.StickWest => nameof(HardwareInputPrompts.StickWest),
+            HardwareInputEnums.StickButton => nameof(HardwareInputPrompts.StickButton),
+            HardwareInputEnums.TrackpadNorth => nameof(HardwareInputPrompts.TrackpadNorth),
+            HardwareInputEnums.TrackpadEast => nameof(HardwareInputPrompts.TrackpadEast),
+            HardwareInputEnums.TrackpadSouth => nameof(HardwareInputPrompts.TrackpadSouth),
+            HardwareInputEnums.TrackpadWest => nameof(HardwareInputPrompts.TrackpadWest),
+            HardwareInputEnums.TrackpadCenter => nameof(HardwareInputPrompts.TrackpadCenter),
+            HardwareInputEnums.FaceButtonNorth => nameof(HardwareInputPrompts.FaceButtonNorth),
+            HardwareInputEnums.FaceButtonEast => nameof(HardwareInputPrompts.FaceButtonEast),
+            HardwareInputEnums.FaceButtonSouth => nameof(HardwareInputPrompts.FaceButtonSouth),
+            HardwareInputEnums.FaceButtonWest => nameof(HardwareInputPrompts.FaceButtonWest),
+            HardwareInputEnums.SystemButtonNorth => nameof(HardwareInputPrompts.SystemButtonNorth),
+            HardwareInputEnums.SystemButtonSouth => nameof(HardwareInputPrompts.SystemButtonSouth),
+            HardwareInputEnums.TriggerPrimary => nameof(HardwareInputPrompts.TriggerPrimary),
+            HardwareInputEnums.TriggerSecondary => nameof(HardwareInputPrompts.TriggerSecondary),
+            HardwareInputEnums.GripTrigger => nameof(HardwareInputPrompts.GripTrigger),
+            HardwareInputEnums.GripButton => nameof(HardwareInputPrompts.GripButton),
             _ => throw new ArgumentOutOfRangeException(nameof(hwi), hwi, null)
         };
         return promptName;
     }
+
     public static string GetPromptNameForHardwareInputShared(HardwareInputShared hwi)
     {
         var promptName = hwi switch
@@ -150,6 +246,6 @@ public static class KeyboardSimulatorUtils
         };
         return promptName;
     }
-    
+
     #endregion
 }

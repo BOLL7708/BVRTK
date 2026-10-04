@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using System.Numerics;
 using BVRTK.Components.Graphics;
 using BVRTK.Components.KeyboardSimulator;
+using EasyOpenVR.Data.Manifest;
 using Hexa.NET.ImGui;
 
 namespace BVRTK;
@@ -44,28 +44,45 @@ public static class Session
         {
             field = value;
             VrInputActionGuiIds = [.. value.Select(entry => entry.Id)];
-            VrInputActionGuiTagToLabel = [.. value.ToImmutableDictionary(
-                entry => entry.Name,
-                entry => entry.Prompt()
-            )];
+            VrInputActionGuiTagToLabel =
+            [
+                .. value.ToImmutableDictionary(
+                    entry => entry.Name,
+                    entry => entry.Prompt()
+                )
+            ];
         }
     } = [];
 
-    public static volatile string[] VrInputActionGuiIds = [];
-    public static ImmutableDictionary<string, string> VrInputActionGuiTagToLabel = [];
-    public static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds();
-    public static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary();
-    public static volatile string[] SupportedLanguageGuiIds = Utils.GetSupportedLanguageGuiIds();
-    public static ImmutableDictionary<string, string> SupportedLanguageGuiTagToLabel = Utils.GetSupportedLanguageGuiIdPairs().ToImmutableDictionary();
+    internal static volatile string[] VrInputActionGuiIds = [];
+    internal static ImmutableDictionary<string, string> VrInputActionGuiTagToLabel = [];
+    internal static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds();
+    internal static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary();
+    internal static volatile string[] SupportedLanguageGuiIds = Utils.GetSupportedLanguageGuiIds();
+    internal static ImmutableDictionary<string, string> SupportedLanguageGuiTagToLabel = Utils.GetSupportedLanguageGuiIdPairs().ToImmutableDictionary();
 
-    public static string SteamSceneAppId { get; set; } = "";
+    #nullable enable
+    public static event Action<string>? OnSteamSceneAppIdChanged;
+    public static string SteamSceneAppId
+    {
+        get;
+        set
+        {
+            if (EqualityComparer<string>.Default.Equals(field, value)) return;
+            field = value;
+            OnSteamSceneAppIdChanged?.Invoke(value);
+        }
+    } = "";
+
     public static string SteamSceneAppName { get; set; } = "";
+    public static ActionSet[] VrInputActionSets { get; set; } = [];
 }
 
-public class ActionGuiEntry(string name, string path, Func<string> prompt)
+public class ActionGuiEntry(string name, string path, bool isChord, Func<string> prompt)
 {
     public readonly string Name = name;
     public readonly string Path = path;
+    public readonly bool IsChord = isChord;
     public readonly Func<string> Prompt = prompt;
     public string Id => $"{Prompt()}##{Name}";
 }

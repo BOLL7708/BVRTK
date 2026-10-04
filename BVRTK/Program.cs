@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Runtime.InteropServices;
+using BVRTK.Components.KeyboardSimulator;
 using BVRTK.Data;
+using BVRTK.Data.Setting;
 using EasyOpenVR;
 using Valve.VR;
 
@@ -159,7 +161,10 @@ class Program
                     Constants.OverlayPhysicalWidth,
                     thumbnailBytes: Utils.LoadEmbeddedResource("BVRTK.Resources.Media.bvrtk.thumbnail.png")
                 );
-                vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) => { Services.GuiBackend.EnqueueOverlayEvent(in vrEvent); });
+                vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
+                {
+                    Services.GuiBackend.EnqueueOverlayEvent(in vrEvent);
+                });
                 Services.GuiBackend.HasTerminated += (sender, e) =>
                 {
                     vr.Shutdown();
@@ -167,7 +172,17 @@ class Program
 
                 vr.System.SetAutoLaunch(Constants.SystemApplicationKey, Settings.Current.Application.LaunchWithSteamVr);
                 SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (autoLaunch) => { vr.System.SetAutoLaunch(Constants.SystemApplicationKey, autoLaunch); };
-
+                
+                // region Initialize Everything
+                foreach (var actionSet in Session.VrInputActionSets)
+                {
+                    Console.WriteLine($"REGISTERING ACTION SET: {actionSet.Name}");
+                    var result = vr.Input.RegisterActionSet(actionSet.Name);
+                    if(!result.Success) Console.WriteLine($"FAILED TO REGISTER ACTIONSET {result.ErrorName} {result.ErrorName} {result.Error}");
+                }
+                KeyboardSim.Init();
+                // endregion
+                
                 Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
                 guiTask = Task.Run(() => Services.GuiBackend.Run(mainHandle), Session.ProgramCts.Token);
             }

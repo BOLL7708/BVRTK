@@ -1,6 +1,6 @@
 namespace BVRTK.Components.KeyboardSimulator;
 
-public enum HardwareInputLeftRight
+public enum HardwareInputEnums
 {
     StickNorth,
     StickEast,
@@ -63,4 +63,12 @@ public enum HardwareInputShared
     Chord14,
     Chord15,
     Chord16
+}
+
+public static class HardwareInputSharedExtensions
+{
+    extension(HardwareInputShared input)
+    {
+        public bool IsChord => input is >= HardwareInputShared.Chord1 and <= HardwareInputShared.Chord16;
+    }
 }

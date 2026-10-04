@@ -5,6 +5,7 @@ using BVRTK.Components.Server;
 using BVRTK.Resources;
 using EasyOpenVR;
 using EasyOpenVR.Data.Manifest;
+using SharpHook.Simulation;
 using Software.Boll.EasyUtils;
 using Valve.VR;
 
@@ -22,6 +23,9 @@ public static class Services
 
     private static readonly Lazy<GuiBackend> LazyApplicationWindow = new(BuildApplicationWindow);
     public static GuiBackend GuiBackend => LazyApplicationWindow.Value;
+
+    private static readonly Lazy<EventSimulator> LazySharpHook = new(BuildSharpHook);
+    public static EventSimulator SharpHook => LazySharpHook.Value;
 
     #endregion
 
@@ -75,7 +79,7 @@ public static class Services
                     set.AddLocalization("en_US", "Keyboard Simulator");
                     
                     // We are duplicating the hardware inputs to represent the left and right controller.
-                    var hwInputsLr = Enum.GetValues<HardwareInputLeftRight>();
+                    var hwInputsLr = Enum.GetValues<HardwareInputEnums>();
                     string[] prefixNames = [nameof(GeneralPrompts.Left), nameof(GeneralPrompts.Right)];
                     List<ActionGuiEntry> actionGuiEntries = [];
                     foreach (var prefixName in prefixNames)
@@ -92,7 +96,12 @@ public static class Services
                                 configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName); });
                             
                             // Register the actions for display in the GUI
-                            actionGuiEntries.Add(new ActionGuiEntry(prefixedName, action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName)));
+                            actionGuiEntries.Add(new ActionGuiEntry(
+                                prefixedName, 
+                                action.Name, 
+                                false,
+                                Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName))
+                            );
                         }
                     }
 
@@ -108,7 +117,12 @@ public static class Services
                             configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName); });
                         
                         // Register the actions for display in the GUI
-                        actionGuiEntries.Add(new ActionGuiEntry(name, action.Name, Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName)));
+                        actionGuiEntries.Add(new ActionGuiEntry(
+                            name, 
+                            action.Name, 
+                            hardwareInputShared.IsChord,
+                            Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName))
+                        );
                     }
 
                     Session.GuiActionEntries = [.. actionGuiEntries];
@@ -117,6 +131,9 @@ public static class Services
         
         #endregion
 
+        // We load these so they can be registered to enable listening to inputs to those sets.
+        Session.VrInputActionSets = actionManifestBuilder.GetActionSets();
+        
         return new EasyOpenVrBuilder()
             .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, Session.isDebug)
             .SetActionManifest(actionManifestFilename, actionManifestBuilder, Session.isDebug)
@@ -129,5 +146,10 @@ public static class Services
     private static GuiBackend BuildApplicationWindow()
     {
         return new GuiBackend();
+    }
+
+    private static EventSimulator BuildSharpHook()
+    {
+        return EventSimulator.Create("BVRTK Event Simulator");
     }
 }

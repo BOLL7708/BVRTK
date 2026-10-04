@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using BVRTK.Components.KeyboardSimulator;
 using BVRTK.Data;
 using Hexa.NET.ImGui;
 
@@ -155,55 +156,32 @@ public static class KeyboardSimulatorPages
 
     private static void ParseEntry(string value)
     {
-        var parts = value.Split("|", 4);
-        if (parts.Length < 3)
-        {
-            // Reset current values as we are likely registering a new entry.
-            _vrInputActionIndex = 0;
-            _keyIndex = 0;
-            _label = "";
-            SetModifierFlags(ModifierFlags.None);
-            return;
-        }
-
-        _vrInputActionIndex = Session.VrInputActionGuiIds.ToList().FindIndex(it => it.EndsWith($"##{parts[0]}"));
-        _keyIndex = Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{parts[1]}"));
-        _label = parts.Length >= 4 ? parts[3] : "";
-
-        if (byte.TryParse(
-                parts[2],
-                NumberStyles.HexNumber,
-                CultureInfo.InvariantCulture,
-                out var modifierByte))
-        {
-            SetModifierFlags((ModifierFlags)modifierByte);
-        }
-        else
-        {
-            // To let NEW entries have zero flags instead of the previous ones.
-            SetModifierFlags(ModifierFlags.None);
-        }
+        var entry = KeyboardSimulatorUtils.ParseEntry(value);
+        _vrInputActionIndex = entry.ActionIndex;
+        _keyIndex = entry.KeyCodeIndex;
+        _label = entry.Label;
+        SetModifierFlags(entry.Modifiers);
     }
 
     private static string EncodeEntry()
     {
-        var action = GuiUtils.GetTagFromId(Session.VrInputActionGuiIds[_vrInputActionIndex < 0 ? 0 : _vrInputActionIndex]);
-        var key = GuiUtils.GetTagFromId(Session.KeyboardSimulatorKeyCodeGuiIds[_keyIndex < 0 ? 0 : _keyIndex]);
-        var modifiers = GetModifierFlags();
-        return $"{action}|{key}|{(byte)modifiers:X2}|{_label}";
+        var entry = new KeyboardSimulatorUtils.SimEntry
+        {
+            ActionIndex = _vrInputActionIndex,
+            KeyCodeIndex = _keyIndex,
+            Modifiers = GetModifierFlags(),
+            Label = _label
+        };
+        return KeyboardSimulatorUtils.EncodeEntry(entry);
     }
 
     private static string[] DisplayEntry(string value)
     {
-        var parts = value.Split("|", 4);
-        if (parts.Length < 3) return ["N/A"];
-
-        Session.VrInputActionGuiTagToLabel.TryGetValue(parts[0], out var action);
-        Session.KeyboardSimulatorKeyCodeGuiTagToLabel.TryGetValue(parts[1], out var key);
-        byte.TryParse(parts[2], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var modifierByte);
-        var label = parts.Length >= 4 ? parts[3] : "";
-        var description = $"{action} => {DisplayFlags((ModifierFlags)modifierByte)}{key}";
-        return label.Length > 0 ? [label, description] : [description];
+        var entry = KeyboardSimulatorUtils.ParseEntry(value);
+        var actionPrompt = entry.Action.Prompt();
+        Session.KeyboardSimulatorKeyCodeGuiTagToLabel.TryGetValue(entry.KeyCode.ToString(), out var keyCodeName);
+        var description = $"{actionPrompt} => {DisplayFlags(entry.Modifiers)}{keyCodeName}";
+        return entry.Label.Length > 0 ? [entry.Label, description] : [description];
     }
 
     private static string RenderDialog(string startValue)
@@ -340,64 +318,48 @@ public static class KeyboardSimulatorPages
         ImGui.PopStyleColor(3);
     }
 
-    [Flags]
-    private enum ModifierFlags : byte
+
+
+    private static KeyboardSimulatorUtils.ModifierFlags GetModifierFlags()
     {
-        None = 0,
+        var flags = KeyboardSimulatorUtils.ModifierFlags.None;
 
-        AltLeft = 1 << 0,
-        AltRight = 1 << 1,
+        if (_altLeft) flags |= KeyboardSimulatorUtils.ModifierFlags.AltLeft;
+        if (_altRight) flags |= KeyboardSimulatorUtils.ModifierFlags.AltRight;
 
-        CtrlLeft = 1 << 2,
-        CtrlRight = 1 << 3,
+        if (_ctrlLeft) flags |= KeyboardSimulatorUtils.ModifierFlags.CtrlLeft;
+        if (_ctrlRight) flags |= KeyboardSimulatorUtils.ModifierFlags.CtrlRight;
 
-        ShiftLeft = 1 << 4,
-        ShiftRight = 1 << 5,
+        if (_shiftLeft) flags |= KeyboardSimulatorUtils.ModifierFlags.ShiftLeft;
+        if (_shiftRight) flags |= KeyboardSimulatorUtils.ModifierFlags.ShiftRight;
 
-        MetaLeft = 1 << 6,
-        MetaRight = 1 << 7
-    }
-
-    private static ModifierFlags GetModifierFlags()
-    {
-        var flags = ModifierFlags.None;
-
-        if (_altLeft) flags |= ModifierFlags.AltLeft;
-        if (_altRight) flags |= ModifierFlags.AltRight;
-
-        if (_ctrlLeft) flags |= ModifierFlags.CtrlLeft;
-        if (_ctrlRight) flags |= ModifierFlags.CtrlRight;
-
-        if (_shiftLeft) flags |= ModifierFlags.ShiftLeft;
-        if (_shiftRight) flags |= ModifierFlags.ShiftRight;
-
-        if (_metaLeft) flags |= ModifierFlags.MetaLeft;
-        if (_metaRight) flags |= ModifierFlags.MetaRight;
+        if (_metaLeft) flags |= KeyboardSimulatorUtils.ModifierFlags.MetaLeft;
+        if (_metaRight) flags |= KeyboardSimulatorUtils.ModifierFlags.MetaRight;
 
         return flags;
     }
 
-    private static void SetModifierFlags(ModifierFlags flags)
+    private static void SetModifierFlags(KeyboardSimulatorUtils.ModifierFlags flags)
     {
-        _altLeft = flags.HasFlag(ModifierFlags.AltLeft);
-        _altRight = flags.HasFlag(ModifierFlags.AltRight);
+        _altLeft = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.AltLeft);
+        _altRight = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.AltRight);
 
-        _ctrlLeft = flags.HasFlag(ModifierFlags.CtrlLeft);
-        _ctrlRight = flags.HasFlag(ModifierFlags.CtrlRight);
+        _ctrlLeft = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.CtrlLeft);
+        _ctrlRight = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.CtrlRight);
 
-        _shiftLeft = flags.HasFlag(ModifierFlags.ShiftLeft);
-        _shiftRight = flags.HasFlag(ModifierFlags.ShiftRight);
+        _shiftLeft = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.ShiftLeft);
+        _shiftRight = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.ShiftRight);
 
-        _metaLeft = flags.HasFlag(ModifierFlags.MetaLeft);
-        _metaRight = flags.HasFlag(ModifierFlags.MetaRight);
+        _metaLeft = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.MetaLeft);
+        _metaRight = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.MetaRight);
     }
 
-    private static string DisplayFlags(ModifierFlags flags)
+    private static string DisplayFlags(KeyboardSimulatorUtils.ModifierFlags flags)
     {
-        var alt = flags.HasFlag(ModifierFlags.AltLeft) | flags.HasFlag(ModifierFlags.AltRight) ? "/" : "";
-        var ctrl = flags.HasFlag(ModifierFlags.CtrlLeft) | flags.HasFlag(ModifierFlags.CtrlRight) ? "^" : "";
-        var shift = flags.HasFlag(ModifierFlags.ShiftLeft) | flags.HasFlag(ModifierFlags.ShiftRight) ? "+" : "";
-        var meta = flags.HasFlag(ModifierFlags.MetaLeft) | flags.HasFlag(ModifierFlags.MetaRight) ? "#" : "";
+        var alt = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.AltLeft) | flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.AltRight) ? "/" : "";
+        var ctrl = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.CtrlLeft) | flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.CtrlRight) ? "^" : "";
+        var shift = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.ShiftLeft) | flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.ShiftRight) ? "+" : "";
+        var meta = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.MetaLeft) | flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.MetaRight) ? "#" : "";
         var all = $"{alt}{ctrl}{shift}{meta}";
         return all.IsWhiteSpace() ? "" : $"[{all}] ";
     }
