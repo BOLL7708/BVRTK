@@ -11,7 +11,7 @@ public static partial class Gui
     private static void RenderSidebar()
     {
         // The sidebar
-        ImGui.BeginChild("##Sidebar", new Vector2(Constants.GuiSidebarWidth, 0));
+        ImGui.BeginChild("##Sidebar", new Vector2(Constants.Gui.SidebarWidth, 0));
 
         // To add top space.
         ImGui.Dummy(Vector2.Zero);
@@ -19,8 +19,8 @@ public static partial class Gui
         #region Tabs
 
         // Section buttons, each colored by its accent
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiTabRounding);
-        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding with { X = Constants.GuiTabRounding * 2f });
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.Gui.TabRounding);
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding with { X = Constants.Gui.TabRounding * 2f });
         ImGui.PushStyleVar(ImGuiStyleVar.ButtonTextAlign, new Vector2(1f, 0.5f)); // Horizontal and vertical alignment
 
         var availableSpace = ImGui.GetContentRegionAvail();
@@ -49,7 +49,7 @@ public static partial class Gui
                 : GuiColor.White with { W = section.IsEnabled() ? 1: 0.5f }
             );
 
-            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.GuiTabRounding);
+            ImGui.SetCursorPosX(ImGui.GetCursorPosX() + Constants.Gui.TabRounding);
             ImGui.Button(section.Title(), availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
@@ -71,7 +71,7 @@ public static partial class Gui
 
         GuiUtils.PushColorAccents(GuiColor.Root);
         ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.GuiGeneralRounding);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.Gui.GeneralRounding);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
         ImGui.BeginChild("##QuickSettings", ImGuiChildFlags.AlwaysUseWindowPadding);
 

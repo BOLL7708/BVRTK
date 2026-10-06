@@ -152,13 +152,13 @@ class Program
                 // Console.WriteLine($"TEST OVERLAY: {result1.Success} {result2.Success} {result3.Success}");
                 var ds = Path.DirectorySeparatorChar;
                 vr.Overlay.CreateDashboardOverlay(
-                    Constants.OverlayUniqueId,
-                    Constants.OverlayTitle,
+                    Constants.Overlay.UniqueId,
+                    Constants.Overlay.Title,
                     out var mainHandle,
                     out var thumbnailHandle,
-                    Constants.OverlayTextureWidth,
-                    Constants.OverlayTextureHeight,
-                    Constants.OverlayPhysicalWidth,
+                    Constants.Overlay.TextureWidth,
+                    Constants.Overlay.TextureHeight,
+                    Constants.Overlay.PhysicalWidth,
                     thumbnailBytes: Utils.LoadEmbeddedResource("BVRTK.Resources.Media.bvrtk.thumbnail.png")
                 );
                 vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>

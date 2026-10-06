@@ -36,7 +36,7 @@ public static class Session
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }
 
-    /// Filled at action manifest registration
+    /// Filled at action manifest registration, includes all actions for the entire project.
     public static ImmutableList<ActionGuiEntry> GuiActionEntries
     {
         get;
@@ -54,12 +54,13 @@ public static class Session
         }
     } = [];
 
-    internal static volatile string[] VrInputActionGuiIds = [];
-    internal static ImmutableDictionary<string, string> VrInputActionGuiTagToLabel = [];
-    internal static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds();
-    internal static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary();
-    internal static volatile string[] SupportedLanguageGuiIds = Utils.GetSupportedLanguageGuiIds();
-    internal static ImmutableDictionary<string, string> SupportedLanguageGuiTagToLabel = Utils.GetSupportedLanguageGuiIdPairs().ToImmutableDictionary();
+    internal static volatile string[] VrInputActionGuiIds = []; // Full IDs
+    internal static ImmutableDictionary<string, string> VrInputActionGuiTagToLabel = []; // IDs as pairs
+    
+    internal static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds(); // Full IDs
+    internal static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary(); // IDs as pairs
+    internal static volatile string[] SupportedLanguageGuiIds = Utils.GetSupportedLanguageGuiIds(); // Full IDs
+    internal static ImmutableDictionary<string, string> SupportedLanguageGuiTagToLabel = Utils.GetSupportedLanguageGuiIdPairs().ToImmutableDictionary(); // IDs as pairs
 
     #nullable enable
     public static event Action<string>? OnSteamSceneAppIdChanged;

@@ -27,7 +27,7 @@ public static partial class Gui
         
         ImGui.BeginTabBar($"##Tabs{section.Title}");
 
-        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, Constants.GuiTabRounding);
+        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, Constants.Gui.TabRounding);
         Settings.Current.Application.CurrentPageInSection.TryGetValue(sectionIndex, out var selectedTab);
         var alreadyRestored = RestoredSectionsInPage.Contains(sectionIndex);
         
@@ -55,7 +55,7 @@ public static partial class Gui
 
                 // Drawing a custom separation line for the tab bar that matches the sidebar.
                 ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.TabActive());
-                ImGui.BeginChild($"##Separator{section.Title}", Vector2.Zero with { Y = Constants.GuiMainSeparatorGirth });
+                ImGui.BeginChild($"##Separator{section.Title}", Vector2.Zero with { Y = Constants.Gui.MainSeparatorGirth });
                 ImGui.EndChild();
                 ImGui.PopStyleColor();
 

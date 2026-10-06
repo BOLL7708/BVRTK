@@ -279,7 +279,7 @@ public class GuiGenerator : IIncrementalGenerator
                     case GuiElementKind.Int:
                         sb.AppendLine($"""
                                                var {e.FieldName} = Settings.Current.{e.ClassName}.{e.PropName};
-                                               ImGui.SetNextItemWidth({e.InputWidth}f*Constants.OverlayGuiScale);
+                                               ImGui.SetNextItemWidth({e.InputWidth}f*Constants.Overlay.GuiScale);
                                                if (ImGui.InputInt("{e.Label}", ref {e.FieldName}, {e.IntStep}, ImGuiInputTextFlags.CharsDecimal)) Settings.Current.{e.ClassName}.Set{e.PropName}({e.FieldName});
                                        """);
                         break;
@@ -312,7 +312,7 @@ public class GuiGenerator : IIncrementalGenerator
                         sb.AppendLine($$"""
                                                var {{e.FieldName}} = Settings.Current.{{e.ClassName}}.{{e.PropName}};
                                                var {{e.FieldName}}Index = GuiUtils.GetIndexOfTagInIds({{e.ComboValuesConstantPath}}, {{e.FieldName}});
-                                               ImGui.SetNextItemWidth({{e.ComboWidth}}f * Constants.OverlayGuiScale);
+                                               ImGui.SetNextItemWidth({{e.ComboWidth}}f * Constants.Overlay.GuiScale);
                                                if(ImGui.Combo("{{e.Label}}", ref {{e.FieldName}}Index, {{e.ComboValuesConstantPath}}, {{e.ComboValuesConstantPath}}.Length)) 
                                                {
                                                    var nameStr = {{e.ComboValuesConstantPath}}[{{e.FieldName}}Index];

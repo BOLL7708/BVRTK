@@ -121,7 +121,7 @@ public static class GuiUtils
     public static void DrawTitle(string title)
     {
         ImGui.Dummy(Vector2.Zero);
-        DrawCenteredText(title, FontStyle.Bold, Constants.GuiFontSize * 1.25f);
+        DrawCenteredText(title, FontStyle.Bold, Constants.Gui.FontSize * 1.25f);
         DrawDivider();
     }
 
@@ -181,15 +181,15 @@ public static class GuiUtils
     )
     {
         var vp = ImGui.GetMainViewport();
-        var center = vp.Pos + (vp.Size + new Vector2(Constants.GuiSidebarWidth + Constants.GuiMainSeparatorGirth, 0)) * 0.5f;
-        var buttonSize = new Vector2(128f * Constants.OverlayGuiScale, 0);
+        var center = vp.Pos + (vp.Size + new Vector2(Constants.Gui.SidebarWidth + Constants.Gui.MainSeparatorGirth, 0)) * 0.5f;
+        var buttonSize = new Vector2(128f * Constants.Overlay.GuiScale, 0);
 
         ImGui.SetNextWindowPos(center, ImGuiCond.Appearing, new Vector2(0.5f, 0.5f));
         ImGui.PushStyleColor(ImGuiCol.ModalWindowDimBg, GuiColor.Black with { W = 0.5f });
         ImGui.SetNextWindowSizeConstraints((vp.Size * 0.5f) with { Y = 0 }, vp.Size);
 
         ImGui.PushStyleColor(ImGuiCol.Text, GuiColor.Black);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, Constants.GuiBorderWidth);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, Constants.Gui.BorderWidth);
         if (ImGui.BeginPopupModal(tag, ImGuiWindowFlags.AlwaysAutoResize))
         {
             ImGui.PushStyleColor(ImGuiCol.Text, GuiColor.White);
@@ -257,13 +257,13 @@ public static class GuiUtils
             null,
             value =>
             {
-                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.SetNextItemWidth(size * Constants.Overlay.GuiScale);
                 ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.ReadOnly);
             },
             value =>
             {
                 if (ImGui.IsWindowAppearing()) ImGui.SetKeyboardFocusHere(0);
-                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.SetNextItemWidth(size * Constants.Overlay.GuiScale);
                 ImGui.InputInt(label, ref value, 0, ImGuiInputTextFlags.CharsDecimal);
                 return value;
             }, updateSetting);
@@ -275,13 +275,13 @@ public static class GuiUtils
             null,
             value =>
             {
-                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.SetNextItemWidth(size * Constants.Overlay.GuiScale);
                 ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.ReadOnly);
             },
             value =>
             {
                 if (ImGui.IsWindowAppearing()) ImGui.SetKeyboardFocusHere(0);
-                ImGui.SetNextItemWidth(size * Constants.OverlayGuiScale);
+                ImGui.SetNextItemWidth(size * Constants.Overlay.GuiScale);
                 ImGui.InputText(label, ref value, maxLength, ImGuiInputTextFlags.None);
                 return value;
             }, updateSetting);
@@ -323,10 +323,10 @@ public static class GuiUtils
             || string.IsNullOrWhiteSpace(message)
         ) return;
 
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, Constants.GuiGeneralRounding);
-        ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, Constants.GuiBorderWidth);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, Constants.Gui.GeneralRounding);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, Constants.Gui.BorderWidth);
         ImGui.BeginTooltip();
-        ImGui.PushTextWrapPos(ImGui.GetFontSize() * Constants.GuiTooltipWrap);
+        ImGui.PushTextWrapPos(ImGui.GetFontSize() * Constants.Gui.TooltipWrap);
         ImGui.TextUnformatted(message);
         ImGui.PopTextWrapPos();
         ImGui.EndTooltip();
@@ -348,7 +348,7 @@ public static class GuiUtils
     {
         foreach (var rv in RoundingVars)
         {
-            ImGui.PushStyleVar(rv, Constants.GuiGeneralRounding);
+            ImGui.PushStyleVar(rv, Constants.Gui.GeneralRounding);
         }
     }
 
@@ -362,8 +362,8 @@ public static class GuiUtils
         var section = GuiStructure.Sections[Settings.Current.Application.CurrentSection];
         var color = ImGui.ColorConvertFloat4ToU32(section.AccentColor.Fade(fade));
         var pos = ImGui.GetCursorScreenPos();
-        var size = new Vector2(ImGui.GetContentRegionAvail().X, Constants.GuiSeparatorGirth);
-        ImGui.GetWindowDrawList().AddRectFilled(pos, pos + size, color, Constants.GuiGeneralRounding);
+        var size = new Vector2(ImGui.GetContentRegionAvail().X, Constants.Gui.SeparatorGirth);
+        ImGui.GetWindowDrawList().AddRectFilled(pos, pos + size, color, Constants.Gui.GeneralRounding);
         ImGui.Dummy(size);
     }
 

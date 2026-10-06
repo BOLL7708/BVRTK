@@ -36,7 +36,7 @@ public static partial class Gui
         ImGui.PopStyleColor();
         ImGui.PopStyleVar(3);
 
-        GuiUtils.PushFont(FontStyle.Regular, Constants.GuiFontSize);
+        GuiUtils.PushFont(FontStyle.Regular, Constants.Gui.FontSize);
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.GuiItemSpacing);
 
         if (Session.ExitPressed)

@@ -52,8 +52,8 @@ public class GuiBackend
 
         ImGui.StyleColorsDark();
         var style = ImGui.GetStyle();
-        style.ScaleAllSizes(Constants.OverlayGuiScale);
-        style.FontScaleDpi = Constants.OverlayGuiScale;
+        style.ScaleAllSizes(Constants.Overlay.GuiScale);
+        style.FontScaleDpi = Constants.Overlay.GuiScale;
 
         io.ConfigDpiScaleFonts = true;
         io.ConfigDpiScaleViewports = true;
@@ -126,7 +126,7 @@ public class GuiBackend
         ImGuiImplOpenGL3.NewFrame();
         ImGuiImplGLFW.NewFrame();
         var io = ImGui.GetIO();
-        io.DisplaySize = new Vector2(Constants.OverlayTextureWidth, Constants.OverlayTextureHeight); // match the FBO
+        io.DisplaySize = new Vector2(Constants.Overlay.TextureWidth, Constants.Overlay.TextureHeight); // match the FBO
         io.DisplayFramebufferScale = new Vector2(1, 1);
         if (Session.OverlayFocus)
         {
@@ -351,8 +351,8 @@ public class GuiBackend
         GLFW.WindowHint(GLFW.GLFW_VISIBLE, Settings.Current.Application.ShowDesktopWindowOnLaunch ? GLFW.GLFW_TRUE : GLFW.GLFW_FALSE);
 
         var window = GLFW.CreateWindow(
-            Constants.OverlayTextureWidth,
-            Constants.OverlayTextureHeight,
+            Constants.Overlay.TextureWidth,
+            Constants.Overlay.TextureHeight,
             "BVRTK", null, null
         );
         if (window.IsNull)
@@ -409,7 +409,7 @@ public class GuiBackend
 
         var fboTex = gl.GenTexture();
         gl.BindTexture(GLTextureTarget.Texture2D, fboTex);
-        gl.TexImage2D(GLTextureTarget.Texture2D, 0, GLInternalFormat.Rgba8, Constants.OverlayTextureWidth, Constants.OverlayTextureHeight, 0, GLPixelFormat.Rgba, GLPixelType.UnsignedByte, 0);
+        gl.TexImage2D(GLTextureTarget.Texture2D, 0, GLInternalFormat.Rgba8, Constants.Overlay.TextureWidth, Constants.Overlay.TextureHeight, 0, GLPixelFormat.Rgba, GLPixelType.UnsignedByte, 0);
         gl.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MinFilter, (int)GLEnum.Linear);
         gl.TexParameteri(GLTextureTarget.Texture2D, GLTextureParameterName.MagFilter, (int)GLEnum.Linear);
         gl.FramebufferTexture2D(GLFramebufferTarget.Framebuffer, GLFramebufferAttachment.ColorAttachment0, GLTextureTarget.Texture2D, fboTex, 0);
@@ -446,7 +446,7 @@ public class GuiBackend
             // Figure out what the below does
             gl.BindFramebuffer(GLFramebufferTarget.ReadFramebuffer, fbo);
             gl.BindFramebuffer(GLFramebufferTarget.DrawFramebuffer, 0);
-            gl.BlitFramebuffer(0, 0, Constants.OverlayTextureWidth, Constants.OverlayTextureHeight, 0, 0, ww, wh, GLClearBufferMask.ColorBufferBit, GLBlitFramebufferFilter.Linear);
+            gl.BlitFramebuffer(0, 0, Constants.Overlay.TextureWidth, Constants.Overlay.TextureHeight, 0, 0, ww, wh, GLClearBufferMask.ColorBufferBit, GLBlitFramebufferFilter.Linear);
             gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
             GLFW.SwapBuffers(window);
