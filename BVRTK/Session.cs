@@ -36,26 +36,16 @@ public static class Session
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }
 
-    /// Filled at action manifest registration, includes all actions for the entire project.
-    public static ImmutableList<ActionGuiEntry> GuiActionEntries
-    {
-        get;
-        set
-        {
-            field = value;
-            VrInputActionGuiIds = [.. value.Select(entry => entry.Id)];
-            VrInputActionGuiTagToLabel =
-            [
-                .. value.ToImmutableDictionary(
-                    entry => entry.Name,
-                    entry => entry.Prompt()
-                )
-            ];
-        }
-    } = [];
 
-    internal static volatile string[] VrInputActionGuiIds = []; // Full IDs
-    internal static ImmutableDictionary<string, string> VrInputActionGuiTagToLabel = []; // IDs as pairs
+    public static void SetActionEntriesForSet(string actionSet, ActionGuiEntry[] entries)
+    {
+        ActionEntries = ActionEntries.SetItem(actionSet, entries);
+        ActionGuiIds = ActionGuiIds.SetItem(actionSet, [.. entries.Select(entry => entry.Id)]);
+    }
+    
+    /// Filled at action manifest registration, includes all actions for the entire project.
+    internal static ImmutableDictionary<string, ActionGuiEntry[]> ActionEntries = [];
+    internal static ImmutableDictionary<string, string[]> ActionGuiIds = []; // Full IDs
     
     internal static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds(); // Full IDs
     internal static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary(); // IDs as pairs

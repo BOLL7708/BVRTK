@@ -97,8 +97,12 @@ public static class KeyboardSimulatorUtils
         // TODO: New settings values here later
 
         // Parse strings and derive indices
-        var actionIndex = Math.Max(0, Session.VrInputActionGuiIds.ToList().FindIndex(it => it.EndsWith($"##{actionStr}")));
-        var actionEntry = Session.GuiActionEntries[actionIndex];
+        Session.ActionGuiIds.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionEntryLabels);
+        var actionIndex = Math.Max(0, (actionEntryLabels ?? []).ToList().FindIndex(it => it.EndsWith($"##{actionStr}")));
+        
+        Session.ActionEntries.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionEntries); 
+        var actionEntry = (actionEntries ?? [])[actionIndex];
+        
         var keyCodeIndex = Math.Max(0, Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{keyCodeStr}")));
         var keyCode = NameToEnum(keyCodeStr);
         var modifierFlags = (ModifierFlags)ParseByteFromHexStr(modifierStr);
@@ -124,7 +128,8 @@ public static class KeyboardSimulatorUtils
 
     internal static string EncodeEntry(SimEntry entry)
     {
-        var action = GuiUtils.GetTagFromId(Session.VrInputActionGuiIds[entry.ActionIndex]);
+        Session.ActionGuiIds.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionGuiIds);
+        var action = GuiUtils.GetTagFromId((actionGuiIds?? [])[entry.ActionIndex]);
         var key = GuiUtils.GetTagFromId(Session.KeyboardSimulatorKeyCodeGuiIds[entry.KeyCodeIndex]);
         return $"{action}|{key}|{(byte)entry.Modifiers:X2} {entry.Label}".Trim();
     }

@@ -186,7 +186,8 @@ public static class KeyboardSimulatorPages
 
     private static string RenderDialog(string startValue)
     {
-        ImGui.Combo("VR Input Action", ref _vrInputActionIndex, Session.VrInputActionGuiIds, Session.VrInputActionGuiIds.Length);
+        Session.ActionGuiIds.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionGuiIds);
+        ImGui.Combo("VR Input Action", ref _vrInputActionIndex, actionGuiIds ?? [], actionGuiIds?.Length ?? 0);
         GuiUtils.DrawTooltip("The VR input action that will trigger the key simulation.");
         GuiUtils.DrawDivider();
         ImGui.Combo("Simulated Key", ref _keyIndex, Session.KeyboardSimulatorKeyCodeGuiIds, Session.KeyboardSimulatorKeyCodeGuiIds.Length);

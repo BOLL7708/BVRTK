@@ -125,7 +125,7 @@ public static class Services
                         );
                     }
 
-                    Session.GuiActionEntries = [.. actionGuiEntries];
+                    Session.SetActionEntriesForSet(Constants.ActionSet.KeyboardSim, [.. actionGuiEntries]);
                 });
         
         
