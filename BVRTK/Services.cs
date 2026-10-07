@@ -61,7 +61,7 @@ public static class Services
             .AddVersion(1, 1)
             .AddDefaultBindings(ControllerType.Knuckles, $"software.boll.bvrtk.bindings.knuckles.json")
             .AddActionSet(
-                "default",
+                Constants.ActionSet.Default,
                 ActionSetUsage.Leftright,
                 set => set
                     .AddLocalization("en-us", "Default")
@@ -72,7 +72,7 @@ public static class Services
                     )
             )
             .AddActionSet(
-                "keyboardsim",
+                Constants.ActionSet.KeyboardSim,
                 ActionSetUsage.Leftright,
                 set =>
                 {
@@ -98,7 +98,7 @@ public static class Services
                             // Register the actions for display in the GUI
                             actionGuiEntries.Add(new ActionGuiEntry(
                                 prefixedName, 
-                                action.Name, 
+                                action.Name,
                                 false,
                                 Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName))
                             );

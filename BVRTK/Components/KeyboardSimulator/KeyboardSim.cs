@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using BVRTK.Data;
+using SharpHook.Data;
 
 namespace BVRTK.Components.KeyboardSimulator;
 
@@ -29,6 +30,18 @@ public class KeyboardSim
         }
     }
 
+    private static void SimKey(KeyCode keyCode, bool down)
+    {
+        UioHookResult result;
+        if (down) result = Services.SharpHook.SimulateKeyPress(keyCode);
+        else result = Services.SharpHook.SimulateKeyRelease(keyCode);
+        if (result != UioHookResult.Success)
+        {
+            // TODO: Hook this up to some proper logging or even something that sends a notification into VR.
+            Console.WriteLine($"ERROR SIMULATING KEY: {result}");
+        }
+    }
+    
     private static ulong RegisterEntry(KeyboardSimulatorUtils.SimEntry entry)
     {
         var result = Services.Vr.Input.RegisterDigitalAction(
@@ -36,9 +49,20 @@ public class KeyboardSim
             (data, info) =>
             {
                 Console.WriteLine($"INPUT: active->{data.bActive} state->{data.bState} changed->{data.bChanged}");
-                // TODO: Here we should in the future handle the different trigger modes too!
-                // TODO: WE SHOULD ALSO SOMEHOW ADD THE MODIFIER KEYS! SHEESH! But test this first.
-                if (data.bState) Services.SharpHook.SimulateKeyPress(entry.KeyCode);
+                if (!data.bActive || !data.bState) return;
+                
+                // TODO: Should we in the future handle different trigger modes?
+                var modifiers = entry.Modifiers.ToKeyCodes();
+                foreach(var modifier in modifiers)
+                {
+                    SimKey(modifier, true);
+                }
+                SimKey(entry.KeyCode, true);    
+                SimKey(entry.KeyCode, false);    
+                foreach(var modifier in modifiers)
+                {
+                    SimKey(modifier, false);
+                }
             },
             entry.Action.IsChord
         );

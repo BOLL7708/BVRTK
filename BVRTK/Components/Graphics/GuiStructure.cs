@@ -4,6 +4,7 @@ using BVRTK.Data;
 using BVRTK.Data.Setting;
 using BVRTK.Resources;
 using Hexa.NET.ImGui;
+using static System.DateTime;
 
 namespace BVRTK.Components.Graphics;
 
@@ -14,6 +15,7 @@ public static class GuiStructure
     public static readonly List<Section> Sections =
     [
         new(() => "Development", () => "Only for me!", isPublic: false, font: FontStyle.Bold, accentColor: GuiColor.FromHue(0), pages: [
+            new Page("Debug", DevelopmentPages.Debug),
             new Page("Component Zoo", DevelopmentPages.Zoo)
         ]),
         new(() => GuiSidebarPrompts.AppLabel, () => GuiSidebarPrompts.AppTooltip, font: FontStyle.Bold, accentColor: GuiColor.Root, pages: [

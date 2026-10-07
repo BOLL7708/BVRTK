@@ -1,5 +1,6 @@
 using System.Numerics;
 using BVRTK.Data;
+using EasyOpenVR;
 using Hexa.NET.ImGui;
 using Hexa.NET.ImGui.Widgets.Dialogs;
 
@@ -139,5 +140,12 @@ public static class DevelopmentPages
         // ImGui.ListBox();
 
         ImGui.SeparatorText("More?");
+    }
+
+
+    public static void Debug()
+    {
+        GuiUtils.DrawTitle("Input Source Handles");
+        ImGui.Text(string.Join('\n', Services.Vr.Data.InputSourceToInputSourceHandle.Select(kvp => $"{kvp.Key}\t{kvp.Value}")));
     }
 }

@@ -47,4 +47,10 @@ public static class Constants
         { "en-US", CultureInfo.InvariantCulture },
         { "sv-SE", new CultureInfo("sv-SE") },
     };
+
+    public static class ActionSet
+    {
+        public const string Default = "default";
+        public const string KeyboardSim = "keyboardsim";
+    }
 }
