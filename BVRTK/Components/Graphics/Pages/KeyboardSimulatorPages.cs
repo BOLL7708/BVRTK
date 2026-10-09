@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Numerics;
 using BVRTK.Components.KeyboardSimulator;
 using BVRTK.Data;
@@ -8,6 +7,7 @@ namespace BVRTK.Components.Graphics.Pages;
 
 public static class KeyboardSimulatorPages
 {
+    #region Pages
     public static void Entries()
     {
         GuiUtils.DrawTitle("General Entries");
@@ -82,7 +82,9 @@ public static class KeyboardSimulatorPages
             GuiUtils.DrawCenteredText("No game detected.");
         }
     }
-
+    
+    
+    #endregion
 
     private static void AddGameEntry(string entry)
     {
@@ -140,7 +142,8 @@ public static class KeyboardSimulatorPages
         Settings.Current.KeyboardSimulator.SetInEntriesPerGame(Session.SteamSceneAppId, [.. list]);
     }
     
-    private static readonly string SubTableTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogSubTable");
+    private static readonly string ModifierTableTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogModifierTable");
+    private static readonly string ModifierAndTriggerColumnsTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogModifierAndTriggerColumns");
 
     private static int _vrInputActionIndex;
     private static int _keyIndex;
@@ -152,6 +155,8 @@ public static class KeyboardSimulatorPages
     private static bool _shiftRight;
     private static bool _metaLeft;
     private static bool _metaRight;
+    private static int _triggerIndex;
+    private static int _triggerInterval = 100;
     private static string _label = "";
 
     private static void ParseEntry(string value)
@@ -159,8 +164,10 @@ public static class KeyboardSimulatorPages
         var entry = KeyboardSimulatorUtils.ParseEntry(value);
         _vrInputActionIndex = entry.ActionIndex;
         _keyIndex = entry.KeyCodeIndex;
-        _label = entry.Label;
         SetModifierFlags(entry.Modifiers);
+        _triggerIndex = entry.TriggerIndex;
+        _triggerInterval = entry.TriggerInterval;
+        _label = entry.Label;
     }
 
     private static string EncodeEntry()
@@ -170,6 +177,8 @@ public static class KeyboardSimulatorPages
             ActionIndex = _vrInputActionIndex,
             KeyCodeIndex = _keyIndex,
             Modifiers = GetModifierFlags(),
+            TriggerIndex = _triggerIndex,
+            TriggerInterval = _triggerInterval,
             Label = _label
         };
         return KeyboardSimulatorUtils.EncodeEntry(entry);
@@ -193,23 +202,48 @@ public static class KeyboardSimulatorPages
         ImGui.Combo("Simulated Key", ref _keyIndex, Session.KeyboardSimulatorKeyCodeGuiIds, Session.KeyboardSimulatorKeyCodeGuiIds.Length);
         GuiUtils.DrawTooltip("Key that will be simulated on the selected VR input action.");
 
-        ImGui.BeginTable(SubTableTag, 5);
-        ImGui.TableNextColumn();
-        GuiUtils.DrawRightAlignedText("Modifier", FontStyle.Bold);
-        GuiUtils.DrawTooltip("Which modifier keys to hold down when simulating the key.");
-        ImGui.TableNextColumn();
-        GuiUtils.DrawText("Alt", FontStyle.Bold);
-        ImGui.TableNextColumn();
-        GuiUtils.DrawText("Ctrl", FontStyle.Bold);
-        ImGui.TableNextColumn();
-        GuiUtils.DrawText("Shift", FontStyle.Bold);
-        ImGui.TableNextColumn();
-        GuiUtils.DrawText("OS", FontStyle.Bold);
-        GuiUtils.DrawTooltip("The Windows/Super/Option key, depending on platform.");
-        DrawRow("Left", ref _altLeft, ref _ctrlLeft, ref _shiftLeft, ref _metaLeft, "Use the left side modifier key(s).");
-        DrawRow("Right", ref _altRight, ref _ctrlRight, ref _shiftRight, ref _metaRight, "Use the right side modifier key(s).");
-        ImGui.EndTable();
+        ImGui.Columns(2, ModifierAndTriggerColumnsTag, false);
+        ImGui.SetColumnWidth(0,Constants.Overlay.GuiScale * 230f);
+        
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, _defaultCellPadding); // Resetting padding here as otherwise the edit modal will inherit it from the entry list.
+        if (ImGui.BeginTable(ModifierTableTag, 5, ImGuiTableFlags.SizingFixedFit))
+        {
+            ImGui.TableNextColumn();
+            GuiUtils.DrawText("Modifier", FontStyle.Bold);
+            GuiUtils.DrawTooltip("Which modifier keys to hold down when simulating the key.");
+            ImGui.TableNextColumn();
+            GuiUtils.DrawText("Alt", FontStyle.Bold);
+            ImGui.TableNextColumn();
+            GuiUtils.DrawText("Ctrl", FontStyle.Bold);
+            ImGui.TableNextColumn();
+            GuiUtils.DrawText("Shift", FontStyle.Bold);
+            ImGui.TableNextColumn();
+            GuiUtils.DrawText("OS", FontStyle.Bold);
+            GuiUtils.DrawTooltip("The Windows/Super/Option key, depending on platform.");
+            DrawRow("Left", ref _altLeft, ref _ctrlLeft, ref _shiftLeft, ref _metaLeft, "Use the left side modifier key(s).");
+            DrawRow("Right", ref _altRight, ref _ctrlRight, ref _shiftRight, ref _metaRight, "Use the right side modifier key(s).");
+            ImGui.EndTable();
+        }
+        ImGui.PopStyleVar();
+        
+        ImGui.NextColumn();
+        
+        ImGui.TextUnformatted("When to trigger");
 
+        ImGui.AlignTextToFramePadding();
+        ImGui.TextUnformatted("On");
+        ImGui.SameLine();
+        ImGui.Combo("##KeyboardSim.Trigger.When", ref _triggerIndex, Session.KeyboardSimulatorTriggerGuiIds, Session.KeyboardSimulatorTriggerGuiIds.Length);
+
+        var isRepeatOn = Enum.GetValues<HardwareInputTrigger>()[_triggerIndex] == HardwareInputTrigger.Repeat;
+        var intervalFlags = isRepeatOn ? ImGuiInputTextFlags.None : ImGuiInputTextFlags.ReadOnly;
+        ImGui.InputInt("Interval", ref _triggerInterval, 10, 100, intervalFlags);
+        _triggerInterval = Math.Clamp(_triggerInterval, 1, 99999);
+        if(isRepeatOn) GuiUtils.DrawTooltip("The number of milliseconds between each repeated key simulation.");
+
+        ImGui.Columns(1);
+        
+        GuiUtils.DrawDivider();
         ImGui.InputText("Optional name", ref _label, 32, ImGuiInputTextFlags.None);
 
         return EncodeEntry();
@@ -231,9 +265,11 @@ public static class KeyboardSimulatorPages
         }
     }
 
+    private static Vector2 _defaultCellPadding = Vector2.Zero;
 
     private static void RenderList(string tag, string[] entries, ref int index, Action<string?, string?> replace, Action<int> moveUp, Action<int> moveDown)
     {
+        if (_defaultCellPadding == Vector2.Zero) _defaultCellPadding = ImGui.GetStyle().CellPadding;
         var sectionIndex = Settings.Current.Application.CurrentSection;
         var section = GuiStructure.Sections[sectionIndex];
         ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.Fade(0.30f));

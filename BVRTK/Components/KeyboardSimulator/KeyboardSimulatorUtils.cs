@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using BVRTK.Components.Graphics;
 using BVRTK.Resources;
@@ -69,19 +68,6 @@ public static class KeyboardSimulatorUtils
         return [.. ids];
     }
 
-    private static KeyCode NameToEnum(string tag)
-    {
-        try
-        {
-            return Enum.Parse<KeyCode>(tag);
-        }
-        catch (Exception e)
-        {
-            // TODO: Log this probably
-            return KeyCode.VcUndefined;
-        }
-    }
-
     internal static SimEntry ParseEntry(string value)
     {
         // Split on the label, which is the first space, then the label can contain anything.
@@ -94,21 +80,27 @@ public static class KeyboardSimulatorUtils
         var actionStr = parts.ElementAtOrDefault(0) ?? string.Empty;
         var keyCodeStr = parts.ElementAtOrDefault(1) ?? string.Empty;
         var modifierStr = parts.ElementAtOrDefault(2) ?? "00";
-        // TODO: New settings values here later
+        var triggerStr = parts.ElementAtOrDefault(3) ?? string.Empty;
+        var triggerIntervalStr = parts.ElementAtOrDefault(4) ?? "100";
 
         // Parse strings and derive indices
         Session.ActionGuiIds.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionEntryLabels);
         var actionIndex = Math.Max(0, (actionEntryLabels ?? []).ToList().FindIndex(it => it.EndsWith($"##{actionStr}")));
-        
-        Session.ActionEntries.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionEntries); 
-        var actionEntry = (actionEntries ?? [])[actionIndex];
-        
-        var keyCodeIndex = Math.Max(0, Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{keyCodeStr}")));
-        var keyCode = NameToEnum(keyCodeStr);
-        var modifierFlags = (ModifierFlags)ParseByteFromHexStr(modifierStr);
-        // TODO: Use same parser for other checkboxes
 
-        return new SimEntry(actionEntry, actionIndex, keyCode, keyCodeIndex, modifierFlags, label);
+        Session.ActionEntries.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionEntries);
+        var actionEntry = (actionEntries ?? [])[actionIndex];
+
+        var keyCodeIndex = Math.Max(0, Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{keyCodeStr}")));
+        Enum.TryParse<KeyCode>(keyCodeStr, true, out var keyCode);
+        
+        var modifierFlags = (ModifierFlags)ParseByteFromHexStr(modifierStr);
+
+        var triggerIndex = Math.Max(0, Session.KeyboardSimulatorTriggerGuiIds.ToList().FindIndex(it => it.EndsWith($"##{triggerStr}")));
+        Enum.TryParse<HardwareInputTrigger>(triggerStr, true, out var trigger);
+        int.TryParse(triggerIntervalStr, NumberStyles.None, CultureInfo.InvariantCulture, out var triggerInterval);
+
+        // Output entry
+        return new SimEntry(actionEntry, actionIndex, keyCode, keyCodeIndex, modifierFlags, trigger, triggerIndex, triggerInterval, label);
 
         byte ParseByteFromHexStr(string hexStr)
         {
@@ -129,9 +121,10 @@ public static class KeyboardSimulatorUtils
     internal static string EncodeEntry(SimEntry entry)
     {
         Session.ActionGuiIds.TryGetValue(Constants.ActionSet.KeyboardSim, out var actionGuiIds);
-        var action = GuiUtils.GetTagFromId((actionGuiIds?? [])[entry.ActionIndex]);
+        var action = GuiUtils.GetTagFromId((actionGuiIds ?? [])[entry.ActionIndex]);
         var key = GuiUtils.GetTagFromId(Session.KeyboardSimulatorKeyCodeGuiIds[entry.KeyCodeIndex]);
-        return $"{action}|{key}|{(byte)entry.Modifiers:X2} {entry.Label}".Trim();
+        var trigger = GuiUtils.GetTagFromId(Session.KeyboardSimulatorTriggerGuiIds[entry.TriggerIndex]);
+        return $"{action}|{key}|{(byte)entry.Modifiers:X2}|{trigger}|{entry.TriggerInterval} {entry.Label}".Trim();
     }
 
 
@@ -141,6 +134,9 @@ public static class KeyboardSimulatorUtils
         KeyCode KeyCode,
         int KeyCodeIndex,
         ModifierFlags Modifiers,
+        HardwareInputTrigger Trigger,
+        int TriggerIndex,
+        int TriggerInterval,
         string Label
     );
 
@@ -215,39 +211,21 @@ public static class KeyboardSimulatorUtils
     {
         var promptName = hwi switch
         {
-            HardwareInputShared.OtherButton1 => nameof(HardwareInputPrompts.OtherButton1),
-            HardwareInputShared.OtherButton2 => nameof(HardwareInputPrompts.OtherButton2),
-            HardwareInputShared.OtherButton3 => nameof(HardwareInputPrompts.OtherButton3),
-            HardwareInputShared.OtherButton4 => nameof(HardwareInputPrompts.OtherButton4),
-            HardwareInputShared.OtherButton5 => nameof(HardwareInputPrompts.OtherButton5),
-            HardwareInputShared.OtherButton6 => nameof(HardwareInputPrompts.OtherButton6),
-            HardwareInputShared.OtherButton7 => nameof(HardwareInputPrompts.OtherButton7),
-            HardwareInputShared.OtherButton8 => nameof(HardwareInputPrompts.OtherButton8),
-            HardwareInputShared.OtherButton9 => nameof(HardwareInputPrompts.OtherButton9),
-            HardwareInputShared.OtherButton10 => nameof(HardwareInputPrompts.OtherButton10),
-            HardwareInputShared.OtherButton11 => nameof(HardwareInputPrompts.OtherButton11),
-            HardwareInputShared.OtherButton12 => nameof(HardwareInputPrompts.OtherButton12),
-            HardwareInputShared.OtherButton13 => nameof(HardwareInputPrompts.OtherButton13),
-            HardwareInputShared.OtherButton14 => nameof(HardwareInputPrompts.OtherButton14),
-            HardwareInputShared.OtherButton15 => nameof(HardwareInputPrompts.OtherButton15),
-            HardwareInputShared.OtherButton16 => nameof(HardwareInputPrompts.OtherButton16),
-            HardwareInputShared.Chord1 => nameof(HardwareInputPrompts.Chord1),
-            HardwareInputShared.Chord2 => nameof(HardwareInputPrompts.Chord2),
-            HardwareInputShared.Chord3 => nameof(HardwareInputPrompts.Chord3),
-            HardwareInputShared.Chord4 => nameof(HardwareInputPrompts.Chord4),
-            HardwareInputShared.Chord5 => nameof(HardwareInputPrompts.Chord5),
-            HardwareInputShared.Chord6 => nameof(HardwareInputPrompts.Chord6),
-            HardwareInputShared.Chord7 => nameof(HardwareInputPrompts.Chord7),
-            HardwareInputShared.Chord8 => nameof(HardwareInputPrompts.Chord8),
-            HardwareInputShared.Chord9 => nameof(HardwareInputPrompts.Chord9),
-            HardwareInputShared.Chord10 => nameof(HardwareInputPrompts.Chord10),
-            HardwareInputShared.Chord11 => nameof(HardwareInputPrompts.Chord11),
-            HardwareInputShared.Chord12 => nameof(HardwareInputPrompts.Chord12),
-            HardwareInputShared.Chord13 => nameof(HardwareInputPrompts.Chord13),
-            HardwareInputShared.Chord14 => nameof(HardwareInputPrompts.Chord14),
-            HardwareInputShared.Chord15 => nameof(HardwareInputPrompts.Chord15),
-            HardwareInputShared.Chord16 => nameof(HardwareInputPrompts.Chord16),
-            _ => throw new ArgumentOutOfRangeException(nameof(hwi), hwi, null)
+            HardwareInputShared.OtherButton1 or HardwareInputShared.OtherButton2 or HardwareInputShared.OtherButton3
+                or HardwareInputShared.OtherButton4 or HardwareInputShared.OtherButton5
+                or HardwareInputShared.OtherButton6 or HardwareInputShared.OtherButton7
+                or HardwareInputShared.OtherButton8 or HardwareInputShared.OtherButton9
+                or HardwareInputShared.OtherButton10 or HardwareInputShared.OtherButton11
+                or HardwareInputShared.OtherButton12 or HardwareInputShared.OtherButton13
+                or HardwareInputShared.OtherButton14 or HardwareInputShared.OtherButton15
+                or HardwareInputShared.OtherButton16 => nameof(HardwareInputPrompts.OtherButton),
+            HardwareInputShared.Chord1 or HardwareInputShared.Chord2 or HardwareInputShared.Chord3
+                or HardwareInputShared.Chord4 or HardwareInputShared.Chord5 or HardwareInputShared.Chord6
+                or HardwareInputShared.Chord7 or HardwareInputShared.Chord8 or HardwareInputShared.Chord9
+                or HardwareInputShared.Chord10 or HardwareInputShared.Chord11 or HardwareInputShared.Chord12
+                or HardwareInputShared.Chord13 or HardwareInputShared.Chord14 or HardwareInputShared.Chord15
+                or HardwareInputShared.Chord16 => nameof(HardwareInputPrompts.Chord),
+            _ => ""
         };
         return promptName;
     }

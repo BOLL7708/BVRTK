@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Numerics;
 using BVRTK.Data;
 using Hexa.NET.ImGui;
@@ -7,7 +6,7 @@ namespace BVRTK.Components.Graphics;
 
 public static partial class Gui
 {
-    public static void RenderWindow()
+    public static unsafe void RenderWindow()
     {
         #region Setup
 
@@ -32,6 +31,11 @@ public static partial class Gui
         #region Draw
 
         ImGui.Begin("##Root", flags);
+
+        ImGui.PushFont(Session.GuiFonts.Regular, 10f);
+        if (Session.ShowAbout) ImGui.ShowAboutWindow();
+        if(Session.ShowMetrics) ImGui.ShowMetricsWindow();
+        ImGui.PopFont();
 
         ImGui.PopStyleColor();
         ImGui.PopStyleVar(3);

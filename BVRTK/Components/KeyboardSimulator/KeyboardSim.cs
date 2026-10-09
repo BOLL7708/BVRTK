@@ -48,10 +48,9 @@ public class KeyboardSim
             entry.Action.Path,
             (data, info) =>
             {
-                Console.WriteLine($"INPUT: active->{data.bActive} state->{data.bState} changed->{data.bChanged}");
                 if (!data.bActive || !data.bState) return;
                 
-                // TODO: Should we in the future handle different trigger modes?
+                // TODO: Should in the future handle different trigger modes
                 var modifiers = entry.Modifiers.ToKeyCodes();
                 foreach(var modifier in modifiers)
                 {
@@ -66,7 +65,6 @@ public class KeyboardSim
             },
             entry.Action.IsChord
         );
-        Console.WriteLine($"REGISTERED DIGITAL ACTION: {entry.Action.Path}");
         return result.ResultULong;
     }
 

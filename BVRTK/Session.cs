@@ -15,6 +15,8 @@ public static class Session
 #endif
 
     public static string Version { get; set; } = "v0.0.0";
+    public static bool ShowAbout = false;
+    public static bool ShowMetrics = false;
 
     public static unsafe class GuiFonts
     {
@@ -47,10 +49,15 @@ public static class Session
     internal static ImmutableDictionary<string, ActionGuiEntry[]> ActionEntries = [];
     internal static ImmutableDictionary<string, string[]> ActionGuiIds = []; // Full IDs
     
-    internal static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds(); // Full IDs
-    internal static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary(); // IDs as pairs
     internal static volatile string[] SupportedLanguageGuiIds = Utils.GetSupportedLanguageGuiIds(); // Full IDs
     internal static ImmutableDictionary<string, string> SupportedLanguageGuiTagToLabel = Utils.GetSupportedLanguageGuiIdPairs().ToImmutableDictionary(); // IDs as pairs
+    
+    internal static volatile string[] KeyboardSimulatorKeyCodeGuiIds = KeyboardSimulatorUtils.GetGuiIds(); // Full IDs
+    internal static ImmutableDictionary<string, string> KeyboardSimulatorKeyCodeGuiTagToLabel = KeyboardSimulatorUtils.GetGuiIdPairs().ToImmutableDictionary(); // IDs as pairs
+    internal static volatile string[] KeyboardSimulatorTriggerGuiIds = HardwareInputTrigger.GetTriggerGuiIds; // Full IDs
+    internal static ImmutableDictionary<string, Func<string>> KeyboardSimulatorTriggerGuiTagToLabel = HardwareInputTrigger.GetTriggerGuiIdPairs.ToImmutableDictionary(); // IDs as pairs
+
+    
 
     #nullable enable
     public static event Action<string>? OnSteamSceneAppIdChanged;

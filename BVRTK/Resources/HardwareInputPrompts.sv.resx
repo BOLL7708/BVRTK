@@ -11,56 +11,11 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="Chord1" xml:space="preserve">
-        <value>Ackord 1</value>
+    <data name="Chord" xml:space="preserve">
+        <value>Ackord</value>
     </data>
-    <data name="Chord10" xml:space="preserve">
-        <value>Ackord 10</value>
-    </data>
-    <data name="Chord11" xml:space="preserve">
-        <value>Ackord 11</value>
-    </data>
-    <data name="Chord12" xml:space="preserve">
-        <value>Ackord 12</value>
-    </data>
-    <data name="Chord13" xml:space="preserve">
-        <value>Ackord 13</value>
-    </data>
-    <data name="Chord14" xml:space="preserve">
-        <value>Ackord 14</value>
-    </data>
-    <data name="Chord15" xml:space="preserve">
-        <value>Ackord 15</value>
-    </data>
-    <data name="Chord16" xml:space="preserve">
-        <value>Ackord 16</value>
-    </data>
-    <data name="Chord2" xml:space="preserve">
-        <value>Ackord 2</value>
-    </data>
-    <data name="Chord3" xml:space="preserve">
-        <value>Ackord 3</value>
-    </data>
-    <data name="Chord4" xml:space="preserve">
-        <value>Ackord 4</value>
-    </data>
-    <data name="Chord5" xml:space="preserve">
-        <value>Ackord 5</value>
-    </data>
-    <data name="Chord6" xml:space="preserve">
-        <value>Ackord 6</value>
-    </data>
-    <data name="Chord7" xml:space="preserve">
-        <value>Ackord 7</value>
-    </data>
-    <data name="Chord8" xml:space="preserve">
-        <value>Ackord 8</value>
-    </data>
-    <data name="Chord9" xml:space="preserve">
-        <value>Ackord 9</value>
-    </data>
-    <data name="OtherButton1" xml:space="preserve">
-        <value>Annan knapp 1</value>
+    <data name="OtherButton" xml:space="preserve">
+        <value>Annan knapp</value>
     </data>
     <data name="StickButton" xml:space="preserve">
         <value>Spak-knapp</value>

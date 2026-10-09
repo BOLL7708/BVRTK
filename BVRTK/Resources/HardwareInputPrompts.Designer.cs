@@ -60,146 +60,11 @@ namespace BVRTK.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Chord 1.
+        ///   Looks up a localized string similar to Chord.
         /// </summary>
-        internal static string Chord1 {
+        internal static string Chord {
             get {
-                return ResourceManager.GetString("Chord1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 10.
-        /// </summary>
-        internal static string Chord10 {
-            get {
-                return ResourceManager.GetString("Chord10", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 11.
-        /// </summary>
-        internal static string Chord11 {
-            get {
-                return ResourceManager.GetString("Chord11", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 12.
-        /// </summary>
-        internal static string Chord12 {
-            get {
-                return ResourceManager.GetString("Chord12", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 13.
-        /// </summary>
-        internal static string Chord13 {
-            get {
-                return ResourceManager.GetString("Chord13", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 14.
-        /// </summary>
-        internal static string Chord14 {
-            get {
-                return ResourceManager.GetString("Chord14", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 15.
-        /// </summary>
-        internal static string Chord15 {
-            get {
-                return ResourceManager.GetString("Chord15", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 16.
-        /// </summary>
-        internal static string Chord16 {
-            get {
-                return ResourceManager.GetString("Chord16", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 2.
-        /// </summary>
-        internal static string Chord2 {
-            get {
-                return ResourceManager.GetString("Chord2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 3.
-        /// </summary>
-        internal static string Chord3 {
-            get {
-                return ResourceManager.GetString("Chord3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 4.
-        /// </summary>
-        internal static string Chord4 {
-            get {
-                return ResourceManager.GetString("Chord4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 5.
-        /// </summary>
-        internal static string Chord5 {
-            get {
-                return ResourceManager.GetString("Chord5", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 6.
-        /// </summary>
-        internal static string Chord6 {
-            get {
-                return ResourceManager.GetString("Chord6", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 7.
-        /// </summary>
-        internal static string Chord7 {
-            get {
-                return ResourceManager.GetString("Chord7", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 8.
-        /// </summary>
-        internal static string Chord8 {
-            get {
-                return ResourceManager.GetString("Chord8", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chord 9.
-        /// </summary>
-        internal static string Chord9 {
-            get {
-                return ResourceManager.GetString("Chord9", resourceCulture);
+                return ResourceManager.GetString("Chord", resourceCulture);
             }
         }
         
@@ -258,6 +123,42 @@ namespace BVRTK.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Held.
+        /// </summary>
+        internal static string KeyTriggerHeld {
+            get {
+                return ResourceManager.GetString("KeyTriggerHeld", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Press.
+        /// </summary>
+        internal static string KeyTriggerPress {
+            get {
+                return ResourceManager.GetString("KeyTriggerPress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Release.
+        /// </summary>
+        internal static string KeyTriggerRelease {
+            get {
+                return ResourceManager.GetString("KeyTriggerRelease", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repeat.
+        /// </summary>
+        internal static string KeyTriggerRepeat {
+            get {
+                return ResourceManager.GetString("KeyTriggerRepeat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to None.
         /// </summary>
         internal static string None {
@@ -267,146 +168,11 @@ namespace BVRTK.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Other Button 1.
+        ///   Looks up a localized string similar to Other Button.
         /// </summary>
-        internal static string OtherButton1 {
+        internal static string OtherButton {
             get {
-                return ResourceManager.GetString("OtherButton1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 10.
-        /// </summary>
-        internal static string OtherButton10 {
-            get {
-                return ResourceManager.GetString("OtherButton10", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 11.
-        /// </summary>
-        internal static string OtherButton11 {
-            get {
-                return ResourceManager.GetString("OtherButton11", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 12.
-        /// </summary>
-        internal static string OtherButton12 {
-            get {
-                return ResourceManager.GetString("OtherButton12", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 13.
-        /// </summary>
-        internal static string OtherButton13 {
-            get {
-                return ResourceManager.GetString("OtherButton13", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 14.
-        /// </summary>
-        internal static string OtherButton14 {
-            get {
-                return ResourceManager.GetString("OtherButton14", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 15.
-        /// </summary>
-        internal static string OtherButton15 {
-            get {
-                return ResourceManager.GetString("OtherButton15", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 16.
-        /// </summary>
-        internal static string OtherButton16 {
-            get {
-                return ResourceManager.GetString("OtherButton16", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 2.
-        /// </summary>
-        internal static string OtherButton2 {
-            get {
-                return ResourceManager.GetString("OtherButton2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 3.
-        /// </summary>
-        internal static string OtherButton3 {
-            get {
-                return ResourceManager.GetString("OtherButton3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 4.
-        /// </summary>
-        internal static string OtherButton4 {
-            get {
-                return ResourceManager.GetString("OtherButton4", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 5.
-        /// </summary>
-        internal static string OtherButton5 {
-            get {
-                return ResourceManager.GetString("OtherButton5", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 6.
-        /// </summary>
-        internal static string OtherButton6 {
-            get {
-                return ResourceManager.GetString("OtherButton6", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 7.
-        /// </summary>
-        internal static string OtherButton7 {
-            get {
-                return ResourceManager.GetString("OtherButton7", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 8.
-        /// </summary>
-        internal static string OtherButton8 {
-            get {
-                return ResourceManager.GetString("OtherButton8", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Other Button 9.
-        /// </summary>
-        internal static string OtherButton9 {
-            get {
-                return ResourceManager.GetString("OtherButton9", resourceCulture);
+                return ResourceManager.GetString("OtherButton", resourceCulture);
             }
         }
         

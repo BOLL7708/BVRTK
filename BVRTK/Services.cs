@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using BVRTK.Components.Graphics;
 using BVRTK.Components.KeyboardSimulator;
 using BVRTK.Components.Server;
@@ -38,9 +37,9 @@ public static class Services
     private static EasyOpenVr BuildVr()
     {
         const string dir = "_steamvr";
-        
+
         FileUtils.EnsureDirectoryExists(dir);
-        
+
         #region App Manifest
 
         const string vrManifestFilename = $"{dir}/software.boll.bvrtk.vrmanifest";
@@ -77,7 +76,7 @@ public static class Services
                 set =>
                 {
                     set.AddLocalization("en_US", "Keyboard Simulator");
-                    
+
                     // We are duplicating the hardware inputs to represent the left and right controller.
                     var hwInputsLr = Enum.GetValues<HardwareInputEnums>();
                     string[] prefixNames = [nameof(GeneralPrompts.Left), nameof(GeneralPrompts.Right)];
@@ -89,15 +88,18 @@ public static class Services
                             var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputLeftRight(hardwareInputLeftRight);
                             var name = Enum.GetName(hardwareInputLeftRight);
                             if (string.IsNullOrWhiteSpace(name)) continue;
-                            var prefixedName = $"{prefixName}_{name}".ToLowerInvariant(); 
+
+                            var prefixedName = $"{prefixName}_{name}".ToLowerInvariant();
+
+                            // Register translations in the manifest
                             var action = set.AddAction(
                                 prefixedName,
                                 requirement: ActionRequirement.Optional,
                                 configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName); });
-                            
+
                             // Register the actions for display in the GUI
                             actionGuiEntries.Add(new ActionGuiEntry(
-                                prefixedName, 
+                                prefixedName,
                                 action.Name,
                                 false,
                                 Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, GeneralPrompts.ResourceManager, prefixName))
@@ -106,34 +108,40 @@ public static class Services
                     }
 
                     var hwInputsShared = Enum.GetValues<HardwareInputShared>();
+                    var hwInputsSuffix = 0;
                     foreach (var hardwareInputShared in hwInputsShared)
                     {
                         var promptName = KeyboardSimulatorUtils.GetPromptNameForHardwareInputShared(hardwareInputShared);
                         var name = Enum.GetName(hardwareInputShared)?.ToLowerInvariant();
                         if (string.IsNullOrWhiteSpace(name)) continue;
+
+                        var suffix = hwInputsSuffix + 1;
+
+                        // Register translations in the manifest
                         var action = set.AddAction(
                             name,
                             requirement: ActionRequirement.Optional,
-                            configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName); });
-                        
+                            configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, promptName, promptSuffixNumber: suffix); });
+
                         // Register the actions for display in the GUI
                         actionGuiEntries.Add(new ActionGuiEntry(
-                            name, 
-                            action.Name, 
+                            name,
+                            action.Name,
                             hardwareInputShared.IsChord,
-                            Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName))
+                            Utils.GetPromptWithPrefixFunc(HardwareInputPrompts.ResourceManager, promptName, promptSuffixNumber: suffix))
                         );
+
+                        hwInputsSuffix = ++hwInputsSuffix % 16;
                     }
 
                     Session.SetActionEntriesForSet(Constants.ActionSet.KeyboardSim, [.. actionGuiEntries]);
                 });
-        
-        
+
         #endregion
 
         // We load these so they can be registered to enable listening to inputs to those sets.
         Session.VrInputActionSets = actionManifestBuilder.GetActionSets();
-        
+
         return new EasyOpenVrBuilder()
             .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, Session.isDebug)
             .SetActionManifest(actionManifestFilename, actionManifestBuilder, Session.isDebug)

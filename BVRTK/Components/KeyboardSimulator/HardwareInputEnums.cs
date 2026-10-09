@@ -1,3 +1,5 @@
+using BVRTK.Resources;
+
 namespace BVRTK.Components.KeyboardSimulator;
 
 public enum HardwareInputEnums
@@ -70,5 +72,30 @@ public static class HardwareInputSharedExtensions
     extension(HardwareInputShared input)
     {
         public bool IsChord => input is >= HardwareInputShared.Chord1 and <= HardwareInputShared.Chord16;
+    }
+}
+
+public enum HardwareInputTrigger
+{
+    Press,
+    Release,
+    Held,
+    Repeat
+}
+
+public static class HardwareInputTriggerExtensions
+{
+    extension(HardwareInputTrigger trigger)
+    {
+        public static Dictionary<string, Func<string>> GetTriggerGuiIdPairs =>  new()
+        {
+            [nameof(HardwareInputTrigger.Press)]   = () => HardwareInputPrompts.KeyTriggerPress,
+            [nameof(HardwareInputTrigger.Release)] = () => HardwareInputPrompts.KeyTriggerRelease,
+            [nameof(HardwareInputTrigger.Held)]    = () => HardwareInputPrompts.KeyTriggerHeld,
+            [nameof(HardwareInputTrigger.Repeat)]  = () => HardwareInputPrompts.KeyTriggerRepeat,
+        };
+        
+        public static string[] GetTriggerGuiIds =>
+            [.. HardwareInputTrigger.GetTriggerGuiIdPairs.Select(pair => $"{pair.Value()}##{pair.Key}")];
     }
 }

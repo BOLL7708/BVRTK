@@ -65,7 +65,6 @@ class Program
 
         vr.State += state =>
         {
-            Console.WriteLine($"[STATE] {Enum.GetName(state)}");
             if (state == EasyOpenVr.EState.ReadyToShutdown)
             {
                 Session.ProgramCts.Cancel();
@@ -176,7 +175,6 @@ class Program
                 // region Initialize Everything
                 foreach (var actionSet in Session.VrInputActionSets)
                 {
-                    Console.WriteLine($"REGISTERING ACTION SET: {actionSet.Name}");
                     var result = vr.Input.RegisterActionSet(actionSet.Name);
                     if(!result.Success) Console.WriteLine($"FAILED TO REGISTER ACTIONSET {result.ErrorName} {result.ErrorName} {result.Error}");
                 }

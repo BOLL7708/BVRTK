@@ -1,4 +1,3 @@
-using System.ComponentModel.Design.Serialization;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
@@ -33,6 +32,7 @@ public partial class Utils
                 : entry.Value;
             values.Add(entry.Key, value.NativeName);
         }
+
         return values;
     }
 
@@ -49,7 +49,14 @@ public partial class Utils
     }
 
     // Used to provide values for the action manifest builder
-    public static ActionBuilder AddLocalizationsToAction(ActionBuilder actionBuilder, ResourceManager resourceManager, string promptName, ResourceManager? prefixResourceManager = null, string? promptPrefixName = null)
+    public static ActionBuilder AddLocalizationsToAction(
+        ActionBuilder actionBuilder,
+        ResourceManager resourceManager,
+        string promptName,
+        ResourceManager? prefixResourceManager = null,
+        string? promptPrefixName = null,
+        int? promptSuffixNumber = null
+    )
     {
         foreach (var language in Constants.SupportedLanguages)
         {
@@ -57,20 +64,30 @@ public partial class Utils
             var code = SharedUtils.FixLanguageTag(language.Key, "");
             if (string.IsNullOrEmpty(prompt) || string.IsNullOrEmpty(code)) continue;
 
-            var prefix = prefixResourceManager?.GetString(promptPrefixName ?? "", language.Value);
-            actionBuilder.AddLocalization(code, !string.IsNullOrEmpty(prefix) ? $"{prefix} {prompt}" : prompt);
+            var prefixPrompt = prefixResourceManager?.GetString(promptPrefixName ?? "", language.Value);
+            var prefix = string.IsNullOrEmpty(prefixPrompt) ? "" : $"{prefixPrompt} ";
+            var suffix = promptSuffixNumber == null ? "" : $" {promptSuffixNumber}";
+            actionBuilder.AddLocalization(code, $"{prefix}{prompt}{suffix}");
         }
 
         return actionBuilder;
     }
 
-    public static Func<string> GetPromptWithPrefixFunc(ResourceManager resourceManager, string promptName, ResourceManager? prefixResourceManager = null, string? promptPrefixName = null)
+    public static Func<string> GetPromptWithPrefixFunc(
+        ResourceManager resourceManager,
+        string promptName,
+        ResourceManager? prefixResourceManager = null,
+        string? promptPrefixName = null,
+        int? promptSuffixNumber = null
+    )
     {
         return () =>
         {
             var prompt = resourceManager.GetString(promptName);
-            var prefix = prefixResourceManager?.GetString(promptPrefixName ?? "");
-            return !string.IsNullOrEmpty(prefix) ? $"{prefix} {prompt}" : prompt ?? "";
+            var prefixPrompt = prefixResourceManager?.GetString(promptPrefixName ?? "");
+            var prefix = string.IsNullOrEmpty(prefixPrompt) ? "" : $"{prefixPrompt} ";
+            var suffix = promptSuffixNumber == null ? "" : $" {promptSuffixNumber}";
+            return $"{prefix}{prompt}{suffix}";
         };
     }
 
