@@ -11,7 +11,7 @@ public static class KeyboardSimulatorUtils
 
     private static readonly Dictionary<KeyCode, string> KeyCodeDisplayValues = new()
     {
-        [KeyCode.VcAccept] = "CUSTOM LABEL YO!"
+        [KeyCode.VcUndefined] = "None"
     };
 
     private static readonly List<KeyCode> KeyCodeIgnored =
@@ -31,14 +31,18 @@ public static class KeyboardSimulatorUtils
         var keycodes = Enum.GetValues<KeyCode>();
         var functionKeys = keycodes.Where(x => IsFunc(Enum.GetName(x)));
         var singleKeys = keycodes.Where(x => IsSingle(Enum.GetName(x)));
-        var rest = keycodes.Where(x => !IsSingle(Enum.GetName(x)) && !IsFunc(Enum.GetName(x)));
-        keycodes = [.. functionKeys, .. singleKeys, .. rest];
+        var rest = keycodes.Where(x =>
+            !IsSingle(Enum.GetName(x))
+            && !IsFunc(Enum.GetName(x))
+            && x != KeyCode.VcUndefined
+        );
+        keycodes = [KeyCode.VcUndefined, .. functionKeys, .. singleKeys, .. rest];
 
         // Check if we have a value, otherwise take the name and remove Vc prefix.
         var values = new Dictionary<string, string>();
         foreach (var keycode in keycodes)
         {
-            if ((int)keycode == 0 || KeyCodeIgnored.Contains(keycode)) continue;
+            if (KeyCodeIgnored.Contains(keycode)) continue;
             KeyCodeDisplayValues.TryGetValue(keycode, out var displayOverride);
 
             // According to [official docs](https://sharphook.tolik.io/articles/keycodes.html) the enum VALUE is
@@ -92,7 +96,7 @@ public static class KeyboardSimulatorUtils
 
         var keyCodeIndex = Math.Max(0, Session.KeyboardSimulatorKeyCodeGuiIds.ToList().FindIndex(it => it.EndsWith($"##{keyCodeStr}")));
         Enum.TryParse<KeyCode>(keyCodeStr, true, out var keyCode);
-        
+
         var modifierFlags = (ModifierFlags)ParseByteFromHexStr(modifierStr);
 
         var triggerIndex = Math.Max(0, Session.KeyboardSimulatorTriggerGuiIds.ToList().FindIndex(it => it.EndsWith($"##{triggerStr}")));
@@ -100,7 +104,7 @@ public static class KeyboardSimulatorUtils
         int.TryParse(triggerIntervalStr, NumberStyles.None, CultureInfo.InvariantCulture, out var triggerInterval);
 
         // Output entry
-        return new SimEntry(actionEntry, actionIndex, keyCode, keyCodeIndex, modifierFlags, trigger, triggerIndex, triggerInterval, label);
+        return new SimEntry(actionEntry, actionIndex, keyCode, keyCodeIndex, modifierFlags, trigger, triggerIndex, triggerInterval, label, value);
 
         byte ParseByteFromHexStr(string hexStr)
         {
@@ -137,7 +141,8 @@ public static class KeyboardSimulatorUtils
         HardwareInputTrigger Trigger,
         int TriggerIndex,
         int TriggerInterval,
-        string Label
+        string Label,
+        string GuiId
     );
 
     [Flags]

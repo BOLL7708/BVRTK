@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using BVRTK.Data;
 using SharpHook.Data;
+using SharpHook.Simulation;
 
 namespace BVRTK.Components.KeyboardSimulator;
 
@@ -30,37 +32,135 @@ public class KeyboardSim
         }
     }
 
-    private static void SimKey(KeyCode keyCode, bool down)
+    private static void SimKey(KeyCode keyCode, bool? down = null)
     {
-        UioHookResult result;
-        if (down) result = Services.SharpHook.SimulateKeyPress(keyCode);
-        else result = Services.SharpHook.SimulateKeyRelease(keyCode);
+        if (keyCode == KeyCode.VcUndefined) return;
+
+        var result = down switch
+        {
+            true => Services.SharpHook.SimulateKeyPress(keyCode),
+            false => Services.SharpHook.SimulateKeyRelease(keyCode),
+            _ => Services.SharpHook.SimulateKeyStroke(keyCode)
+        };
         if (result != UioHookResult.Success)
         {
             // TODO: Hook this up to some proper logging or even something that sends a notification into VR.
             Console.WriteLine($"ERROR SIMULATING KEY: {result}");
         }
     }
-    
+
+    private static void ApplyModifiers(KeyCode[] modifiers, bool down)
+    {
+        foreach (var modifier in modifiers)
+        {
+            SimKey(modifier, down);
+        }
+    }
+
+    private static readonly ConcurrentDictionary<string, RepeatRunner> Repeaters = new();
+
+
+    private sealed class RepeatRunner(KeyCode keyCode, KeyCode[] modifiers, int intervalMs) : IDisposable
+    {
+        private readonly CancellationTokenSource _cts = new();
+        private Task? _task;
+
+        public void Start() => _task = Task.Run(Loop);
+
+        private void Loop()
+        {
+            ApplyModifiers(modifiers, true);
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
+                var next = TimeSpan.Zero;
+                var interval = TimeSpan.FromMilliseconds(intervalMs);
+
+                while (!_cts.IsCancellationRequested)
+                {
+                    SimKey(keyCode);
+                    next += interval; // Advancing fixed interval target, will keep the effective interval absolute
+                    var wait = next - stopwatch.Elapsed;
+                    if (wait > TimeSpan.Zero) _cts.Token.WaitHandle.WaitOne(wait); // Will wake if canceled, then loop breaks
+                }
+            }
+            finally
+            {
+                ApplyModifiers(modifiers, false); // Will run even if something errors out
+            }
+        }
+
+        public void Stop()
+        {
+            _cts.Cancel();
+            _task?.Wait();
+            Dispose();
+        }
+
+        public void Dispose() => _cts.Dispose();
+    }
+
     private static ulong RegisterEntry(KeyboardSimulatorUtils.SimEntry entry)
     {
         var result = Services.Vr.Input.RegisterDigitalAction(
             entry.Action.Path,
             (data, info) =>
             {
-                if (!data.bActive || !data.bState) return;
-                
-                // TODO: Should in the future handle different trigger modes
+                if (!data.bActive || !data.bChanged) return;
+
                 var modifiers = entry.Modifiers.ToKeyCodes();
-                foreach(var modifier in modifiers)
+                switch (entry.Trigger)
                 {
-                    SimKey(modifier, true);
-                }
-                SimKey(entry.KeyCode, true);    
-                SimKey(entry.KeyCode, false);    
-                foreach(var modifier in modifiers)
-                {
-                    SimKey(modifier, false);
+                    case HardwareInputTrigger.Press:
+                        if (data is { bState: true })
+                        {
+                            ApplyModifiers(modifiers, true);
+                            SimKey(entry.KeyCode);
+                            ApplyModifiers(modifiers, false);
+                        }
+
+                        break;
+                    case HardwareInputTrigger.Release:
+                        if (data is { bState: false })
+                        {
+                            ApplyModifiers(modifiers, true);
+                            SimKey(entry.KeyCode);
+                            ApplyModifiers(modifiers, false);
+                        }
+
+                        break;
+                    case HardwareInputTrigger.Held:
+                        switch (data)
+                        {
+                            case { bState: true }:
+                                ApplyModifiers(modifiers, true);
+                                SimKey(entry.KeyCode, true);
+                                break;
+                            case { bState: false }:
+                                SimKey(entry.KeyCode, false);
+                                ApplyModifiers(modifiers, false);
+                                break;
+                        }
+
+                        break;
+                    case HardwareInputTrigger.Repeat:
+                        switch (data)
+                        {
+                            case { bState: true }:
+                            {
+                                var runner = new RepeatRunner(entry.KeyCode, modifiers, entry.TriggerInterval);
+                                runner.Start(); // Start immediately, before dictionary, to prevent stop before start.
+                                if (!Repeaters.TryAdd(entry.GuiId, runner)) runner.Stop();
+                                break;
+                            }
+                            case { bState: false }:
+                            {
+                                if (Repeaters.TryRemove(entry.GuiId, out var runner)) runner.Stop();
+                                break;
+                            }
+                        }
+
+                        break;
                 }
             },
             entry.Action.IsChord
@@ -71,6 +171,11 @@ public class KeyboardSim
     private static void UnregisterEntries(ulong[] handles)
     {
         Services.Vr.Input.UnregisterActions(handles);
+        foreach (var guiId in Repeaters.Keys)
+        {
+            // We remove the repeaters from the dictionary so they cannot be stopped twice.
+            if (Repeaters.TryRemove(guiId, out var repeater)) repeater.Stop();
+        }
     }
 
     /// <summary>
@@ -102,7 +207,7 @@ public class KeyboardSim
         Session.OnSteamSceneAppIdChanged += appId =>
         {
             if (!Settings.Current.KeyboardSimulator.Enabled) return;
-            
+
             UnregisterEntries([.. _gameEntries.Keys]);
             Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(appId, out var gameEntries);
             RegisterEntries(gameEntries ?? [], ref _gameEntries);
