@@ -38,6 +38,8 @@ public static class Session
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }
 
+    public static string HapticPulseActionName { get; set; } = "";
+    public static ulong HapticPulseActionHandle { get; set; }
 
     public static void SetActionEntriesForSet(string actionSet, ActionGuiEntry[] entries)
     {

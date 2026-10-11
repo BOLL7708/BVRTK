@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using BVRTK.Components.KeyboardSimulator;
 using BVRTK.Data;
-using BVRTK.Data.Setting;
 using EasyOpenVR;
 using Valve.VR;
 
@@ -179,6 +178,7 @@ class Program
                     if(!result.Success) Console.WriteLine($"FAILED TO REGISTER ACTIONSET {result.ErrorName} {result.ErrorName} {result.Error}");
                 }
                 KeyboardSim.Init();
+                Session.HapticPulseActionHandle = vr.Input.GetActionHandle(Session.HapticPulseActionName).ResultULong;
                 // endregion
                 
                 Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));

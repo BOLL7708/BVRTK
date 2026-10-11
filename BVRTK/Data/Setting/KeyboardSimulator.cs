@@ -12,7 +12,7 @@ public partial class KeyboardSimulator
     [GuiCheckbox("Haptic pulse on key", "Will trigger a haptic pulse when a key is being simulated.")]
     public bool HapticPulseOnKey { get; set; } = false;
 
-    [GuiCheckbox("Notification on key", "Will spawn a notification in the headset when a key is being simulated.")]
+    // [GuiCheckbox("Notification on key", "Will spawn a notification in the headset when a key is being simulated.")]
     public bool NotificationOnKey { get; set; } = false;
 
     public ImmutableList<string> EntriesGeneral { get; set; } = [];

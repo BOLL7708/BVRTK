@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using BVRTK.Data;
+using EasyOpenVR;
 using SharpHook.Data;
 using SharpHook.Simulation;
 
@@ -24,7 +25,6 @@ public class KeyboardSim
         {
             var entry = KeyboardSimulatorUtils.ParseEntry(entryStr);
             var handle = RegisterEntry(entry);
-            Console.WriteLine($"REGISTERED INPUT: {entry.Action.Name} -> {entry.KeyCode} handle: {handle} {long.MaxValue} {long.MinValue}");
             if (handle != ulong.MaxValue && handle != ulong.MinValue)
             {
                 collection.TryAdd(handle, entry); // Handles are supposed to be unique so this should be safe.
@@ -54,6 +54,14 @@ public class KeyboardSim
         foreach (var modifier in modifiers)
         {
             SimKey(modifier, down);
+        }
+    }
+
+    private static void DoHapticPulse(EasyOpenVr.InputMethods.InputActionInfo info)
+    {
+        if (Settings.Current.KeyboardSimulator.HapticPulseOnKey)
+        {
+            Services.Vr.Input.SendHapticPulse(Session.HapticPulseActionHandle, info.SourceHandle);
         }
     }
 
@@ -114,6 +122,7 @@ public class KeyboardSim
                     case HardwareInputTrigger.Press:
                         if (data is { bState: true })
                         {
+                            DoHapticPulse(info);
                             ApplyModifiers(modifiers, true);
                             SimKey(entry.KeyCode);
                             ApplyModifiers(modifiers, false);
@@ -123,6 +132,7 @@ public class KeyboardSim
                     case HardwareInputTrigger.Release:
                         if (data is { bState: false })
                         {
+                            DoHapticPulse(info);
                             ApplyModifiers(modifiers, true);
                             SimKey(entry.KeyCode);
                             ApplyModifiers(modifiers, false);
@@ -133,6 +143,7 @@ public class KeyboardSim
                         switch (data)
                         {
                             case { bState: true }:
+                                DoHapticPulse(info);
                                 ApplyModifiers(modifiers, true);
                                 SimKey(entry.KeyCode, true);
                                 break;
@@ -148,6 +159,7 @@ public class KeyboardSim
                         {
                             case { bState: true }:
                             {
+                                DoHapticPulse(info);
                                 var runner = new RepeatRunner(entry.KeyCode, modifiers, entry.TriggerInterval);
                                 runner.Start(); // Start immediately, before dictionary, to prevent stop before start.
                                 if (!Repeaters.TryAdd(entry.GuiId, runner)) runner.Stop();

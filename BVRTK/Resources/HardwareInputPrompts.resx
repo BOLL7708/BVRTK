@@ -99,4 +99,7 @@
     <data name="KeyTriggerRepeat" xml:space="preserve">
         <value>Repeat</value>
     </data>
+    <data name="HapticPulse" xml:space="preserve">
+        <value>Haptic Pulse</value>
+    </data>
 </root>

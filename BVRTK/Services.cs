@@ -134,6 +134,15 @@ public static class Services
                         hwInputsSuffix = ++hwInputsSuffix % 16;
                     }
 
+                    var hapticItem = set.AddAction(
+                        "HapticPulse",
+                        ActionType.Vibration,
+                        ActionDirection.Out,
+                        ActionRequirement.Mandatory,
+                        configure: action => { Utils.AddLocalizationsToAction(action, HardwareInputPrompts.ResourceManager, "HapticPulse"); }
+                    );
+                    Session.HapticPulseActionName = hapticItem.Name;
+
                     Session.SetActionEntriesForSet(Constants.ActionSet.KeyboardSim, [.. actionGuiEntries]);
                 });
 

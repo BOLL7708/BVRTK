@@ -123,6 +123,15 @@ namespace BVRTK.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Haptic Pulse.
+        /// </summary>
+        internal static string HapticPulse {
+            get {
+                return ResourceManager.GetString("HapticPulse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Held.
         /// </summary>
         internal static string KeyTriggerHeld {
