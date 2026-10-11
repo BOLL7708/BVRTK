@@ -272,11 +272,10 @@ public static class KeyboardSimulatorPages
         if (_defaultCellPadding == Vector2.Zero) _defaultCellPadding = ImGui.GetStyle().CellPadding;
         var sectionIndex = Settings.Current.Application.CurrentSection;
         var section = GuiStructure.Sections[sectionIndex];
-        ImGui.PushStyleColor(ImGuiCol.ChildBg, section.AccentColor.Fade(0.30f));
         ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.35f));
-        ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, section.AccentColor.Fade(0.25f));
+        ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, section.AccentColor.Fade(0.20f));
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Constants.GuiItemSpacing);
-        ImGui.BeginChild($"##keyboardSimulator{tag}Child", Vector2.Zero, ImGuiChildFlags.AlwaysUseWindowPadding | ImGuiChildFlags.AutoResizeY);
+        ImGui.BeginChild($"##keyboardSimulator{tag}Child", Vector2.Zero, ImGuiChildFlags.None | ImGuiChildFlags.AutoResizeY);
 
         if (ImGui.BeginTable($"##keyboardSimulator{tag}Background", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
         {
@@ -352,7 +351,7 @@ public static class KeyboardSimulatorPages
 
         ImGui.EndChild();
         ImGui.PopStyleVar();
-        ImGui.PopStyleColor(3);
+        ImGui.PopStyleColor(2);
     }
 
 

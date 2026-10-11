@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -28,7 +29,7 @@ public class GuiBackend
 
     public event EventHandler? HasTerminated;
     protected virtual void OnTerminated() => HasTerminated?.Invoke(this, EventArgs.Empty);
-    
+
     private readonly ConcurrentQueue<VREvent_t> _overlayEvents = new();
 
     public void EnqueueOverlayEvent(in VREvent_t vrEvent)
@@ -71,7 +72,7 @@ public class GuiBackend
         Session.GuiImages.Logo = LoadImage(gl, "BVRTK.Resources.Media.bvrtk.logo.png");
 
         #endregion
-    } 
+    }
 
     private static unsafe ImFontPtr LoadFont(string resourceName)
     {
@@ -157,7 +158,7 @@ public class GuiBackend
         };
         OpenVR.Overlay.SetOverlayTexture(mainHandle, ref tex);
     }
-    
+
     /// <summary>
     /// We read the queue of incoming Overlay events from VR and
     /// convert those to valid input events for ImGui
@@ -269,7 +270,6 @@ public class GuiBackend
 
     #region Focus
 
-    
     private static bool _hasFocus = false;
     private static VREvent_Mouse_t _lastOverlayMouse = new();
 
@@ -337,7 +337,7 @@ public class GuiBackend
         GLFW.SetErrorCallback(error);
 
         _glfwInitialized = GLFW.Init() == GLFW.GLFW_TRUE;
-        
+
         const string glslVersion = "#version 150";
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
         GLFW.WindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -347,7 +347,7 @@ public class GuiBackend
         // Handle monitor scaling, scale the window but not the frame buffer, to avoid affecting VR overlay.
         GLFW.WindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_TRUE);
         GLFW.WindowHint(GLFW.GLFW_SCALE_FRAMEBUFFER, GLFW.GLFW_FALSE);
-        
+
         GLFW.WindowHint(GLFW.GLFW_VISIBLE, Settings.Current.Application.ShowDesktopWindowOnLaunch ? GLFW.GLFW_TRUE : GLFW.GLFW_FALSE);
 
         var window = GLFW.CreateWindow(
@@ -361,7 +361,7 @@ public class GuiBackend
             GLFW.Terminate();
             return;
         }
-        
+
         SetWindowIcon(window, "BVRTK.Resources.Media.bvrtk.thumbnail.png");
 
         _window = window;
@@ -387,7 +387,7 @@ public class GuiBackend
         // input handling when the desktop mouse cursor leaves the window.
         GLFW.SetWindowFocusCallback(window, &OnWindowFocus);
         Session.DesktopFocus = GLFW.GetWindowAttrib(window, GLFW.GLFW_FOCUSED) != 0;
-        
+
         // Replace the default window close callback as it will terminate
         // the GL window which houses the texture the overlay is using.
         GLFW.SetWindowCloseCallback(window, &OnWindowClose);
@@ -416,22 +416,25 @@ public class GuiBackend
         gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
         var hasSavedOnHidden = false;
-        
-        // Main loop
+        var stopwatch = Stopwatch.StartNew();
+        long endOfNextFrame = 0;
+
+        // Main loop // TODO: I Believe this is lacking a frame limiter? When using the debug metrics it varies between 100-300 fps, we should probably lock it to 60 or some faction of headset Hz? Desktop Hz?
         while (!_shouldTerminate)
         {
             // Poll for and process events
             GLFW.PollEvents();
             ApplyOverlayEventsAsInput();
             DisplayVrKeyboardOnTextInput(overlayHandle);
-            
+
             if (!(_overlayVisible || IsWindowVisible()))
             {
-                if(!hasSavedOnHidden) Settings.WriteToDisk();
+                if (!hasSavedOnHidden) Settings.WriteToDisk();
                 hasSavedOnHidden = true;
                 GLFW.WaitEventsTimeout(1); // Will interrupt on an event, which happens if the window is shown.
                 continue;
             }
+
             hasSavedOnHidden = false;
 
             GLFW.MakeContextCurrent(window);
@@ -442,14 +445,22 @@ public class GuiBackend
             // Mirror to the desktop window (GPU copy, not a re-render)
             int ww, wh;
             GLFW.GetFramebufferSize(window, &ww, &wh);
-
-            // Figure out what the below does
             gl.BindFramebuffer(GLFramebufferTarget.ReadFramebuffer, fbo);
             gl.BindFramebuffer(GLFramebufferTarget.DrawFramebuffer, 0);
             gl.BlitFramebuffer(0, 0, Constants.Overlay.TextureWidth, Constants.Overlay.TextureHeight, 0, 0, ww, wh, GLClearBufferMask.ColorBufferBit, GLBlitFramebufferFilter.Linear);
             gl.BindFramebuffer(GLFramebufferTarget.Framebuffer, 0);
 
             GLFW.SwapBuffers(window);
+
+            var frameRate = Math.Max(1, Settings.Current.Application.GuiFrameRate);
+            var ticksPerFrame = Stopwatch.Frequency / frameRate;
+            endOfNextFrame += ticksPerFrame;
+
+            var now = stopwatch.ElapsedTicks;
+            if (now > endOfNextFrame) endOfNextFrame = now; // We  are behind or just un-hidden, we don't try to catch up but skip ahead.
+
+            var remainingTime = Stopwatch.GetElapsedTime(now, endOfNextFrame);
+            if (remainingTime.Ticks > 0) Thread.Sleep(remainingTime);
         }
 
         ImGuiImplOpenGL3.Shutdown();
@@ -482,14 +493,14 @@ public class GuiBackend
         }
         else GLFW.HideWindow(_window.Value);
     }
-    
+
     public bool IsWindowVisible()
     {
         if (_window is null) return false;
         return GLFW.GetWindowAttrib(_window.Value, GLFW.GLFW_VISIBLE) != 0
-            && GLFW.GetWindowAttrib(_window.Value, GLFW.GLFW_ICONIFIED) == 0;
+               && GLFW.GetWindowAttrib(_window.Value, GLFW.GLFW_ICONIFIED) == 0;
     }
-    
+
     private bool _overlayVisible = false;
 
     /// <summary>
@@ -520,7 +531,7 @@ public class GuiBackend
                 Console.WriteLine($"Overlay: StbImage decode FAILED: {reason}"); // TODO: Switch to proper logging
                 return;
             }
-            
+
             // Instantiate image object
             GLFWimage image;
             image.Width = width;
@@ -532,11 +543,13 @@ public class GuiBackend
             StbImage.ImageFree(pixels);
         }
     }
-    
+
     private static uint _lastHoveredId;
 
     private static void HapticVibrationOnHover(ulong handle)
     {
+        if (!Settings.Current.Application.EnableHapticsOnHover) return;
+
         var hoveredId = ImGui.GetCurrentContext().HoveredId;
         if (hoveredId != 0 && hoveredId != _lastHoveredId)
         {

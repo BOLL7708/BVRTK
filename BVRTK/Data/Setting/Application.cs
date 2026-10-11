@@ -15,7 +15,14 @@ public partial class Application
     [GuiCheckbox("Show desktop window on launch", "Will show a mirror of the overlay on the desktop when the application launches.")]
     public bool ShowDesktopWindowOnLaunch { get; set; } = true;
 
-    [GuiCombo("Language", "Set the language of the application.", 256f, nameof(Session) + "." + nameof(Session.SupportedLanguageGuiIds))]
+    [GuiCheckbox("Enable haptic pulse on hover", "Will make your controller shake when hovering interactive elements.")]
+    public bool EnableHapticsOnHover { get; set; } = true;
+    
+    [GuiIntSlider("GUI frame rate", "If the GUI is too heavy when visible you can reduce the frame rate it renders at.", 5, 60)]
+    public int GuiFrameRate { get; set; } = 60;
+    
+    
+    // [GuiCombo("Language", "Set the language of the application.", 256f, nameof(Session) + "." + nameof(Session.SupportedLanguageGuiIds))]
     public string Language { get; set; } = Constants.SystemDefaultLanguage;
 
     #region Quick settings in sidebar
