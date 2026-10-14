@@ -155,7 +155,7 @@ public static class Services
             .SetVrAppManifest(vrManifestFilename, vrManifestBuilder, Session.isDebug)
             .SetActionManifest(actionManifestFilename, actionManifestBuilder, Session.isDebug)
             .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
-            .SetPumpInterval(EasyOpenVr.EPumpInterval.FractionOfHmdHz, 1)
+            .SetPumpInterval(EasyOpenVr.EPumpInterval.HmdHz, 0)
             .SetDebug(true)
             .BuildAndInit();
     }
