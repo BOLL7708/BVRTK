@@ -75,9 +75,8 @@ public sealed class WebsocketServer : AbstractServer
             await _server.StopAsync();
             await _server.DisposeAsync();
             _server = null;
+            OnStatusChanged(ServerStatus.Disconnected, 0, _port);
         }
-
-        OnStatusChanged(ServerStatus.Disconnected, 0, _port);
     }
 
     #endregion

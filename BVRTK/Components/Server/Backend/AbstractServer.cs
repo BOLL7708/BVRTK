@@ -56,6 +56,7 @@ public abstract class AbstractServer
 
     public enum ServerStatus
     {
+        None,
         Connected,
         Disconnected,
         Error,

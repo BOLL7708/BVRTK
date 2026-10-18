@@ -20,7 +20,10 @@ public class JsonRpcServer
 
         _websocketServer = new WebsocketServer();
         _websocketServer.ServerError += Console.WriteLine; // TODO: Serilog?
-        _websocketServer.StatusChanged += (status, value, port) => { Console.WriteLine($"Action: {status.GetType().Name} - {Enum.GetName(typeof(AbstractServer.ServerStatus), value)} ({port})"); };
+        _websocketServer.StatusChanged += (status, value, port) =>
+        {
+            Console.WriteLine($"Action: {Enum.GetName(status)} - {Enum.GetName(typeof(AbstractServer.ServerStatus), value)} ({port})");
+        };
         _websocketServer.MessageReceived += async (sessionId, message) =>
         {
             Console.WriteLine($"MessageReceived: {sessionId} - {message}");
