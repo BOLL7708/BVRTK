@@ -31,9 +31,30 @@ public static class Session
         public static GlImage Logo;
     }
 
-    public static readonly CancellationTokenSource ProgramCts = new();
+    public static class GuiFlags
+    {
+        /// <summary>
+        /// Will reset when accessed.
+        /// Causes immediate skips not waiting for a frame reset, so even at low render rates this will continue the render loop immediately.
+        /// </summary>
+        public static int SkipFrames
+        {
+            get
+            {
+                var was = field;
+                field = Math.Max(0, --field);
+                return was;
+            }
+            set;
+        } = 2; // Starts with a few skipped frames to let the initial GUI settle by default.
 
-    public static bool ExitPressed { get; set; }
+        public static bool ShowExitModal { get; set; } = false;
+    }
+
+    /// <summary>
+    ///  Global CancellationTokenSource that will when canceled stop loops and threads and perform a graceful shutdown including cleanup tasks.
+    /// </summary>
+    public static readonly CancellationTokenSource ProgramCts = new();
 
     public static bool OverlayFocus { get; set; }
     public static bool DesktopFocus { get; set; }

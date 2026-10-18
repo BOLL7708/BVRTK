@@ -43,18 +43,16 @@ public static partial class Gui
         GuiUtils.PushFont(FontStyle.Regular, Constants.Gui.FontSize);
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.GuiItemSpacing);
 
-        if (Session.ExitPressed)
+        if (Session.ProgramCts.IsCancellationRequested)
         {
             RenderExitPage();
         } else {
-
             RenderSidebar();
             ImGui.SameLine(0, 0);
             RenderSeparator();
             ImGui.SameLine();
             RenderPage();
             if (Settings.Current.Application.EnableInterfaceGradient) RenderGradient();
-
         }
         
         ImGui.PopStyleVar();

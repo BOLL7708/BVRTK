@@ -53,6 +53,7 @@ public static partial class Gui
             ImGui.Button(section.Title(), availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
+                Session.GuiFlags.SkipFrames = 2; // Allow page to settle, first frame to render tabs, second to render internal tables etc, the rest will have to populate on rendered frames.
                 RestoredSectionsInPage.Clear();
                 Settings.Current.Application.SetCurrentSection(i);
             }
@@ -105,16 +106,14 @@ public static partial class Gui
         
         if (ImGui.Button("Exit", buttonSize))
         {
-            // TODO: Add modal confirmation dialog for this!
-            Session.ExitPressed = true;
-            Session.ProgramCts.Cancel();
+            Session.GuiFlags.ShowExitModal = true;
         }
 
         ImGui.PopStyleColor(3);
 
         #region Debug
 
-        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{Settings.Current.Application.Language}={GuiSidebar.PlayAreaLabel}");
+        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{Session.GuiFlags.ShowExitModal}");
 
         #endregion
 

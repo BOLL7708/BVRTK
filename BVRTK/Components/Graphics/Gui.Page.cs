@@ -76,6 +76,7 @@ public static partial class Gui
                 GuiUtils.PushRounding();
                 ConvertDragToScroll();
                 page.Renderer();
+                RenderExitModal();
                 GuiUtils.PopRounding();
                 ImGui.EndChild();
                 
@@ -116,5 +117,28 @@ public static partial class Gui
         var delta = io.MouseDelta;
         ImGui.SetScrollX(ImGui.GetScrollX() - delta.X);
         ImGui.SetScrollY(ImGui.GetScrollY() - delta.Y);
+    }
+
+    private const string ExitModalTag = "ExitModal";
+
+    private static void RenderExitModal()
+    {
+        
+        if (Session.GuiFlags.ShowExitModal)
+        {
+            Session.GuiFlags.ShowExitModal = false;
+            ImGui.OpenPopup($"Are you sure you want to exit?##{ExitModalTag}"); // TODO: Prompt
+        }
+        GuiUtils.DrawModal(
+            $"Are you sure you want to exit?##{ExitModalTag}", // TODO: Prompt
+            "Yes",
+            "No",
+            null,
+            true,
+            _ =>
+            {
+                Session.ProgramCts.Cancel();
+            }
+        );
     }
 }

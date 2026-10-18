@@ -432,6 +432,7 @@ public class GuiBackend(CancellationToken cancellationToken)
             RenderUiToFbo(gl, fbo);
             SubmitOverlayTexture(overlayHandle, fboTex);
             HapticVibrationOnHover(overlayHandle);
+            if (Session.GuiFlags.SkipFrames > 0) continue; // Used to allow the GUI to settle things like swapping pages, as the tab view populates and tables render.
 
             // Mirror to the desktop window (GPU copy, not a re-render)
             int ww, wh;
