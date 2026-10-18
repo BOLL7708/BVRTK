@@ -42,6 +42,7 @@ class Program
         // TODO: Setup Serilog
 
         var vr = Services.Vr;
+        var vrTask = vr.Run();
 
         #region Event Registration
 
@@ -64,7 +65,7 @@ class Program
 
         vr.State += state =>
         {
-            if (state == EasyOpenVr.EState.ReadyToShutdown)
+            if (state == EasyOpenVr.EState.QuitWasCalled)
             {
                 Session.ProgramCts.Cancel();
             }
@@ -127,11 +128,11 @@ class Program
 
         #endregion
 
-        uint[] indexArr = [];
         var launchServicesDone = false;
         var guiTask = Task.CompletedTask;
+        var cancellationToken = Session.ProgramCts.Token;
 
-        while (!Session.ProgramCts.IsCancellationRequested)
+        while (!launchServicesDone)
         {
             if (!vr.IsInitialized())
             {
@@ -139,73 +140,55 @@ class Program
                 continue;
             }
 
-            if (!launchServicesDone)
+            vr.Overlay.CreateDashboardOverlay(
+                Constants.Overlay.UniqueId,
+                Constants.Overlay.Title,
+                out var mainHandle,
+                out var thumbnailHandle,
+                Constants.Overlay.TextureWidth,
+                Constants.Overlay.TextureHeight,
+                Constants.Overlay.PhysicalWidth,
+                thumbnailBytes: Utils.LoadEmbeddedResource("BVRTK.Resources.Media.bvrtk.thumbnail.png")
+            );
+            vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
             {
-                launchServicesDone = true;
-
-                // var result1 = vr.Overlay.CreateDashboardOverlay("bvrtk.dashboard.test.1", "BVRTK Test 1", out var mainHandle, out var thumbnailHandle);
-                // var result2 = vr.Overlay.SetOverlayTextureFromFile(mainHandle, @"D:\Temp\TEST\main.jpg");
-                // var result3 = vr.Overlay.SetOverlayTextureFromFile(thumbnailHandle, @"D:\Temp\TEST\thumbnail.png");
-                // vr.Overlay.SetOverlayWidth(mainHandle, 2.5f);
-                // Console.WriteLine($"TEST OVERLAY: {result1.Success} {result2.Success} {result3.Success}");
-                var ds = Path.DirectorySeparatorChar;
-                vr.Overlay.CreateDashboardOverlay(
-                    Constants.Overlay.UniqueId,
-                    Constants.Overlay.Title,
-                    out var mainHandle,
-                    out var thumbnailHandle,
-                    Constants.Overlay.TextureWidth,
-                    Constants.Overlay.TextureHeight,
-                    Constants.Overlay.PhysicalWidth,
-                    thumbnailBytes: Utils.LoadEmbeddedResource("BVRTK.Resources.Media.bvrtk.thumbnail.png")
-                );
-                vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
-                {
-                    Services.GuiBackend.EnqueueOverlayEvent(in vrEvent);
-                });
-                Services.GuiBackend.HasTerminated += (sender, e) =>
-                {
-                    vr.Shutdown();
-                };
-
-                vr.System.SetAutoLaunch(Constants.SystemApplicationKey, Settings.Current.Application.LaunchWithSteamVr);
-                SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (autoLaunch) => { vr.System.SetAutoLaunch(Constants.SystemApplicationKey, autoLaunch); };
-                
-                // region Initialize Everything
-                foreach (var actionSet in Session.VrInputActionSets)
-                {
-                    var result = vr.Input.RegisterActionSet(actionSet.Name);
-                    if(!result.Success) Console.WriteLine($"FAILED TO REGISTER ACTIONSET {result.ErrorName} {result.ErrorName} {result.Error}");
-                }
-                KeyboardSim.Init();
-                Session.HapticPulseActionHandle = vr.Input.GetActionHandle(Session.HapticPulseActionName).ResultULong;
-                // endregion
-                
-                Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
-                guiTask = Task.Run(() => Services.GuiBackend.Run(mainHandle), Session.ProgramCts.Token);
-            }
-
-            // TODO: Is the below just test code?
-            if (indexArr.Length == 0) indexArr = vr.Device.GetIndexesForTrackedDeviceClass(ETrackedDeviceClass.HMD);
-            var hmdIndex = indexArr.Length > 0 ? indexArr[0] : uint.MaxValue;
-            if (hmdIndex == uint.MaxValue)
+                Services.GuiBackend.EnqueueOverlayEvent(in vrEvent);
+            });
+            
+            vr.System.SetAutoLaunch(Constants.SystemApplicationKey, Settings.Current.Application.LaunchWithSteamVr);
+            SettingsChangeHandlers.OnApplicationLaunchWithSteamVrChanged += (autoLaunch) => { vr.System.SetAutoLaunch(Constants.SystemApplicationKey, autoLaunch); };
+            
+            // region Initialize Everything
+            foreach (var actionSet in Session.VrInputActionSets)
             {
-                Thread.Sleep(1000);
-                continue;
+                var result = vr.Input.RegisterActionSet(actionSet.Name);
+                if(!result.Success) Console.WriteLine($"FAILED TO REGISTER ACTIONSET {result.ErrorName} {result.ErrorName} {result.Error}");
             }
+            KeyboardSim.Init();
+            Session.HapticPulseActionHandle = vr.Input.GetActionHandle(Session.HapticPulseActionName).ResultULong;
+            // endregion
+            
+            Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
+            guiTask = Services.GuiBackend.Run(mainHandle);
 
-            // var poses = vr.Device.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding);
-            // if (poses.Length <= 0) continue;
-
-            // var pose = poses[0];
-            // Console.WriteLine($"Tracking HMD: {pose.mDeviceToAbsoluteTracking.m3}.{pose.mDeviceToAbsoluteTracking.m7}.{pose.mDeviceToAbsoluteTracking.m11}");
-
-            Thread.Sleep(1000);
+            launchServicesDone = true;
         }
 
-        Settings.WriteToDisk();
-        await Services.Server.Stop();
-        Services.GuiBackend.Terminate(); // Will trigger HasTerminated when done, which in turn finishes the shutdown for SteamVR.
-        await guiTask; // We wait for that task to finish or else the GuiBackend doesn't have time to finish the termination event.
+        try
+        {
+            // Initialization complete, so here we wait until the application should exit, that is, when the global cancellation token is canceled.
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // This always happens on cancel but does not catch other exceptions so we clean up in finally{}.
+        }
+        finally
+        {
+            Settings.WriteToDisk();
+            await Services.Server.Stop();
+            await Task.WhenAll(guiTask, vrTask); // We wait for loops and workers to finish before shutting down the SteamVR API connection.
+            vr.Shutdown();
+        }
     }
 }

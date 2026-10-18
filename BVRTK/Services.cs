@@ -157,12 +157,12 @@ public static class Services
             .SetApplicationType(EVRApplicationType.VRApplication_Overlay)
             .SetPumpInterval(EasyOpenVr.EPumpInterval.HmdHz, 0)
             .SetDebug(true)
-            .BuildAndInit();
+            .Build(Session.ProgramCts.Token);
     }
 
     private static GuiBackend BuildApplicationWindow()
     {
-        return new GuiBackend();
+        return new GuiBackend(Session.ProgramCts.Token);
     }
 
     private static EventSimulator BuildSharpHook()

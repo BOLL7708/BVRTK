@@ -21,15 +21,8 @@ namespace BVRTK.Components.Graphics;
 /// <summary>
 /// Handles the OpenGL backend with OpenGLFW, handles input from both SteamVR and GLFW events, and draws the ImGui interface.
 /// </summary>
-public class GuiBackend
+public class GuiBackend(CancellationToken cancellationToken)
 {
-    public GuiBackend()
-    {
-    }
-
-    public event EventHandler? HasTerminated;
-    protected virtual void OnTerminated() => HasTerminated?.Invoke(this, EventArgs.Empty);
-
     private readonly ConcurrentQueue<VREvent_t> _overlayEvents = new();
 
     public void EnqueueOverlayEvent(in VREvent_t vrEvent)
@@ -40,7 +33,6 @@ public class GuiBackend
 
     private GLFWwindowPtr? _window = null;
     private bool _glfwInitialized = false;
-    private bool _shouldTerminate = false;
 
     // Based on: https://github.com/HexaEngine/Hexa.NET.ImGui/blob/main/Examples/ExampleGLFWOpenGL3/Program.cs
 
@@ -165,6 +157,8 @@ public class GuiBackend
     /// </summary>
     private void ApplyOverlayEventsAsInput()
     {
+        if (cancellationToken.IsCancellationRequested) return; // If the loop and thus contexts are terminating, we should no longer accept events.
+        
         var io = ImGui.GetIO();
         while (_overlayEvents.TryDequeue(out var vrEvent))
         {
@@ -324,11 +318,9 @@ public class GuiBackend
     }
 
     #endregion
-
-    public unsafe void Run(ulong overlayHandle)
+    
+    public unsafe Task Run(ulong overlayHandle)
     {
-        _shouldTerminate = false;
-
         var error = new NativeCallback<GLFWerrorfun>(static (errorCode, description) =>
         {
             // TODO: Switch to proper logging
@@ -359,7 +351,7 @@ public class GuiBackend
         {
             Console.WriteLine("Failed to create GLFW window.");
             GLFW.Terminate();
-            return;
+            return Task.CompletedTask;
         }
 
         SetWindowIcon(window, "BVRTK.Resources.Media.bvrtk.thumbnail.png");
@@ -380,7 +372,7 @@ public class GuiBackend
         {
             Console.WriteLine("Failed to init ImGui Impl GLFW");
             GLFW.Terminate();
-            return;
+            return Task.CompletedTask;
         }
 
         // Replace the default window focus callback as it will disable all
@@ -397,7 +389,7 @@ public class GuiBackend
         {
             Console.WriteLine("Failed to init ImGui Impl OpenGL3");
             GLFW.Terminate();
-            return;
+            return Task.CompletedTask;
         }
 
         GL gl = new(new BindingsContext(window));
@@ -418,9 +410,8 @@ public class GuiBackend
         var hasSavedOnHidden = false;
         var stopwatch = Stopwatch.StartNew();
         long endOfNextFrame = 0;
-
-        // Main loop // TODO: I Believe this is lacking a frame limiter? When using the debug metrics it varies between 100-300 fps, we should probably lock it to 60 or some faction of headset Hz? Desktop Hz?
-        while (!_shouldTerminate)
+        
+        while (!cancellationToken.IsCancellationRequested)
         {
             // Poll for and process events
             GLFW.PollEvents();
@@ -475,14 +466,9 @@ public class GuiBackend
         // Clean up and terminate GLFW
         GLFW.DestroyWindow(window);
         GLFW.Terminate();
-        OnTerminated();
+        return Task.CompletedTask;
     }
-
-    public void Terminate()
-    {
-        _shouldTerminate = true;
-    }
-
+    
     public void SetWindowVisible(bool visible)
     {
         if (_window is null) return; // TODO: Log to log system here.
