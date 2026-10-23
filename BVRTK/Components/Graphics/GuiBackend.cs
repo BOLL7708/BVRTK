@@ -452,7 +452,7 @@ public class GuiBackend(CancellationToken cancellationToken)
             if (now > endOfNextFrame) endOfNextFrame = now; // We  are behind or just un-hidden, we don't try to catch up but skip ahead.
 
             var remainingTime = Stopwatch.GetElapsedTime(now, endOfNextFrame);
-            if (remainingTime.Ticks > 0) Thread.Sleep(remainingTime);
+            if (remainingTime.Ticks > 0) cancellationToken.WaitHandle.WaitOne(remainingTime);
         }
 
         ImGuiImplOpenGL3.Shutdown();

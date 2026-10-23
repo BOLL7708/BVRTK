@@ -116,13 +116,22 @@ public class SettingsGenerator : IIncrementalGenerator
                                     /// Generated List Adder for {{prop.Name}}, will only add if new.
                                     internal void AddIfNewTo{{prop.Name}}({{valueType}} value)
                                     {
-                                        if(!{{prop.Name}}.Contains(value)) AddTo{{prop.Name}}(value);
+                                        var editedList = Utils.AddToList({{prop.Name}}, value, true);
+                                        if(EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, editedList)) return;
+                                        
+                                        {{prop.Name}} = editedList;
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine($"[{{typeName}}] {{prop.Name}} item added, dirty state set.");
                                     }
                                     
                                     /// Generated List Adder for {{prop.Name}}.
                                     internal void AddTo{{prop.Name}}({{valueType}} value)
                                     {
-                                        {{prop.Name}} = {{prop.Name}}.Add(value);
+                                        var editedList = Utils.AddToList({{prop.Name}}, value);
+                                        if(EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, editedList)) return;
+                                        
+                                        {{prop.Name}} = editedList;
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} item added, dirty state set.");
@@ -132,32 +141,23 @@ public class SettingsGenerator : IIncrementalGenerator
                                     internal void RemoveFrom{{prop.Name}}({{valueType}} value)
                                     {
                                         if(!{{prop.Name}}.Contains(value)) return;
+                                        var editedList = Utils.RemoveFromList({{prop.Name}}, value);
+                                        if(EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, editedList)) return;
                                         
-                                        {{prop.Name}} = {{prop.Name}}.Remove(value);
+                                        {{prop.Name}} = editedList;
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} item removed, dirty state set.");
                                     }
                                     
-                                    /// Generated List Replaced for {{prop.Name}}. Nulling an argument will make for add or remove.
+                                    /// Generated List Replacer for {{prop.Name}}.
                                     #nullable enable
                                     internal void ReplaceIn{{prop.Name}}({{valueType}}? currentValue, {{valueType}}? newValue)
                                     {
-                                        if(currentValue == null && newValue == null) return;
+                                        var editedList = Utils.ReplaceInList({{prop.Name}}, currentValue, newValue);
+                                        if(EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, editedList)) return;
                                         
-                                        if(currentValue != null && newValue != null) {
-                                            var index = {{prop.Name}}.IndexOf(currentValue);
-                                            if(index >= 0) {
-                                                {{prop.Name}} = {{prop.Name}}.SetItem(index, newValue);
-                                            }
-                                        }
-                                        if(currentValue != null && newValue == null) {
-                                            {{prop.Name}} = {{prop.Name}}.Remove(currentValue);
-                                        }
-                                        if(currentValue == null && newValue != null) {
-                                            {{prop.Name}} = {{prop.Name}}.Add(newValue);
-                                        }
-                                        
+                                        {{prop.Name}} = editedList;
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} item replaced, dirty state set.");
@@ -165,24 +165,20 @@ public class SettingsGenerator : IIncrementalGenerator
                                     #nullable disable
                                     
                                     internal void MoveUpIn{{prop.Name}}(int index) {
-                                        if(index <= 0) return;
+                                        var rearrangedList = Utils.RearrangeList({{prop.Name}}, index, index - 1);
+                                        if(EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, rearrangedList)) return;
                                         
-                                        var item = {{prop.Name}}[index];
-                                        {{prop.Name}} = {{prop.Name}}.RemoveAt(index);
-                                        {{prop.Name}} = {{prop.Name}}.Insert(index-1, item);
-                                        
+                                        {{prop.Name}} = rearrangedList;
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} was reordered, dirty state set."); 
                                     }
                                     
                                     internal void MoveDownIn{{prop.Name}}(int index) {
-                                        if(index >= {{prop.Name}}.Count -1) return;                                    
-                                    
-                                        var item = {{prop.Name}}[index];
-                                        {{prop.Name}} = {{prop.Name}}.RemoveAt(index);
-                                        {{prop.Name}} = {{prop.Name}}.Insert(index+1, item);
-                                        
+                                        var rearrangedList = Utils.RearrangeList({{prop.Name}}, index, index + 1);
+                                        if(EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, rearrangedList)) return;
+                                
+                                        {{prop.Name}} = rearrangedList;
                                         InternalDirty = true;
                                         Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
                                         Console.WriteLine($"[{{typeName}}] {{prop.Name}} was reordered, dirty state set.");
