@@ -73,7 +73,7 @@ public class SettingsGenerator : IIncrementalGenerator
 //                                 private {{typeName}} {{fieldName}} = {{GetDefaultFor(prop, typeName)}}; 
 //                             """);
 
-            if (typeName.Contains("ImmutableDictionary"))
+            if (typeName.Contains("ImmutableDictionary") || typeName.Contains("ImmutableSortedDictionary"))
             {
                 var typePair = GeneratorUtils.GetTypeGenericPair(typeName);
                 if (typePair == null) continue;
@@ -185,23 +185,21 @@ public class SettingsGenerator : IIncrementalGenerator
                                     }
                                 """);
             }
-            else
-            {
-                sb.AppendLine($$"""
-                                    /// Generated Value Setter for {{prop.Name}}
-                                    internal void Set{{prop.Name}}({{typeName}} value)
+            
+            sb.AppendLine($$"""
+                                /// Generated Value Setter for {{prop.Name}}
+                                internal void Set{{prop.Name}}({{typeName}} value)
+                                {
+                                    if (!EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, value)) 
                                     {
-                                        if (!EqualityComparer<{{typeName}}>.Default.Equals({{prop.Name}}, value)) 
-                                        {
-                                            {{prop.Name}} = value;
-                                            InternalDirty = true;
-                                            Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
-                                            Console.WriteLine("[{{typeName}}] {{prop.Name}} updated, dirty state set.");
-                                        }
-                                        // TODO: Add log handler here to report failure to set.
+                                        {{prop.Name}} = value;
+                                        InternalDirty = true;
+                                        Data.SettingsChangeHandlers.Notify{{classSymbol.Name}}{{prop.Name}}Changed({{prop.Name}});
+                                        Console.WriteLine("[{{typeName}}] {{prop.Name}} updated, dirty state set.");
                                     }
-                                """);
-            }
+                                    // TODO: Add log handler here to report failure to set.
+                                }
+                            """);
         }
 
         sb.AppendLine("}");

@@ -17,5 +17,5 @@ public partial class KeyboardSimulator
 
     public ImmutableList<string> EntriesGeneral { get; set; } = [];
 
-    public ImmutableDictionary<string, string[]> EntriesPerGame { get; set; } = [];
+    public ImmutableSortedDictionary<string, string[]> EntriesPerGame { get; set; } = ImmutableSortedDictionary<string, string[]>.Empty;
 }
