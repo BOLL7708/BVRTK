@@ -97,5 +97,32 @@ public class UtilsVarTest
         Assert.NotEqual(list, listUp);
         Assert.Equal(listUp, listUpTruth);
     }
+
+    #endregion
+
+    #region Dictionary
+
+    [Fact]
+    public void EditDictionary()
+    {
+        var dic = new SortedDictionary<string, string[]> { { "one", ["two"] }, { "three", ["four"] } }.ToImmutableSortedDictionary();
+
+        // Add
+        var dicAddTruth = new SortedDictionary<string, string[]> { { "one", ["two", "five"] }, { "three", ["four"] } }.ToImmutableSortedDictionary();
+        var dicAdd = Utils.AddDictionaryArrayItem<string>(dic, "one", "five");
+        Assert.NotEqual(dic, dicAdd);
+        Assert.Equal(dicAdd, dicAddTruth);
+        var dicAddNewTruth = new SortedDictionary<string, string[]> { { "one", ["two"] }, { "three", ["four"] }, { "five", ["six"] } }.ToImmutableSortedDictionary();
+        var dicAddNew = Utils.AddDictionaryArrayItem<string>(dic, "five", "six");
+        Assert.NotEqual(dic, dicAddNew);
+        Assert.Equal(dicAddNew, dicAddNewTruth);
+        
+        var dicAddDupeTruth = new SortedDictionary<string, string[]> { { "one", ["two", "two"] }, { "three", ["four"] } }.ToImmutableSortedDictionary();
+        var dicAddDupe = Utils.AddDictionaryArrayItem<string>(dic, "one", "two");
+        Assert.NotEqual(dic, dicAddDupe);
+        Assert.Equal(dicAddDupe, dicAddDupeTruth);
+        
+        var dicAddNoDupe = Utils.AddDictionaryArrayItem<string>(dic, "three", "four", true);
+        Assert.Equal(dic, dicAddNoDupe);
     #endregion
 }

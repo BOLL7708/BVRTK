@@ -70,5 +70,20 @@ public partial class Utils
         var item = list[currentIndex];
         return list.RemoveAt(currentIndex).Insert(newIndex, item);
     }
+
+    #endregion
+
+    #region Dictionary
+
+    public static ImmutableSortedDictionary<string, T[]> AddDictionaryArrayItem<T>(
+        ImmutableSortedDictionary<string, T[]> dictionary, string key, T newItem, bool ignoreDuplicate = false
+    )
+    {
+        dictionary.TryGetValue(key, out var items);
+        if (items != null && ignoreDuplicate && items.Contains(newItem)) return dictionary;
+
+        var list = items ?? [];
+        return dictionary.SetItem(key, [.. list, newItem]);
+    }
     #endregion
 }
