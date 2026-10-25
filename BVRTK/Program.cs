@@ -57,8 +57,6 @@ class Program
         SetLanguage(Settings.Current.Application.Language);
         SettingsChangeHandlers.OnApplicationLanguageChanged += SetLanguage;
 
-        SettingsChangeHandlers.OnKeyboardSimulatorEntriesGeneralChanged += newValue => Console.WriteLine($"EntriesGeneral was updated: {newValue.ToArray()}");
-
         #endregion
 
         #region VR
@@ -109,6 +107,10 @@ class Program
         );
         UpdateGame();
 
+        vr.PumpCycleDeltaMs += (double ms) =>
+        {
+            Session.DebugValue = ms;
+        };
 
         #endregion
 

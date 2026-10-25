@@ -9,7 +9,7 @@ namespace BVRTK.Components.KeyboardSimulator;
 
 public class KeyboardSim
 {
-    private static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> _generalEntries = [];
+    private static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> _manualEntries = [];
     private static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> _gameEntries = [];
 
     private static void UnregisterAndRegister(string[] entries, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection)
@@ -198,7 +198,8 @@ public class KeyboardSim
         // Register everything on first init if enabled
         if (Settings.Current.KeyboardSimulator.Enabled)
         {
-            UnregisterAndRegister([.. Settings.Current.KeyboardSimulator.EntriesGeneral], ref _generalEntries);
+            // TODO: UnregisterAndRegister([.. Settings.Current.KeyboardSimulator.EntriesGeneral], ref _generalEntries);
+            //  Loop all manual entries and register those that are enabled.
             Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var gameEntries);
             UnregisterAndRegister(gameEntries ?? [], ref _gameEntries);
         }
@@ -206,11 +207,12 @@ public class KeyboardSim
         // React to enabling/disabling
         SettingsChangeHandlers.OnKeyboardSimulatorEnabledChanged += on =>
         {
-            UnregisterEntries([.. _generalEntries.Keys]);
+            UnregisterEntries([.. _manualEntries.Keys]);
             UnregisterEntries([.. _gameEntries.Keys]);
             if (!on) return;
 
-            RegisterEntries([.. Settings.Current.KeyboardSimulator.EntriesGeneral], ref _generalEntries);
+            // TODO: RegisterEntries([.. Settings.Current.KeyboardSimulator.EntriesGeneral], ref _manualEntries);
+            //  Here as well get the enabled ones, should probably make a method for this.
             Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var gameEntries);
             RegisterEntries(gameEntries ?? [], ref _gameEntries);
         };
@@ -226,13 +228,14 @@ public class KeyboardSim
         };
 
         // React to general entries changing
-        SettingsChangeHandlers.OnKeyboardSimulatorEntriesGeneralChanged += list =>
+        SettingsChangeHandlers.OnKeyboardSimulatorEntriesManualChanged += list =>
         {
+            // TODO: Figure out which lists should be enabled/disabled etc...
             if (!Settings.Current.KeyboardSimulator.Enabled) return;
 
-            UnregisterEntries([.. _generalEntries.Keys]);
-            _generalEntries.Clear();
-            RegisterEntries([.. list], ref _generalEntries);
+            UnregisterEntries([.. _manualEntries.Keys]);
+            _manualEntries.Clear();
+            // TODO: RegisterEntries([.. list], ref _manualEntries);
         };
 
         // React to game specific entries changing

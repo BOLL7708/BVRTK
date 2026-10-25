@@ -15,7 +15,7 @@ public partial class KeyboardSimulator
     // [GuiCheckbox("Notification on key", "Will spawn a notification in the headset when a key is being simulated.")]
     public bool NotificationOnKey { get; set; } = false;
 
-    public ImmutableList<string> EntriesGeneral { get; set; } = [];
+    public ImmutableSortedDictionary<string, string[]> EntriesManual { get; set; } = ImmutableSortedDictionary<string, string[]>.Empty;
 
-    public ImmutableSortedDictionary<string, string[]> EntriesPerGame { get; set; } = ImmutableSortedDictionary<string, string[]>.Empty;
+    public ImmutableDictionary<string, string[]> EntriesPerGame { get; set; } = [];
 }

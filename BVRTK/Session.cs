@@ -80,7 +80,7 @@ public static class Session
     internal static volatile string[] KeyboardSimulatorTriggerGuiIds = HardwareInputTrigger.GetTriggerGuiIds; // Full IDs
     internal static ImmutableDictionary<string, Func<string>> KeyboardSimulatorTriggerGuiTagToLabel = HardwareInputTrigger.GetTriggerGuiIdPairs.ToImmutableDictionary(); // IDs as pairs
 
-    
+    public static double DebugValue { get; set; } = 0;
 
     #nullable enable
     public static event Action<string>? OnSteamSceneAppIdChanged;

@@ -22,13 +22,13 @@ public partial class Utils
         return list.SetItem(index, newValue);
     }
 
-    public static ImmutableList<T> ReplaceInList<T>(ImmutableList<T> list, int index, T value, bool ignoreDuplicate = false)
+    public static ImmutableList<T> ReplaceInListAt<T>(ImmutableList<T> list, int index, T value, bool ignoreDuplicate = false)
     {
         if (index < 0 || index >= list.Count) return list;
 
         if (ignoreDuplicate && list.Contains(value)) // No need to add it again
         {
-            return RemoveFromList(list, index); // Because it would have been replaced
+            return RemoveFromListAt(list, index); // Because it would have been replaced
         }
 
         return list.SetItem(index, value);
@@ -39,7 +39,7 @@ public partial class Utils
         return list.Remove(value);
     }
 
-    public static ImmutableList<T> RemoveFromList<T>(ImmutableList<T> list, int index)
+    public static ImmutableList<T> RemoveFromListAt<T>(ImmutableList<T> list, int index)
     {
         return index >= 0 && index < list.Count ? list.RemoveAt(index) : list;
     }
@@ -75,18 +75,17 @@ public partial class Utils
 
     #endregion
 
-    #region Dictionary
+    #region Immutable Dictionary
 
-    public static ImmutableSortedDictionary<string, T[]> ReplaceInDictionaryArray<T>(
-        ImmutableSortedDictionary<string, T[]> dictionary,
-        string key, T currentItem, T newItem, bool ignoreDuplicate = false
-    )
+    public static TDic ReplaceInDictionaryArray<TDic, TVal>(
+        TDic dictionary, string key, TVal currentItem, TVal newItem, bool ignoreDuplicate = false
+    ) where TDic : IImmutableDictionary<string, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         var list = (items ?? []).ToList();
 
         var index = list.IndexOf(currentItem);
-        if (index < 0 || EqualityComparer<T>.Default.Equals(currentItem, newItem)) return dictionary;
+        if (index < 0 || EqualityComparer<TVal>.Default.Equals(currentItem, newItem)) return dictionary;
 
         if (ignoreDuplicate && list.Contains(newItem)) // No need to add it again
         {
@@ -94,13 +93,12 @@ public partial class Utils
         }
 
         list[index] = newItem;
-        return dictionary.SetItem(key, [.. list]);
+        return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static ImmutableSortedDictionary<string, T[]> ReplaceInDictionaryArray<T>(
-        ImmutableSortedDictionary<string, T[]> dictionary,
-        string key, int index, T item, bool ignoreDuplicate = false
-    )
+    public static TDic ReplaceInDictionaryArrayAt<TDic, TVal>(
+        TDic dictionary, string key, int index, TVal item, bool ignoreDuplicate = false
+    ) where TDic : IImmutableDictionary<string, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         var list = (items ?? []).ToList();
@@ -109,50 +107,52 @@ public partial class Utils
 
         if (ignoreDuplicate && list.Contains(item)) // No need to add it again
         {
-            return RemoveFromDictionaryArray(dictionary, key, index); // Because it would have been replaced
+            return RemoveFromDictionaryArrayAt<TDic, TVal>(dictionary, key, index); // Because it would have been replaced
         }
 
         list[index] = item;
-        return dictionary.SetItem(key, [.. list]);
+        return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static ImmutableSortedDictionary<string, T[]> RemoveFromDictionaryArray<T>(
-        ImmutableSortedDictionary<string, T[]> dictionary, string key, T item
-    )
+    public static TDic RemoveFromDictionaryArray<TDic, TVal>(
+        TDic dictionary, string key, TVal item
+    ) where TDic : IImmutableDictionary<string, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         if (items == null || !items.Contains(item)) return dictionary;
 
         var list = items.ToList();
         list.Remove(item);
-        return dictionary.SetItem(key, [.. list]);
+        return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static ImmutableSortedDictionary<string, T[]> RemoveFromDictionaryArray<T>(
-        ImmutableSortedDictionary<string, T[]> dictionary, string key, int index
-    )
+    public static TDic RemoveFromDictionaryArrayAt<TDic, TVal>(
+        TDic dictionary, string key, int index
+    ) where TDic : IImmutableDictionary<string, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
-        if (items == null || index >= items.Length) return dictionary;
+        if (items == null || index < 0 || index >= items.Length) return dictionary;
 
         var list = items.ToList();
         list.RemoveAt(index);
-        return dictionary.SetItem(key, [.. list]);
+        return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static ImmutableSortedDictionary<string, T[]> AddToDictionaryArray<T>(
-        ImmutableSortedDictionary<string, T[]> dictionary, string key, T newItem, bool ignoreDuplicate = false
-    )
+    public static TDic AddToDictionaryArray<TDic, TVal>(
+        TDic dictionary, string key, TVal newItem, bool ignoreDuplicate = false
+    ) where TDic : IImmutableDictionary<string, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         if (items != null && ignoreDuplicate && items.Contains(newItem)) return dictionary;
 
         var array = items ?? [];
-        return dictionary.SetItem(key, [.. array, newItem]);
+        return (TDic)dictionary.SetItem(key, [.. array, newItem]);
     }
 
 
-    public static ImmutableSortedDictionary<string, T[]> RearrangeDictionaryArray<T>(ImmutableSortedDictionary<string, T[]> dictionary, string key, int currentIndex, int newIndex)
+    public static TDic RearrangeDictionaryArray<TDic, TVal>(
+        TDic dictionary, string key, int currentIndex, int newIndex
+    ) where TDic : IImmutableDictionary<string, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         var list = (items ?? []).ToList();
@@ -168,7 +168,7 @@ public partial class Utils
         var item = list[currentIndex];
         list.RemoveAt(currentIndex);
         list.Insert(newIndex, item);
-        return dictionary.SetItem(key, [.. list]);
+        return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
     #endregion

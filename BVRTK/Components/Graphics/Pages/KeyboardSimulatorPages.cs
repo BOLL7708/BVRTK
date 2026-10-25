@@ -8,8 +8,7 @@ namespace BVRTK.Components.Graphics.Pages;
 public static class KeyboardSimulatorPages
 {
     #region Pages
-
-    public static void Entries()
+    public static void ManualEntries()
     {
         GuiUtils.DrawTitle("General Entries");
 
@@ -34,14 +33,17 @@ public static class KeyboardSimulatorPages
 
         var generalIndex = 0;
         RenderList(
-            "general",
+            "manual",
             [.. Settings.Current.KeyboardSimulator.EntriesGeneral],
             ref generalIndex,
             Settings.Current.KeyboardSimulator.ReplaceInEntriesGeneral,
             Settings.Current.KeyboardSimulator.MoveUpInEntriesGeneral,
             Settings.Current.KeyboardSimulator.MoveDownInEntriesGeneral
         );
+    }
 
+    public static void GameEntries()
+    {
         if (Session.SteamSceneAppId.Length > 0)
         {
             GuiUtils.DrawTitle($"Entries for: {Session.SteamSceneAppName}");
@@ -83,7 +85,17 @@ public static class KeyboardSimulatorPages
             GuiUtils.DrawCenteredText("No game detected.");
         }
     }
-
+    
+    public static void Monitor()
+    {
+        
+    }
+    
+    public static void Help()
+    {
+        
+    }
+    
     #endregion
 
     private static void AddGameEntry(string entry)
@@ -120,14 +132,14 @@ public static class KeyboardSimulatorPages
 
     private static void MoveGameEntryUp(int index)
     {
-        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray(
+        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string>(
             Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index-1
         ));
     }
 
     private static void MoveGameEntryDown(int index)
     {
-        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray(
+        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string>(
             Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index+1
         ));
     }
