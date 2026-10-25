@@ -130,7 +130,7 @@ public class UtilsVarTest
         var dicRemove = Utils.RemoveFromDictionaryArray(dic, "one", "two");
         Assert.NotEqual(dic, dicRemove);
         Assert.Equal(dicRemove, dicRemoveTruth);
-        var dicRemove2 = Utils.RemoveFromDictionaryArrayAt<ImmutableSortedDictionary<string, string[]>, string>(dic, "one", 0);
+        var dicRemove2 = Utils.RemoveFromDictionaryArrayAt<ISDStrArr, string, string>(dic, "one", 0);
         Assert.NotEqual(dic, dicRemove2);
         Assert.Equal(dicRemove2, dicRemoveTruth);
         
@@ -138,9 +138,9 @@ public class UtilsVarTest
         Assert.Equal(dic, dicRemove3);
         var dicRemove4 = Utils.RemoveFromDictionaryArray(dic, "five", "six");
         Assert.Equal(dic, dicRemove4);
-        var dicRemove5 = Utils.RemoveFromDictionaryArrayAt<ImmutableSortedDictionary<string, string[]>, string>(dic, "one", 1);
+        var dicRemove5 = Utils.RemoveFromDictionaryArrayAt<ISDStrArr, string, string>(dic, "one", 1);
         Assert.Equal(dic, dicRemove5);
-        var dicRemove6 = Utils.RemoveFromDictionaryArrayAt<ImmutableSortedDictionary<string, string[]>, string>(dic, "five", 0);
+        var dicRemove6 = Utils.RemoveFromDictionaryArrayAt<ISDStrArr, string, string>(dic, "five", 0);
         Assert.Equal(dic, dicRemove6);
         
         // Replace
@@ -165,37 +165,37 @@ public class UtilsVarTest
         
         // Move one down
         var dicOneDownTruth = new SortedDictionary<string, string[]> { { "one", ["two", "four", "three", "five", "six", "seven"] } }.ToImmutableSortedDictionary();
-        var dicOneDown = Utils.RearrangeDictionaryArray<ISDStrArr, string>(dic, "one", 2, 1);
+        var dicOneDown = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 2, 1);
         Assert.NotEqual(dic, dicOneDown);
         Assert.Equal(dicOneDown, dicOneDownTruth);
 
         // Move one up
         var dicOneUpTruth = new SortedDictionary<string, string[]> { { "one", ["two", "three", "four", "six", "five", "seven"] } }.ToImmutableSortedDictionary();
-        var dicOneUp = Utils.RearrangeDictionaryArray<ISDStrArr, string>(dic, "one", 4, 3);
+        var dicOneUp = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 4, 3);
         Assert.NotEqual(dic, dicOneUp);
         Assert.Equal(dicOneUp, dicOneUpTruth);
 
         // Move to end
         var dicEndTruth = new SortedDictionary<string, string[]> { { "one", ["two", "four", "five", "six", "seven", "three"] } }.ToImmutableSortedDictionary();
-        var dicEnd = Utils.RearrangeDictionaryArray<ISDStrArr, string>(dic, "one", 1, 5);
+        var dicEnd = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 1, 5);
         Assert.NotEqual(dic, dicEnd);
         Assert.Equal(dicEnd, dicEndTruth);
 
         // Move to start
         var dicStartTruth = new SortedDictionary<string, string[]> { { "one", ["six", "two", "three", "four", "five", "seven"] } }.ToImmutableSortedDictionary();
-        var dicStart = Utils.RearrangeDictionaryArray<ISDStrArr, string>(dic, "one", 4, 0);
+        var dicStart = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 4, 0);
         Assert.NotEqual(dic, dicStart);
         Assert.Equal(dicStart, dicStartTruth);
 
         // Move down
         var dicDownTruth = new SortedDictionary<string, string[]> { { "one", ["two", "six", "three", "four", "five", "seven"] } }.ToImmutableSortedDictionary();
-        var dicDown = Utils.RearrangeDictionaryArray<ISDStrArr, string>(dic, "one", 4, 1);
+        var dicDown = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 4, 1);
         Assert.NotEqual(dic, dicDown);
         Assert.Equal(dicDown, dicDownTruth);
 
         // Move up
         var dicUpTruth = new SortedDictionary<string, string[]> { { "one", ["two", "four", "five", "six", "three", "seven"] } }.ToImmutableSortedDictionary();
-        var dicUp = Utils.RearrangeDictionaryArray<ISDStrArr, string>(dic, "one", 1, 4);
+        var dicUp = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 1, 4);
         Assert.NotEqual(dic, dicUp);
         Assert.Equal(dicUp, dicUpTruth);
     }

@@ -132,14 +132,14 @@ public static class KeyboardSimulatorPages
 
     private static void MoveGameEntryUp(int index)
     {
-        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string>(
+        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string, string>(
             Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index-1
         ));
     }
 
     private static void MoveGameEntryDown(int index)
     {
-        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string>(
+        Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string, string>(
             Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index+1
         ));
     }

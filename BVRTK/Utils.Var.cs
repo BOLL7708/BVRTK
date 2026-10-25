@@ -77,9 +77,9 @@ public partial class Utils
 
     #region Immutable Dictionary
 
-    public static TDic ReplaceInDictionaryArray<TDic, TVal>(
-        TDic dictionary, string key, TVal currentItem, TVal newItem, bool ignoreDuplicate = false
-    ) where TDic : IImmutableDictionary<string, TVal[]>
+    public static TDic ReplaceInDictionaryArray<TDic, TKey, TVal>(
+        TDic dictionary, TKey key, TVal currentItem, TVal newItem, bool ignoreDuplicate = false
+    ) where TDic : IImmutableDictionary<TKey, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         var list = (items ?? []).ToList();
@@ -96,9 +96,9 @@ public partial class Utils
         return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static TDic ReplaceInDictionaryArrayAt<TDic, TVal>(
-        TDic dictionary, string key, int index, TVal item, bool ignoreDuplicate = false
-    ) where TDic : IImmutableDictionary<string, TVal[]>
+    public static TDic ReplaceInDictionaryArrayAt<TDic, TKey, TVal>(
+        TDic dictionary, TKey key, int index, TVal item, bool ignoreDuplicate = false
+    ) where TDic : IImmutableDictionary<TKey, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         var list = (items ?? []).ToList();
@@ -107,16 +107,16 @@ public partial class Utils
 
         if (ignoreDuplicate && list.Contains(item)) // No need to add it again
         {
-            return RemoveFromDictionaryArrayAt<TDic, TVal>(dictionary, key, index); // Because it would have been replaced
+            return RemoveFromDictionaryArrayAt<TDic, TKey, TVal>(dictionary, key, index); // Because it would have been replaced
         }
 
         list[index] = item;
         return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static TDic RemoveFromDictionaryArray<TDic, TVal>(
-        TDic dictionary, string key, TVal item
-    ) where TDic : IImmutableDictionary<string, TVal[]>
+    public static TDic RemoveFromDictionaryArray<TDic, TKey, TVal>(
+        TDic dictionary, TKey key, TVal item
+    ) where TDic : IImmutableDictionary<TKey, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         if (items == null || !items.Contains(item)) return dictionary;
@@ -126,9 +126,9 @@ public partial class Utils
         return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static TDic RemoveFromDictionaryArrayAt<TDic, TVal>(
-        TDic dictionary, string key, int index
-    ) where TDic : IImmutableDictionary<string, TVal[]>
+    public static TDic RemoveFromDictionaryArrayAt<TDic, TKey, TVal>(
+        TDic dictionary, TKey key, int index
+    ) where TDic : IImmutableDictionary<TKey, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         if (items == null || index < 0 || index >= items.Length) return dictionary;
@@ -138,9 +138,9 @@ public partial class Utils
         return (TDic)dictionary.SetItem(key, [.. list]);
     }
 
-    public static TDic AddToDictionaryArray<TDic, TVal>(
-        TDic dictionary, string key, TVal newItem, bool ignoreDuplicate = false
-    ) where TDic : IImmutableDictionary<string, TVal[]>
+    public static TDic AddToDictionaryArray<TDic, TKey, TVal>(
+        TDic dictionary, TKey key, TVal newItem, bool ignoreDuplicate = false
+    ) where TDic : IImmutableDictionary<TKey, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         if (items != null && ignoreDuplicate && items.Contains(newItem)) return dictionary;
@@ -150,9 +150,9 @@ public partial class Utils
     }
 
 
-    public static TDic RearrangeDictionaryArray<TDic, TVal>(
-        TDic dictionary, string key, int currentIndex, int newIndex
-    ) where TDic : IImmutableDictionary<string, TVal[]>
+    public static TDic RearrangeDictionaryArray<TDic, TKey, TVal>(
+        TDic dictionary, TKey key, int currentIndex, int newIndex
+    ) where TDic : IImmutableDictionary<TKey, TVal[]>
     {
         dictionary.TryGetValue(key, out var items);
         var list = (items ?? []).ToList();
