@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Numerics;
-using BVRTK.Components.KeyboardSimulator;
 
 namespace BVRTK;
 
@@ -29,7 +28,6 @@ public static class Constants
 
     public static class Gui
     {
-        
         public const float FontSize = 10f * Overlay.GuiScale;
         public const float SidebarWidth = 128f * Overlay.GuiScale;
         public const float TabRounding = 8f * Overlay.GuiScale;
@@ -38,9 +36,9 @@ public static class Constants
         public const float TooltipWrap = 16f;
         public const float SeparatorGirth = 3f * Overlay.GuiScale;
         public const float BorderWidth = 1.5f * Overlay.GuiScale;
+        public static readonly Vector2 ItemSpacing = new(8f * Overlay.GuiScale, 6f * Overlay.GuiScale);
     }
-    
-    public static readonly Vector2 GuiItemSpacing = new (8f * Overlay.GuiScale, 6f * Overlay.GuiScale);
+
 
     public static readonly Dictionary<string, CultureInfo> SupportedLanguages = new()
     {

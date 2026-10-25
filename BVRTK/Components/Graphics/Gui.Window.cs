@@ -41,7 +41,7 @@ public static partial class Gui
         ImGui.PopStyleVar(3);
 
         GuiUtils.PushFont(FontStyle.Regular, Constants.Gui.FontSize);
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.GuiItemSpacing);
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, Constants.Gui.ItemSpacing);
 
         if (Session.ProgramCts.IsCancellationRequested)
         {

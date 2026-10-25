@@ -209,7 +209,7 @@ public static class GuiUtils
             }
 
             ImGui.SameLine();
-            ImGui.SetCursorPosX(popupWidth - buttonSize.X + Constants.GuiItemSpacing.X);
+            ImGui.SetCursorPosX(popupWidth - buttonSize.X + Constants.Gui.ItemSpacing.X);
             var escape = ImGui.IsKeyPressed(ImGuiKey.Escape);
             if (ImGui.Button(cancelButtonLabel, buttonSize) || escape) ImGui.CloseCurrentPopup();
 

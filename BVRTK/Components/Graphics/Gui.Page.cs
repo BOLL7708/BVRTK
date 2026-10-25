@@ -68,7 +68,7 @@ public static partial class Gui
                 // Also skip the automatic spacing below the custom line.
                 ImGui.SetCursorPosY(ImGui.GetCursorPosY() - ImGui.GetStyle().ItemSpacing.Y);
 
-                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
+                ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.Gui.ItemSpacing);
                 GuiUtils.PushColorAccents(section.AccentColor);
                 
                 // Turns out window padding is ignored by default without a border.
@@ -97,7 +97,7 @@ public static partial class Gui
         ImGui.PopStyleColor(3);
         ImGui.EndChild();
 
-        var versionPos = startPos with { X = ImGui.GetWindowWidth() - ImGui.CalcTextSize(Session.Version).X - Constants.GuiItemSpacing.X};
+        var versionPos = startPos with { X = ImGui.GetWindowWidth() - ImGui.CalcTextSize(Session.Version).X - Constants.Gui.ItemSpacing.X};
         ImGui.GetWindowDrawList().AddText(versionPos, ImGui.GetColorU32(section.AccentColor.Fade(0.5f)), Session.Version);
     }
     

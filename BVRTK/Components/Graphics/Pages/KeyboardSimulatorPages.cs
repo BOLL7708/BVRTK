@@ -8,29 +8,125 @@ namespace BVRTK.Components.Graphics.Pages;
 public static class KeyboardSimulatorPages
 {
     #region Pages
+
     public static void ManualEntries()
     {
         GuiUtils.DrawTitle("General Entries");
 
         GuiUtils.DoModal<string>(
-            "Add General Keyboard Simulation Entry",
-            "Add general entry",
+            "Add Manual Group",
+            "Add group",
             "Add", "Cancel",
             "", // Empty as we start from nothing
-            () =>
-            {
-                ParseEntry(""); // Will reset the entry values.
-            },
+            () => { _manualGroupName = ""; },
             (value) =>
             {
                 ImGui.AlignTextToFramePadding();
-                ImGui.TextUnformatted("For use regardless of which game is running:");
+                ImGui.TextUnformatted("Groups of entries that can be toggled manually:");
                 // No additional GUI needed as we are just displaying the add button.
             },
-            RenderDialog,
-            value => Settings.Current.KeyboardSimulator.AddIfNewToEntriesGeneral(value)
+            (value) =>
+            {
+                ImGui.InputText("Group name", ref _manualGroupName, 32, ImGuiInputTextFlags.None);
+                return _manualGroupName;
+            },
+            value => Settings.Current.KeyboardSimulator.SetInEntriesManual($"0000|1 {value}", [])
         );
 
+        var manualIndex = 0;
+        var manualCount = Settings.Current.KeyboardSimulator.EntriesManual.Count;
+        foreach (var entry in Settings.Current.KeyboardSimulator.EntriesManual)
+        {
+            ImGui.Dummy(Constants.Gui.ItemSpacing);
+
+            var group = KeyboardSimulatorUtils.ParseGroup(entry.Key);
+            var enabled = group.Enabled;
+            if (ImGui.Checkbox($"##ManualEnabled_{entry.Key}", ref enabled))
+            {
+                Console.WriteLine("MANUAL ENABLED WAS CHANGED"); // TODO: Somehow rename the key so that the enabled flag changes.
+            }
+            GuiUtils.DrawTooltip(enabled ? "Uncheck to disable" : "Check to enable.");
+            
+            ImGui.SameLine();
+            ImGui.Dummy(Vector2.Zero);
+            ImGui.SameLine();
+            ImGui.AlignTextToFramePadding();
+            GuiUtils.DrawText(group.Name.Length > 0 ? group.Name : "N/A", FontStyle.Bold);
+            ImGui.SameLine();
+            ImGui.Dummy(Vector2.Zero);
+            ImGui.SameLine();
+
+            GuiUtils.DoModal<string>(
+                $"Add Manual Keyboard Simulation Entry##ManualEntry_{entry.Key}",
+                "Add entry",
+                "Add", "Cancel",
+                "", // Empty as we start from nothing
+                () =>
+                {
+                    ParseEntry(""); // Will reset the entry values.
+                },
+                null,
+                RenderDialog,
+                value => AddManualEntry(entry.Key, value)
+            );
+
+            ImGui.SameLine();
+            GuiUtils.DoModal<string>(
+                $"Rename Manual Group##ManualGroupRename_{entry.Key}",
+                "Rename",
+                "Rename", "Cancel",
+                group.Name,
+                () => { _manualGroupName = ""; },
+                null,
+                (value) =>
+                {
+                    ImGui.InputText("Group name", ref _manualGroupName, 32, ImGuiInputTextFlags.None);
+                    return _manualGroupName;
+                },
+                value => Console.WriteLine($"SHOULD RENAME GROUP TO: {value}") // TODO
+            );
+
+            ImGui.SameLine();
+            
+            // Up & down buttons
+            ImGui.BeginDisabled(manualIndex == 0);
+            if (ImGui.ArrowButton($"##ManualGroupMoveUp_{entry.Key}", ImGuiDir.Up)) Console.WriteLine("MOVE GROUP UP!"); // TODO
+            ImGui.EndDisabled();
+            ImGui.SameLine();
+            ImGui.BeginDisabled(manualIndex == manualCount - 1);
+            if (ImGui.ArrowButton($"##ManualGroupMoveDown_{entry.Key}", ImGuiDir.Down)) Console.WriteLine("MOVE GROUP DOWN"); // TODO
+            ImGui.EndDisabled();
+
+            ImGui.SameLine();
+            ImGui.Dummy(Vector2.Zero);
+            ImGui.SameLine();
+
+            // Delete button
+            GuiUtils.DoModalToConfirm(
+                $"Remove this entry?##ManualGroupDelete_{entry.Key}",
+                "X",
+                "Do you want to delete this whole group?",
+                "Yes",
+                "No",
+                () => Console.WriteLine("SHOULD DELETE WHOLE GROUP") // TODO
+            );
+
+            ImGui.SameLine();
+            ImGui.Dummy(Vector2.Zero);
+
+            var manualListIndex = 0;
+            RenderList(
+                $"##ManualList_{entry.Key}",
+                entry.Value,
+                ref manualListIndex,
+                (currentValue, newValue) => ReplaceManualEntry(entry.Key, currentValue, newValue),
+                index => MoveManualEntryUp(entry.Key, index),
+                index => MoveManualEntryDown(entry.Key, index)
+            );
+
+            manualIndex++;
+        }
+        /*
         var generalIndex = 0;
         RenderList(
             "manual",
@@ -40,6 +136,7 @@ public static class KeyboardSimulatorPages
             Settings.Current.KeyboardSimulator.MoveUpInEntriesGeneral,
             Settings.Current.KeyboardSimulator.MoveDownInEntriesGeneral
         );
+        */
     }
 
     public static void GameEntries()
@@ -85,18 +182,68 @@ public static class KeyboardSimulatorPages
             GuiUtils.DrawCenteredText("No game detected.");
         }
     }
-    
+
     public static void Monitor()
     {
-        
     }
-    
+
     public static void Help()
     {
-        
     }
-    
+
     #endregion
+
+    #region Manual Entries
+
+    private static void AddManualEntry(string group, string entry)
+    {
+        Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.AddToDictionaryArray(
+            Settings.Current.KeyboardSimulator.EntriesManual, group, entry
+        ));
+    }
+
+    private static void ReplaceManualEntry(string group, string? currentEntry, string? newEntry)
+    {
+        if (currentEntry == null && newEntry == null) return;
+        if (currentEntry != null && newEntry != null)
+        {
+            Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.ReplaceInDictionaryArray(
+                Settings.Current.KeyboardSimulator.EntriesManual, group, currentEntry, newEntry
+            ));
+        }
+
+        if (currentEntry == null && newEntry != null)
+        {
+            Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.AddToDictionaryArray(
+                Settings.Current.KeyboardSimulator.EntriesManual, group, newEntry
+            ));
+        }
+
+        if (currentEntry != null && newEntry == null)
+        {
+            Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.RemoveFromDictionaryArray(
+                Settings.Current.KeyboardSimulator.EntriesManual, group, currentEntry
+            ));
+        }
+    }
+
+    private static void MoveManualEntryUp(string group, int index)
+    {
+        Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(
+            Settings.Current.KeyboardSimulator.EntriesManual, group, index, index - 1
+        ));
+    }
+
+    private static void MoveManualEntryDown(string group, int index)
+    {
+        Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(
+            Settings.Current.KeyboardSimulator.EntriesManual, group, index, index + 1
+        ));
+    }
+
+    #endregion
+
+    #region Game Entries
 
     private static void AddGameEntry(string entry)
     {
@@ -133,19 +280,50 @@ public static class KeyboardSimulatorPages
     private static void MoveGameEntryUp(int index)
     {
         Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string, string>(
-            Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index-1
+            Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index - 1
         ));
     }
 
     private static void MoveGameEntryDown(int index)
     {
         Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string, string>(
-            Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index+1
+            Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index + 1
         ));
     }
 
+    #endregion
+
     private static readonly string ModifierTableTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogModifierTable");
     private static readonly string ModifierAndTriggerColumnsTag = GuiUtils.GetNextSerialTag("KeyboardSimulatorModalDialogModifierAndTriggerColumns");
+
+    #region Group
+
+    private static int _manualOrder;
+    private static bool _manualEnabled;
+    private static string _manualGroupName = "";
+
+    private static void ParseGroup(string groupStr)
+    {
+        var group = KeyboardSimulatorUtils.ParseGroup(groupStr);
+        _manualOrder = group.Order;
+        _manualEnabled = group.Enabled;
+        _manualGroupName = group.Name;
+    }
+
+    private static string EncodeGroup()
+    {
+        var group = new KeyboardSimulatorUtils.SimGroup
+        {
+            Order = _manualOrder,
+            Enabled = _manualEnabled,
+            Name = _manualGroupName
+        };
+        return KeyboardSimulatorUtils.EncodeGroup(group);
+    }
+
+    #endregion
+
+    #region Entry
 
     private static int _vrInputActionIndex;
     private static int _keyIndex;
@@ -194,6 +372,8 @@ public static class KeyboardSimulatorPages
         var description = $"{actionPrompt} => {DisplayFlags(entry.Modifiers)}{keyCodeName}";
         return entry.Label.Length > 0 ? [entry.Label, description] : [description];
     }
+
+    #endregion
 
     private static string RenderDialog(string startValue)
     {
@@ -277,7 +457,7 @@ public static class KeyboardSimulatorPages
         var section = GuiStructure.Sections[sectionIndex];
         ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.35f));
         ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, section.AccentColor.Fade(0.20f));
-        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Constants.GuiItemSpacing);
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Constants.Gui.ItemSpacing);
         ImGui.BeginChild($"##keyboardSimulator{tag}Child", Vector2.Zero, ImGuiChildFlags.None | ImGuiChildFlags.AutoResizeY);
 
         if (ImGui.BeginTable($"##keyboardSimulator{tag}Background", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))

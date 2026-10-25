@@ -72,6 +72,49 @@ public static class KeyboardSimulatorUtils
         return [.. ids];
     }
 
+    internal static SimGroup ParseGroup(string value)
+    {
+        var firstSpace = value.IndexOf(' ');
+        var settings = firstSpace >= 0 ? value[..firstSpace] : value;
+        var name = firstSpace >= 0 ? value[(firstSpace + 1)..] : string.Empty;
+        
+        // Split on the settings divider
+        var parts = settings.Split("|");
+        var orderStr = parts.ElementAtOrDefault(0) ?? "0";
+        var enabledStr = parts.ElementAtOrDefault(1) ?? "1";
+        var order = 0;
+        var enabled = true;
+        var orderOk = false;
+        var enabledOk = false;
+        try
+        {
+            orderOk = int.TryParse(orderStr, out order);
+            enabledOk = bool.TryParse(enabledStr, out enabled);
+        }
+        finally
+        {
+            if (!orderOk) order = 0;
+            if (!enabledOk) enabled = true;
+        }
+        return new SimGroup(
+            order,
+            enabled,
+            name
+        );
+    }
+
+    internal static string EncodeGroup(SimGroup group)
+    {
+        var enabled = group.Enabled ? 1 : 0; 
+        return $"{group.Order:D4}|{enabled} {group.Name}";
+    }
+
+    internal record struct SimGroup(
+        int Order,
+        bool Enabled,
+        string Name
+    );
+
     internal static SimEntry ParseEntry(string value)
     {
         // Split on the label, which is the first space, then the label can contain anything.

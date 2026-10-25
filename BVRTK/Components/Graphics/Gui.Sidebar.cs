@@ -73,7 +73,7 @@ public static partial class Gui
         GuiUtils.PushColorAccents(GuiColor.Root);
         ImGui.PushStyleColor(ImGuiCol.ChildBg, Vector4.Zero);
         ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, Constants.Gui.GeneralRounding);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.GuiItemSpacing);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Constants.Gui.ItemSpacing);
         ImGui.BeginChild("##QuickSettings", ImGuiChildFlags.AlwaysUseWindowPadding);
 
         var showTooltips = Settings.Current.Application.ShowTooltips;
@@ -92,7 +92,7 @@ public static partial class Gui
 
         GuiUtils.DrawTooltip("Display this application in a mirror window on the desktop.");
 
-        var buttonSize = (availableSpace - Constants.GuiItemSpacing * 2) with { Y = 0 };
+        var buttonSize = (availableSpace - Constants.Gui.ItemSpacing * 2) with { Y = 0 };
         ImGui.PushStyleColor(ImGuiCol.Button, GuiColor.Transparent);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, GuiColor.White with { W = 0.25f });
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, GuiColor.White with { W = 0.5f });
