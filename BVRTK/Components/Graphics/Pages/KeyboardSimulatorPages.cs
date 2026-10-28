@@ -38,11 +38,12 @@ public static class KeyboardSimulatorPages
         var manualCount = Settings.Current.KeyboardSimulator.EntriesManual.Count;
         foreach (var entry in Settings.Current.KeyboardSimulator.EntriesManual)
         {
+            ImGui.PushID(entry.Key);
             ImGui.Dummy(Constants.Gui.ItemSpacing);
 
             var manualListIndex = 0;
             RenderList(
-                $"##ManualList_{entry.Key}",
+                $"manual",
                 entry.Key,
                 entry.Value,
                 ref manualListIndex,
@@ -53,6 +54,7 @@ public static class KeyboardSimulatorPages
                 true,
                 manualCount
             );
+            ImGui.PopID();
         }
     }
 
@@ -60,6 +62,7 @@ public static class KeyboardSimulatorPages
     {
         if (Session.SteamSceneAppId.Length > 0)
         {
+            ImGui.PushID(Session.SteamSceneAppId);
             GuiUtils.DrawTitle($"Entries for: {Session.SteamSceneAppName}");
 
             var gameIndex = 0;
@@ -76,6 +79,7 @@ public static class KeyboardSimulatorPages
                     MoveGameEntryDown,
                     AddGameEntry
                 );
+            ImGui.PopID();
         }
         else
         {
@@ -367,17 +371,18 @@ public static class KeyboardSimulatorPages
         var sectionIndex = Settings.Current.Application.CurrentSection;
         var section = GuiStructure.Sections[sectionIndex];
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Constants.Gui.ItemSpacing);
-        ImGui.BeginChild($"##keyboardSimulator{tag}Child", Vector2.Zero, ImGuiChildFlags.None | ImGuiChildFlags.AutoResizeY);
+        ImGui.PushID(tag);
+        ImGui.BeginChild($"##keyboardSimulatorChild", Vector2.Zero, ImGuiChildFlags.None | ImGuiChildFlags.AutoResizeY);
 
         #region Group Title
 
         ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.40f));
 
-        if (ImGui.BeginTable($"##keyboardSimulator{tag}GroupTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
+        if (ImGui.BeginTable($"##keyboardSimulatorGroupTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
         {
-            ImGui.TableSetupColumn($"##keyboardSimulator{tag}GroupLeftCol", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn($"##keyboardSimulator{tag}GroupMiddleCol", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn($"##keyboardSimulator{tag}GroupRightCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn($"##keyboardSimulatorGroupLeftCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn($"##keyboardSimulatorGroupMiddleCol", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn($"##keyboardSimulatorGroupRightCol", ImGuiTableColumnFlags.WidthFixed);
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -388,8 +393,9 @@ public static class KeyboardSimulatorPages
             // ALWAYS Checkbox for enabled
             // TODO: We should have the same format for both collections' keys
             var group = KeyboardSimulatorUtils.ParseGroup(entryKey);
+            ImGui.PushID(entryKey);
             var enabled = group.Enabled;
-            if (ImGui.Checkbox($"##ManualEnabled_{entryKey}", ref enabled))
+            if (ImGui.Checkbox($"##ManualEnabled", ref enabled))
             {
                 Console.WriteLine("MANUAL ENABLED WAS CHANGED"); // TODO: Implement
             }
@@ -468,6 +474,7 @@ public static class KeyboardSimulatorPages
 
             ImGui.SameLine();
             ImGui.Dummy(Vector2.Zero);
+            ImGui.PopID();
             ImGui.EndTable();
         }
 
@@ -483,13 +490,11 @@ public static class KeyboardSimulatorPages
         ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.20f));
         ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, section.AccentColor.Fade(0.30f));
 
-        if (ImGui.BeginTable($"##keyboardSimulator{tag}EntriesTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
+        if (ImGui.BeginTable($"##keyboardSimulatorEntriesTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
         {
-            ImGui.TableSetupColumn($"##keyboardSimulator{tag}EntryLeftCol", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn($"##keyboardSimulator{tag}EntryMiddleCol", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn($"##keyboardSimulator{tag}EntryRightCol", ImGuiTableColumnFlags.WidthFixed);
-
-            
+            ImGui.TableSetupColumn($"##keyboardSimulatorEntryLeftCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn($"##keyboardSimulatorEntryMiddleCol", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn($"##keyboardSimulatorEntryRightCol", ImGuiTableColumnFlags.WidthFixed);
 
             if (entries.Length == 0)
             {
@@ -503,6 +508,7 @@ public static class KeyboardSimulatorPages
             {
                 foreach (var universalEntry in entries)
                 {
+                    ImGui.PushID(index);
                     ImGui.TableNextRow();
                     ImGui.TableNextColumn();
                     ImGui.Dummy(Vector2.Zero);
@@ -510,7 +516,7 @@ public static class KeyboardSimulatorPages
 
                     // Edit button
                     GuiUtils.DoModal(
-                        $"Edit Entry##keyboardSimulator{tag}Edit{index}",
+                        $"Edit Entry##keyboardSimulatorEdit",
                         "Edit",
                         "Apply", "Cancel",
                         universalEntry,
@@ -530,11 +536,11 @@ public static class KeyboardSimulatorPages
 
                     // Up & down buttons
                     ImGui.BeginDisabled(index == 0);
-                    if (ImGui.ArrowButton($"##keyboardSimulator{tag}MoveUp{index}", ImGuiDir.Up)) moveUp(index);
+                    if (ImGui.ArrowButton($"##keyboardSimulatorMoveUp", ImGuiDir.Up)) moveUp(index);
                     ImGui.EndDisabled();
                     ImGui.SameLine();
                     ImGui.BeginDisabled(index == entries.Length - 1);
-                    if (ImGui.ArrowButton($"##keyboardSimulator{tag}MoveDown{index}", ImGuiDir.Down)) moveDown(index);
+                    if (ImGui.ArrowButton($"##keyboardSimulatorMoveDown", ImGuiDir.Down)) moveDown(index);
                     ImGui.EndDisabled();
 
                     ImGui.SameLine();
@@ -543,7 +549,7 @@ public static class KeyboardSimulatorPages
 
                     // Delete button
                     GuiUtils.DoModalToConfirm(
-                        $"Remove this entry?##keyboardSimulator{tag}Delete{index}",
+                        $"Remove this entry?##keyboardSimulatorDelete",
                         "X",
                         string.Join("\n", description),
                         "Yes",
@@ -553,7 +559,7 @@ public static class KeyboardSimulatorPages
 
                     ImGui.SameLine();
                     ImGui.Dummy(Vector2.Zero);
-
+                    ImGui.PopID();
                     index++;
                 }
             }
@@ -564,6 +570,7 @@ public static class KeyboardSimulatorPages
         ImGui.PopStyleVar();
         ImGui.PopStyleColor(2);
         ImGui.EndChild();
+        ImGui.PopID();
         #endregion
     }
 
