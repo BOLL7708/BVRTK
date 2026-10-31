@@ -9,8 +9,6 @@ public static class KeyboardSimulatorPages
 {
     #region Pages
 
-    // TODO: Convert from interpolating a lot of tags, to using ImGui.PushID(tag) and ImGui.PopID()
-
     public static void ManualEntries()
     {
         GuiUtils.DoModal<string>(
@@ -57,14 +55,13 @@ public static class KeyboardSimulatorPages
                 entryStr => AddManualEntry(entry.Key, entryStr),
                 true,
                 manualCount,
-                newName =>
+                newKey =>
                 {
-                    var group = KeyboardSimulatorUtils.ParseGroup(entry.Key);
-                    group.Name = newName;
-                    var newKey = KeyboardSimulatorUtils.EncodeGroup(group, manualCount);
+                    Console.WriteLine($"RENAME {entry.Key} TO {newKey}");
                     Settings.Current.KeyboardSimulator.SetEntriesManual(
                         Settings.Current.KeyboardSimulator.EntriesManual.RenameKey(entry.Key, newKey)
                     );
+                    // Session.GuiFlags.SkipFrames = 2;
                 },
                 () =>
                 {
@@ -404,17 +401,18 @@ public static class KeyboardSimulatorPages
             ImGui.SameLine();
 
             // ALWAYS Checkbox for enabled
-            // TODO: We should have the same format for both collections' keys
             var group = KeyboardSimulatorUtils.ParseGroup(entryKey);
             ImGui.PushID(entryKey);
             var enabled = group.Enabled;
             if (ImGui.Checkbox($"##ManualEnabled", ref enabled))
             {
-                Console.WriteLine("MANUAL ENABLED WAS CHANGED"); // TODO: Implement
+                group.Enabled = enabled;
+                renameGroup?.Invoke(KeyboardSimulatorUtils.EncodeGroup(group, totalGroups));
+                SkipFrames();
             }
 
             GuiUtils.DrawTooltip(enabled ? "Uncheck to disable" : "Check to enable.");
-
+            
             ImGui.SameLine();
 
             // ALWAYS Add entry
@@ -429,8 +427,11 @@ public static class KeyboardSimulatorPages
                 },
                 null,
                 RenderDialog,
-                addEntry
-            );
+                value =>
+                {
+                    addEntry(value);
+                    SkipFrames();
+                });
 
             ImGui.TableNextColumn();
 
@@ -456,8 +457,12 @@ public static class KeyboardSimulatorPages
                         ImGui.InputText("Group name", ref _manualGroupName, 32, ImGuiInputTextFlags.None);
                         return _manualGroupName;
                     },
-                    value => renameGroup?.Invoke(value)
-                );
+                    value =>
+                    {
+                        group.Name = value;
+                        renameGroup?.Invoke(KeyboardSimulatorUtils.EncodeGroup(group, totalGroups));
+                        SkipFrames();
+                    });
 
                 ImGui.SameLine();
 
@@ -466,6 +471,7 @@ public static class KeyboardSimulatorPages
                 if (ImGui.ArrowButton($"##ManualGroupMoveUp", ImGuiDir.Up))
                 {
                     moveGroup?.Invoke(-1);
+                    SkipFrames();
                 }
                 ImGui.EndDisabled();
                 ImGui.SameLine();
@@ -473,6 +479,7 @@ public static class KeyboardSimulatorPages
                 if (ImGui.ArrowButton($"##ManualGroupMoveDown", ImGuiDir.Down))
                 {
                     moveGroup?.Invoke(1);
+                    SkipFrames();
                 }
                 ImGui.EndDisabled();
 
@@ -641,5 +648,10 @@ public static class KeyboardSimulatorPages
         var meta = flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.MetaLeft) | flags.HasFlag(KeyboardSimulatorUtils.ModifierFlags.MetaRight) ? "#" : "";
         var all = $"{alt}{ctrl}{shift}{meta}";
         return all.IsWhiteSpace() ? "" : $"[{all}] ";
+    }
+
+    private static void SkipFrames()
+    {
+        Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesInterface;
     }
 }

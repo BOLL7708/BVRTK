@@ -37,6 +37,8 @@ public static class Constants
         public const float SeparatorGirth = 3f * Overlay.GuiScale;
         public const float BorderWidth = 1.5f * Overlay.GuiScale;
         public static readonly Vector2 ItemSpacing = new(8f * Overlay.GuiScale, 6f * Overlay.GuiScale);
+        public static int SkipFramesNavigation = 5;
+        public static int SkipFramesInterface = 3;
     }
 
 

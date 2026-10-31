@@ -53,7 +53,6 @@ public static partial class Gui
             ImGui.Button(section.Title(), availableSpace with { Y = 0 });
             if (ImGui.IsItemActivated())
             {
-                Session.GuiFlags.SkipFrames = 2; // Allow page to settle, first frame to render tabs, second to render internal tables etc, the rest will have to populate on rendered frames.
                 RestoredSectionsInPage.Clear();
                 Settings.Current.Application.SetCurrentSection(i);
             }

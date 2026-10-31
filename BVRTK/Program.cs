@@ -56,6 +56,19 @@ class Program
 
         SetLanguage(Settings.Current.Application.Language);
         SettingsChangeHandlers.OnApplicationLanguageChanged += SetLanguage;
+        
+        void SkipFrames<T>(T _)
+        {
+            // This is done to allow the interface to settle.
+            // * First it was to let sub tabs render
+            // * Then to allow tables to settle
+            // * Then to allow scrolls bars to appear and settle
+            // * Etc so we do five frames in total now, to have some margin.
+            // This is triggered when we change section or page.
+            Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesNavigation;
+        }
+        SettingsChangeHandlers.OnApplicationCurrentPageInSectionChanged += SkipFrames;
+        SettingsChangeHandlers.OnApplicationCurrentSectionChanged += SkipFrames;
 
         #endregion
 

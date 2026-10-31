@@ -72,7 +72,7 @@ public static class KeyboardSimulatorUtils
         return [.. ids];
     }
 
-    internal static SimGroup ParseGroup(string value)
+    public static SimGroup ParseGroup(string value)
     {
         var firstSpace = value.IndexOf(' ');
         var settings = firstSpace >= 0 ? value[..firstSpace] : value;
@@ -83,34 +83,34 @@ public static class KeyboardSimulatorUtils
         var orderStr = parts.ElementAtOrDefault(0) ?? "0";
         var enabledStr = parts.ElementAtOrDefault(1) ?? "1";
         var order = 0;
-        var enabled = true;
+        var enabled = 0;
         var orderOk = false;
         var enabledOk = false;
         try
         {
             orderOk = int.TryParse(orderStr, out order);
-            enabledOk = bool.TryParse(enabledStr, out enabled);
+            enabledOk = int.TryParse(enabledStr, out enabled);
         }
         finally
         {
             if (!orderOk) order = 0;
-            if (!enabledOk) enabled = true;
+            if (!enabledOk) enabled = 1;
         }
         return new SimGroup(
             order,
-            enabled,
+            enabled > 0,
             name
         );
     }
 
-    internal static string EncodeGroup(SimGroup group, int totalGroups)
+    public static string EncodeGroup(SimGroup group, int totalGroups)
     {
         var enabled = group.Enabled ? 1 : 0;
         var serial = Utils.GetZeroPaddedInt(group.Order, totalGroups);
         return $"{serial}|{enabled} {group.Name}";
     }
 
-    internal record struct SimGroup(
+    public record struct SimGroup(
         int Order,
         bool Enabled,
         string Name
