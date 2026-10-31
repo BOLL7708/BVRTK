@@ -103,10 +103,11 @@ public static class KeyboardSimulatorUtils
         );
     }
 
-    internal static string EncodeGroup(SimGroup group)
+    internal static string EncodeGroup(SimGroup group, int totalGroups)
     {
-        var enabled = group.Enabled ? 1 : 0; 
-        return $"{group.Order:D4}|{enabled} {group.Name}";
+        var enabled = group.Enabled ? 1 : 0;
+        var serial = Utils.GetZeroPaddedInt(group.Order, totalGroups);
+        return $"{serial}|{enabled} {group.Name}";
     }
 
     internal record struct SimGroup(

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using BVRTK;
 using Xunit;
 using Utils = BVRTK.Utils;
 
@@ -35,7 +36,7 @@ public class UtilsVarTest
         var listRemove2 = Utils.RemoveFromListAt(list, 2);
         Assert.NotEqual(list, listRemove2);
         Assert.Equal(listRemove2, listRemoveTruth);
-        
+
         var listRemove3 = Utils.RemoveFromList(list, "five");
         Assert.Equal(list, listRemove3);
         var listRemove4 = Utils.RemoveFromListAt(list, 100);
@@ -49,7 +50,7 @@ public class UtilsVarTest
         var listReplace2 = Utils.ReplaceInListAt(list, 1, "2");
         Assert.NotEqual(list, listReplace2);
         Assert.Equal(listReplace2, listReplaceTruth);
-        
+
         var listReplace3 = Utils.ReplaceInList(list, "five", "2");
         Assert.Equal(list, listReplace3);
         var listReplace4 = Utils.ReplaceInListAt(list, 100, "2");
@@ -116,12 +117,12 @@ public class UtilsVarTest
         var dicAddNew = Utils.AddToDictionaryArray(dic, "five", "six");
         Assert.NotEqual(dic, dicAddNew);
         Assert.Equal(dicAddNew, dicAddNewTruth);
-        
+
         var dicAddDupeTruth = new SortedDictionary<string, string[]> { { "one", ["two", "two"] }, { "three", ["four"] } }.ToImmutableSortedDictionary();
         var dicAddDupe = Utils.AddToDictionaryArray(dic, "one", "two");
         Assert.NotEqual(dic, dicAddDupe);
         Assert.Equal(dicAddDupe, dicAddDupeTruth);
-        
+
         var dicAddNoDupe = Utils.AddToDictionaryArray(dic, "three", "four", true);
         Assert.Equal(dic, dicAddNoDupe);
 
@@ -133,7 +134,7 @@ public class UtilsVarTest
         var dicRemove2 = Utils.RemoveFromDictionaryArrayAt<ISDStrArr, string, string>(dic, "one", 0);
         Assert.NotEqual(dic, dicRemove2);
         Assert.Equal(dicRemove2, dicRemoveTruth);
-        
+
         var dicRemove3 = Utils.RemoveFromDictionaryArray(dic, "one", "three");
         Assert.Equal(dic, dicRemove3);
         var dicRemove4 = Utils.RemoveFromDictionaryArray(dic, "five", "six");
@@ -142,16 +143,16 @@ public class UtilsVarTest
         Assert.Equal(dic, dicRemove5);
         var dicRemove6 = Utils.RemoveFromDictionaryArrayAt<ISDStrArr, string, string>(dic, "five", 0);
         Assert.Equal(dic, dicRemove6);
-        
+
         // Replace
-        var dicReplaceTruth = new SortedDictionary<string, string[]> { {"one", ["2"]}, {"three", ["four"]} }.ToImmutableSortedDictionary();
+        var dicReplaceTruth = new SortedDictionary<string, string[]> { { "one", ["2"] }, { "three", ["four"] } }.ToImmutableSortedDictionary();
         var dicReplace = Utils.ReplaceInDictionaryArray(dic, "one", "two", "2");
         Assert.NotEqual(dic, dicReplace);
         Assert.Equal(dicReplace, dicReplaceTruth);
         var dicReplace2 = Utils.ReplaceInDictionaryArrayAt(dic, "one", 0, "2");
         Assert.NotEqual(dic, dicReplace2);
         Assert.Equal(dicReplace2, dicReplaceTruth);
-        
+
         var dicReplace3 = Utils.ReplaceInDictionaryArray(dic, "one", "five", "2");
         Assert.Equal(dic, dicReplace3);
         var dicReplace4 = Utils.ReplaceInDictionaryArrayAt(dic, "one", 1, "2");
@@ -159,10 +160,10 @@ public class UtilsVarTest
     }
 
     [Fact]
-    public void RearrangeDictionary()
+    public void RearrangeDictionaryArrays()
     {
         var dic = new SortedDictionary<string, string[]> { { "one", ["two", "three", "four", "five", "six", "seven"] } }.ToImmutableSortedDictionary();
-        
+
         // Move one down
         var dicOneDownTruth = new SortedDictionary<string, string[]> { { "one", ["two", "four", "three", "five", "six", "seven"] } }.ToImmutableSortedDictionary();
         var dicOneDown = Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(dic, "one", 2, 1);
@@ -199,5 +200,52 @@ public class UtilsVarTest
         Assert.NotEqual(dic, dicUp);
         Assert.Equal(dicUp, dicUpTruth);
     }
+
     #endregion
+
+    [Fact]
+    public void RearrangeDictionary()
+    {
+        var dic = new SortedDictionary<string, string[]> { { "45|aaa", [] }, { "45|bbb", [] }, { "57|ccc", [] }, { "57|ddd", [] } }.ToImmutableSortedDictionary();
+        var dicBig = new SortedDictionary<string, string[]>
+        {
+            { "1|a", [] }, { "1|b", [] }, { "1|c", [] }, { "1|d", [] }, { "1|e", [] }, { "1|f", [] }, { "1|g", [] }, { "1|h", [] }, { "1|i", [] }, { "1|j", [] }
+        }.ToImmutableSortedDictionary();
+
+        // Reserialization
+        var dicNewTruth = new SortedDictionary<string, string[]> { { "1|aaa", [] }, { "2|bbb", [] }, { "3|ccc", [] }, { "4|ddd", [] } }.ToImmutableSortedDictionary();
+        var dicNew = dic.ReserializeKeys();
+        Assert.NotEqual(dic, dicNew);
+        Assert.Equal(dicNew, dicNewTruth);
+
+        var dicBigTruth = new SortedDictionary<string, string[]>
+        {
+            { "01|a", [] }, { "02|b", [] }, { "03|c", [] }, { "04|d", [] }, { "05|e", [] }, { "06|f", [] }, { "07|g", [] }, { "08|h", [] }, { "09|i", [] }, { "10|j", [] }
+        }.ToImmutableSortedDictionary();
+        var dicBigNew = dicBig.ReserializeKeys();
+        Assert.NotEqual(dicBig, dicBigNew);
+        Assert.Equal(dicBigNew, dicBigTruth);
+
+        // Rearrangement
+        var dicUpdateTruth = new SortedDictionary<string, string[]> { { "1|aaa", [] }, { "2|ccc", [] }, { "3|bbb", [] }, { "4|ddd", [] } }.ToImmutableSortedDictionary();
+        var dicUpdate = dic.RearrangeKey("45|bbb", 1);
+        Assert.NotEqual(dic, dicUpdate);
+        Assert.Equal(dicUpdate, dicUpdateTruth);
+        
+        var dicUpdate2Truth = new SortedDictionary<string, string[]> { { "1|ccc", [] }, { "2|aaa", [] }, { "3|bbb", [] }, { "4|ddd", [] } }.ToImmutableSortedDictionary();
+        var dicUpdate2 = dic.RearrangeKey("57|ccc", -2);
+        Assert.NotEqual(dic, dicUpdate2);
+        Assert.Equal(dicUpdate2, dicUpdate2Truth);
+        
+        // Removal
+        var dicRemoveTruth = new SortedDictionary<string, string[]> { { "1|aaa", [] }, { "2|ccc", [] }, { "3|ddd", [] } }.ToImmutableSortedDictionary();
+        var dicRemove = dic.RemoveKey("45|bbb");
+        Assert.NotEqual(dic, dicRemove);
+        Assert.Equal(dicRemove, dicRemoveTruth);
+        
+        var dicRemove2Truth = new SortedDictionary<string, string[]> { { "1|aaa", [] }, { "2|bbb", [] }, { "3|ddd", [] } }.ToImmutableSortedDictionary();
+        var dicRemove2 = dic.RemoveKey("57|ccc");
+        Assert.NotEqual(dic, dicRemove2);
+        Assert.Equal(dicRemove2, dicRemove2Truth);
+    }
 }
