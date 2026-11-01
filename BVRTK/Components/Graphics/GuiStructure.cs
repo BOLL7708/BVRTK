@@ -14,14 +14,14 @@ public static class GuiStructure
 
     public static readonly List<Section> Sections =
     [
-        new(() => "Development", () => "Only for me!", isPublic: false, font: FontStyle.Bold, accentColor: GuiColor.FromHue(0), pages: [
-            new Page("Debug", DevelopmentPages.Debug),
-            new Page("Component Zoo", DevelopmentPages.Zoo)
-        ]),
         new(() => GuiSidebarPrompts.AppLabel, () => GuiSidebarPrompts.AppTooltip, font: FontStyle.Bold, accentColor: GuiColor.Root, pages: [
             new Page("About", ApplicationPages.About),
             new Page("Version History", ApplicationPages.VersionHistory),
             new Page("Licenses", ApplicationPages.Licenses)
+        ]),
+        new(() => "Development", () => "Only for me!", isPublic: false, font: FontStyle.Bold, accentColor: GuiColor.FromHue(0), pages: [
+            new Page("Debug", DevelopmentPages.Debug),
+            new Page("Component Zoo", DevelopmentPages.Zoo)
         ]),
         new(() => GuiSidebarPrompts.PreferencesLabel, () => GuiSidebarPrompts.PreferencesTooltip, accentColor: GuiColor.Preferences, pages: [
             new Page("Options", GuiRenderers.RenderApplicationPage)

@@ -7,10 +7,10 @@ namespace BVRTK.Data.Setting;
 public partial class KeyboardSimulator
 {
     [GuiCheckbox("Enabled", "Enable keyboard simulation")]
-    public bool Enabled { get; set; } = false;
+    public bool Enabled { get; set; } = true;
 
     [GuiCheckbox("Haptic pulse on key", "Will trigger a haptic pulse when a key is being simulated.")]
-    public bool HapticPulseOnKey { get; set; } = false;
+    public bool HapticPulseOnKey { get; set; } = true;
 
     // [GuiCheckbox("Notification on key", "Will spawn a notification in the headset when a key is being simulated.")]
     public bool NotificationOnKey { get; set; } = false;

@@ -192,7 +192,7 @@ public static class KeyboardSimulatorPages
                 var group = KeyboardSimulatorUtils.ParseGroup(kvp.Key);
                 return group.Name == Session.SteamSceneAppId;
             });
-            if (match.Key.Length > 0)
+            if (match.Key is { Length: > 0 }) // Match here is not null but the Key and Value will be if there is no 
             {
                 _previouslyMatchedGameKey = match.Key;
             }
