@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using BVRTK.Data;
 using EasyOpenVR;
@@ -7,30 +8,10 @@ using SharpHook.Simulation;
 
 namespace BVRTK.Components.KeyboardSimulator;
 
-public class KeyboardSim
+public static class KeyboardSim
 {
-    private static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> _manualEntries = [];
-    private static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> _gameEntries = [];
-
-    private static void UnregisterAndRegister(string[] entries, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection)
-    {
-        UnregisterEntries([.. collection.Keys]);
-        RegisterEntries(entries, ref collection);
-    }
-
-    private static void RegisterEntries(string[] entries, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection)
-    {
-        collection.Clear();
-        foreach (var entryStr in entries)
-        {
-            var entry = KeyboardSimulatorUtils.ParseEntry(entryStr);
-            var handle = RegisterEntry(entry);
-            if (handle != ulong.MaxValue && handle != ulong.MinValue)
-            {
-                collection.TryAdd(handle, entry); // Handles are supposed to be unique so this should be safe.
-            }
-        }
-    }
+    internal static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> ManualEntries = [];
+    internal static ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> GameEntries = [];
 
     private static void SimKey(KeyCode keyCode, bool? down = null)
     {
@@ -108,6 +89,20 @@ public class KeyboardSim
         public void Dispose() => _cts.Dispose();
     }
 
+    private static void RegisterEntries(string[] entries, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection)
+    {
+        collection.Clear();
+        foreach (var entryStr in entries)
+        {
+            var entry = KeyboardSimulatorUtils.ParseEntry(entryStr);
+            var handle = RegisterEntry(entry);
+            if (handle != ulong.MaxValue && handle != ulong.MinValue)
+            {
+                collection.TryAdd(handle, entry); // Handles are supposed to be unique so this should be safe.
+            }
+        }
+    }
+
     private static ulong RegisterEntry(KeyboardSimulatorUtils.SimEntry entry)
     {
         var result = Services.Vr.Input.RegisterDigitalAction(
@@ -117,6 +112,7 @@ public class KeyboardSim
                 if (!data.bActive || !data.bChanged) return;
 
                 var modifiers = entry.Modifiers.ToKeyCodes();
+                Console.WriteLine($"SIMULATE KEY: {entry.KeyCode} {string.Join(", ", modifiers)}"); // TODO: Log properly
                 switch (entry.Trigger)
                 {
                     case HardwareInputTrigger.Press:
@@ -180,13 +176,32 @@ public class KeyboardSim
         return result.ResultULong;
     }
 
-    private static void UnregisterEntries(ulong[] handles)
+    private static void UnregisterEntries(ulong[] handles, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection)
     {
         Services.Vr.Input.UnregisterActions(handles);
+        collection.Clear();
         foreach (var guiId in Repeaters.Keys)
         {
             // We remove the repeaters from the dictionary so they cannot be stopped twice.
             if (Repeaters.TryRemove(guiId, out var repeater)) repeater.Stop();
+        }
+    }
+
+    private static void UnregisterAndRegisterGroups(IImmutableDictionary<string, string[]> entries, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection, string? matchGroupName = null)
+    {
+        UnregisterEntries([.. collection.Keys], ref collection);
+        RegisterGroups(entries, ref collection, matchGroupName);
+    }
+
+    private static void RegisterGroups(IImmutableDictionary<string, string[]> entries, ref ConcurrentDictionary<ulong, KeyboardSimulatorUtils.SimEntry> collection, string? matchGroupName = null)
+    {
+        foreach (var (key, value) in entries)
+        {
+            var group = KeyboardSimulatorUtils.ParseGroup(key);
+            if (!group.Enabled) continue;
+            if (matchGroupName != null && !group.Name.Equals(matchGroupName)) continue;
+
+            RegisterEntries(value, ref collection);
         }
     }
 
@@ -198,23 +213,19 @@ public class KeyboardSim
         // Register everything on first init if enabled
         if (Settings.Current.KeyboardSimulator.Enabled)
         {
-            // TODO: UnregisterAndRegister([.. Settings.Current.KeyboardSimulator.EntriesGeneral], ref _generalEntries);
-            //  Loop all manual entries and register those that are enabled.
-            Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var gameEntries);
-            UnregisterAndRegister(gameEntries ?? [], ref _gameEntries);
+            UnregisterAndRegisterGroups(Settings.Current.KeyboardSimulator.EntriesManual, ref ManualEntries);
+            UnregisterAndRegisterGroups(Settings.Current.KeyboardSimulator.EntriesPerGame, ref GameEntries, Session.SteamSceneAppId);
         }
 
-        // React to enabling/disabling
+        // React to enabling/disabling the whole service
         SettingsChangeHandlers.OnKeyboardSimulatorEnabledChanged += on =>
         {
-            UnregisterEntries([.. _manualEntries.Keys]);
-            UnregisterEntries([.. _gameEntries.Keys]);
+            UnregisterEntries([.. ManualEntries.Keys], ref ManualEntries);
+            UnregisterEntries([.. GameEntries.Keys], ref GameEntries);
             if (!on) return;
 
-            // TODO: RegisterEntries([.. Settings.Current.KeyboardSimulator.EntriesGeneral], ref _manualEntries);
-            //  Here as well get the enabled ones, should probably make a method for this.
-            Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var gameEntries);
-            RegisterEntries(gameEntries ?? [], ref _gameEntries);
+            RegisterGroups(Settings.Current.KeyboardSimulator.EntriesManual, ref ManualEntries);
+            RegisterGroups(Settings.Current.KeyboardSimulator.EntriesPerGame, ref GameEntries, Session.SteamSceneAppId);
         };
 
         // React to game changing
@@ -222,30 +233,23 @@ public class KeyboardSim
         {
             if (!Settings.Current.KeyboardSimulator.Enabled) return;
 
-            UnregisterEntries([.. _gameEntries.Keys]);
-            Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(appId, out var gameEntries);
-            RegisterEntries(gameEntries ?? [], ref _gameEntries);
+            UnregisterAndRegisterGroups(Settings.Current.KeyboardSimulator.EntriesPerGame, ref GameEntries, Session.SteamSceneAppId);
         };
 
         // React to general entries changing
         SettingsChangeHandlers.OnKeyboardSimulatorEntriesManualChanged += list =>
         {
-            // TODO: Figure out which lists should be enabled/disabled etc...
             if (!Settings.Current.KeyboardSimulator.Enabled) return;
 
-            UnregisterEntries([.. _manualEntries.Keys]);
-            _manualEntries.Clear();
-            // TODO: RegisterEntries([.. list], ref _manualEntries);
+            UnregisterAndRegisterGroups(Settings.Current.KeyboardSimulator.EntriesManual, ref ManualEntries);
         };
 
-        // React to game specific entries changing
+        // React to game entries changing
         SettingsChangeHandlers.OnKeyboardSimulatorEntriesPerGameChanged += list =>
         {
             if (!Settings.Current.KeyboardSimulator.Enabled) return;
 
-            UnregisterEntries([.. _gameEntries.Keys]);
-            list.TryGetValue(Session.SteamSceneAppId, out var gameEntries);
-            RegisterEntries(gameEntries ?? [], ref _gameEntries);
+            UnregisterAndRegisterGroups(Settings.Current.KeyboardSimulator.EntriesPerGame, ref GameEntries, Session.SteamSceneAppId);
         };
     }
 }

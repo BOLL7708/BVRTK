@@ -17,13 +17,13 @@ public static class KeyboardSimulatorPages
             "Add", "Cancel",
             "", // Empty as we start from nothing
             () => { _manualGroupName = ""; },
-            (value) =>
+            _ =>
             {
                 ImGui.AlignTextToFramePadding();
                 ImGui.TextUnformatted("Groups of entries that can be toggled manually:");
                 // No additional GUI needed as we are just displaying the add button.
             },
-            (value) =>
+            _ =>
             {
                 ImGui.InputText("Group name", ref _manualGroupName, 32, ImGuiInputTextFlags.None);
                 return _manualGroupName;
@@ -39,29 +39,23 @@ public static class KeyboardSimulatorPages
             });
 
         var manualCount = Settings.Current.KeyboardSimulator.EntriesManual.Count;
-        var manualListIndex = 0;
         foreach (var entry in Settings.Current.KeyboardSimulator.EntriesManual)
         {
             ImGui.PushID(entry.Key);
             ImGui.Dummy(Constants.Gui.ItemSpacing);
 
             RenderList(
-                $"manual",
+                "manual",
                 entry.Key,
                 entry.Value,
-                manualListIndex,
                 (currentValue, newValue) => ReplaceManualEntry(entry.Key, currentValue, newValue),
                 (index, move) => MoveManualEntry(entry.Key, index, move),
                 entryStr => AddManualEntry(entry.Key, entryStr),
-                true,
-                manualCount,
                 newKey =>
                 {
-                    Console.WriteLine($"RENAME {entry.Key} TO {newKey}");
                     Settings.Current.KeyboardSimulator.SetEntriesManual(
                         Settings.Current.KeyboardSimulator.EntriesManual.RenameKey(entry.Key, newKey)
                     );
-                    // Session.GuiFlags.SkipFrames = 2;
                 },
                 () =>
                 {
@@ -74,9 +68,12 @@ public static class KeyboardSimulatorPages
                     Settings.Current.KeyboardSimulator.SetEntriesManual(
                         Settings.Current.KeyboardSimulator.EntriesManual.RearrangeKey(entry.Key, move)
                     );
-                });
+                },
+                null,
+                true,
+                manualCount
+            );
             ImGui.PopID();
-            manualListIndex++;
         }
     }
 
@@ -85,32 +82,49 @@ public static class KeyboardSimulatorPages
         if (Session.SteamSceneAppId.Length > 0)
         {
             ImGui.PushID(Session.SteamSceneAppId);
-            GuiUtils.DrawTitle($"Entries for: {Session.SteamSceneAppName}");
+            
+            ImGui.TextUnformatted("Groups of entries that gets activated by the running VR game.");
+            ImGui.Dummy(Constants.Gui.ItemSpacing);
 
-            var gameIndex = 0;
-            // TODO: The below needs to check the END of the keys instead of a full match!
-            Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(Session.SteamSceneAppId, out var entries);
-            if (entries != null)
-                RenderList(
-                    "game",
-                    Session.SteamSceneAppId,
-                    entries,
-                    gameIndex,
-                    ReplaceGameEntry,
-                    MoveGameEntry,
-                    AddGameEntry
-                );
+            var entries = GetEntriesForCurrentGame(); // Also updates _previouslyMatchedGameKey
+            RenderList(
+                "game",
+                _previouslyMatchedGameKey,
+                entries,
+                ReplaceGameEntry,
+                MoveGameEntry,
+                AddGameEntry,
+                value =>
+                {
+                    Settings.Current.KeyboardSimulator.SetEntriesPerGame(
+                        Utils.RenameKeyInDictionary<IDStrArr, string, string[]>(Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, value)
+                    );
+                    _previouslyMatchedGameKey = value; // This should always be the current game as that is the only one we can rename by toggling enabled status.
+                },
+                null,
+                null,
+                "VR Game: " + Session.SteamSceneAppName
+            );
+
             ImGui.PopID();
         }
         else
         {
-            GuiUtils.DrawTitle("Game Specific Entries");
             GuiUtils.DrawCenteredText("No game detected.");
         }
     }
 
     public static void Monitor()
     {
+        GuiUtils.DrawText("Active Key Entries", FontStyle.Bold);
+        foreach(var (_, entry) in KeyboardSim.ManualEntries)
+        {
+            ImGui.TextUnformatted($"{entry.Action.Name} -> {entry.KeyCode}");
+        }
+        foreach(var (_, entry) in KeyboardSim.GameEntries)
+        {
+            ImGui.TextUnformatted($"{entry.Action.Name} -> {entry.KeyCode}");
+        }
     }
 
     public static void Help()
@@ -164,10 +178,36 @@ public static class KeyboardSimulatorPages
 
     #region Game Entries
 
+    private static string _previousSteamAppId = "";
+    private static string _previouslyMatchedGameKey = "";
+
+    private static string[] GetEntriesForCurrentGame()
+    {
+        if (Session.SteamSceneAppId != _previousSteamAppId)
+        {
+            _previousSteamAppId = Session.SteamSceneAppId;
+            _previouslyMatchedGameKey = "";
+            var match = Settings.Current.KeyboardSimulator.EntriesPerGame.ToList().Find(kvp =>
+            {
+                var group = KeyboardSimulatorUtils.ParseGroup(kvp.Key);
+                return group.Name == Session.SteamSceneAppId;
+            });
+            if (match.Key.Length > 0)
+            {
+                _previouslyMatchedGameKey = match.Key;
+            }
+        }
+
+        if (_previouslyMatchedGameKey.Length == 0) return [];
+
+        Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(_previouslyMatchedGameKey, out var entries);
+        return entries ?? [];
+    }
+
     private static void AddGameEntry(string entry)
     {
         Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.AddToDictionaryArray(
-            Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, entry
+            Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, entry
         ));
     }
 
@@ -177,29 +217,35 @@ public static class KeyboardSimulatorPages
         if (currentEntry != null && newEntry != null)
         {
             Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.ReplaceInDictionaryArray(
-                Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, currentEntry, newEntry
+                Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, currentEntry, newEntry
             ));
         }
 
         if (currentEntry == null && newEntry != null)
         {
             Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.AddToDictionaryArray(
-                Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, newEntry
+                Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, newEntry
             ));
         }
 
         if (currentEntry != null && newEntry == null)
         {
-            Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RemoveFromDictionaryArray(
-                Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, currentEntry
-            ));
+            var newEntries = Utils.RemoveFromDictionaryArray(
+                Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, currentEntry
+            );
+            newEntries.TryGetValue(_previouslyMatchedGameKey, out var newArray);
+            Settings.Current.KeyboardSimulator.SetEntriesPerGame(
+                (newArray ?? []).Length == 0 
+                    ? newEntries.Remove(_previouslyMatchedGameKey) // We clear an empty group from the list to not end up with a bunch of empty ones.
+                    : newEntries
+            );
         }
     }
 
     private static void MoveGameEntry(int index, int move)
     {
         Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string, string>(
-            Settings.Current.KeyboardSimulator.EntriesPerGame, Session.SteamSceneAppId, index, index + move
+            Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, index, index + move
         ));
     }
 
@@ -210,28 +256,7 @@ public static class KeyboardSimulatorPages
 
     #region Group
 
-    private static int _manualOrder;
-    private static bool _manualEnabled;
     private static string _manualGroupName = "";
-
-    private static void ParseGroup(string groupStr)
-    {
-        var group = KeyboardSimulatorUtils.ParseGroup(groupStr);
-        _manualOrder = group.Order;
-        _manualEnabled = group.Enabled;
-        _manualGroupName = group.Name;
-    }
-
-    private static string EncodeGroup(int totalGroups)
-    {
-        var group = new KeyboardSimulatorUtils.SimGroup
-        {
-            Order = _manualOrder,
-            Enabled = _manualEnabled,
-            Name = _manualGroupName
-        };
-        return KeyboardSimulatorUtils.EncodeGroup(group, totalGroups);
-    }
 
     #endregion
 
@@ -366,15 +391,15 @@ public static class KeyboardSimulatorPages
         string tag,
         string entryKey,
         string[] entries,
-        int listIndex,
         Action<string?, string?> replace,
         Action<int, int> move,
         Action<string> addEntry,
-        bool allowGroupEdit = false,
-        int totalGroups = 0,
-        Action<string>? renameGroup = null,
+        Action<string> renameGroup,
         Action? deleteGroup = null,
-        Action<int>? moveGroup = null
+        Action<int>? moveGroup = null,
+        string? titleOverride = null,
+        bool allowGroupEdit = false,
+        int totalGroups = 0
     )
     {
         if (_defaultCellPadding == Vector2.Zero) _defaultCellPadding = ImGui.GetStyle().CellPadding;
@@ -382,17 +407,17 @@ public static class KeyboardSimulatorPages
         var section = GuiStructure.Sections[sectionIndex];
         ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Constants.Gui.ItemSpacing);
         ImGui.PushID(tag);
-        ImGui.BeginChild($"##keyboardSimulatorChild", Vector2.Zero, ImGuiChildFlags.None | ImGuiChildFlags.AutoResizeY);
+        ImGui.BeginChild("##keyboardSimulatorChild", Vector2.Zero, ImGuiChildFlags.None | ImGuiChildFlags.AutoResizeY);
 
         #region Group Title
 
         ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.40f));
 
-        if (ImGui.BeginTable($"##keyboardSimulatorGroupTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
+        if (ImGui.BeginTable("##keyboardSimulatorGroupTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
         {
-            ImGui.TableSetupColumn($"##keyboardSimulatorGroupLeftCol", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn($"##keyboardSimulatorGroupMiddleCol", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn($"##keyboardSimulatorGroupRightCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("##keyboardSimulatorGroupLeftCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("##keyboardSimulatorGroupMiddleCol", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("##keyboardSimulatorGroupRightCol", ImGuiTableColumnFlags.WidthFixed);
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -404,15 +429,15 @@ public static class KeyboardSimulatorPages
             var group = KeyboardSimulatorUtils.ParseGroup(entryKey);
             ImGui.PushID(entryKey);
             var enabled = group.Enabled;
-            if (ImGui.Checkbox($"##ManualEnabled", ref enabled))
+            if (ImGui.Checkbox("##ManualEnabled", ref enabled))
             {
                 group.Enabled = enabled;
-                renameGroup?.Invoke(KeyboardSimulatorUtils.EncodeGroup(group, totalGroups));
+                renameGroup.Invoke(KeyboardSimulatorUtils.EncodeGroup(group, totalGroups));
                 SkipFrames();
             }
 
             GuiUtils.DrawTooltip(enabled ? "Uncheck to disable" : "Check to enable.");
-            
+
             ImGui.SameLine();
 
             // ALWAYS Add entry
@@ -435,24 +460,29 @@ public static class KeyboardSimulatorPages
 
             ImGui.TableNextColumn();
 
-            GuiUtils.DrawText(group.Name.Length > 0 ? group.Name : "N/A", FontStyle.Bold);
+            GuiUtils.DrawText(
+                titleOverride ?? (group.Name.Length > 0
+                    ? group.Name
+                    : "N/A"),
+                FontStyle.Bold
+            );
 
             ImGui.TableNextColumn();
 
             if (allowGroupEdit)
             {
                 ImGui.PushID(entryKey);
-                
+
                 ImGui.SameLine();
                 // EDIT Rename
                 GuiUtils.DoModal<string>(
-                    $"Rename Manual Group##ManualGroupRename",
+                    "Rename Manual Group##ManualGroupRename",
                     "Rename",
                     "Rename", "Cancel",
                     group.Name,
                     () => { _manualGroupName = group.Name; },
                     null,
-                    (value) =>
+                    _ =>
                     {
                         ImGui.InputText("Group name", ref _manualGroupName, 32, ImGuiInputTextFlags.None);
                         return _manualGroupName;
@@ -460,7 +490,7 @@ public static class KeyboardSimulatorPages
                     value =>
                     {
                         group.Name = value;
-                        renameGroup?.Invoke(KeyboardSimulatorUtils.EncodeGroup(group, totalGroups));
+                        renameGroup.Invoke(KeyboardSimulatorUtils.EncodeGroup(group, totalGroups));
                         SkipFrames();
                     });
 
@@ -468,19 +498,21 @@ public static class KeyboardSimulatorPages
 
                 // EDIT Reorder-arrows
                 ImGui.BeginDisabled(group.Order == 1);
-                if (ImGui.ArrowButton($"##ManualGroupMoveUp", ImGuiDir.Up))
+                if (ImGui.ArrowButton("##ManualGroupMoveUp", ImGuiDir.Up))
                 {
                     moveGroup?.Invoke(-1);
                     SkipFrames();
                 }
+
                 ImGui.EndDisabled();
                 ImGui.SameLine();
                 ImGui.BeginDisabled(group.Order == totalGroups);
-                if (ImGui.ArrowButton($"##ManualGroupMoveDown", ImGuiDir.Down))
+                if (ImGui.ArrowButton("##ManualGroupMoveDown", ImGuiDir.Down))
                 {
                     moveGroup?.Invoke(1);
                     SkipFrames();
                 }
+
                 ImGui.EndDisabled();
 
                 ImGui.SameLine();
@@ -490,14 +522,14 @@ public static class KeyboardSimulatorPages
                 ImGui.SameLine();
 
                 GuiUtils.DoModalToConfirm(
-                    $"Remove this entry?##ManualGroupDelete",
+                    "Remove this entry?##ManualGroupDelete",
                     "X",
                     "Do you want to delete this whole group?",
                     "Yes",
                     "No",
                     () => deleteGroup?.Invoke()
                 );
-                
+
                 ImGui.PopID();
             }
 
@@ -519,11 +551,11 @@ public static class KeyboardSimulatorPages
         ImGui.PushStyleColor(ImGuiCol.TableRowBg, section.AccentColor.Fade(0.20f));
         ImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, section.AccentColor.Fade(0.30f));
 
-        if (ImGui.BeginTable($"##keyboardSimulatorEntriesTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
+        if (ImGui.BeginTable("##keyboardSimulatorEntriesTable", 3, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg))
         {
-            ImGui.TableSetupColumn($"##keyboardSimulatorEntryLeftCol", ImGuiTableColumnFlags.WidthFixed);
-            ImGui.TableSetupColumn($"##keyboardSimulatorEntryMiddleCol", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn($"##keyboardSimulatorEntryRightCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("##keyboardSimulatorEntryLeftCol", ImGuiTableColumnFlags.WidthFixed);
+            ImGui.TableSetupColumn("##keyboardSimulatorEntryMiddleCol", ImGuiTableColumnFlags.WidthStretch);
+            ImGui.TableSetupColumn("##keyboardSimulatorEntryRightCol", ImGuiTableColumnFlags.WidthFixed);
 
             if (entries.Length == 0)
             {
@@ -531,7 +563,7 @@ public static class KeyboardSimulatorPages
                 ImGui.TableNextColumn();
                 ImGui.Dummy(Vector2.Zero);
                 ImGui.SameLine();
-                ImGui.TextUnformatted("No entries found.");
+                ImGui.TextUnformatted("No entries.");
             }
             else
             {
@@ -546,7 +578,7 @@ public static class KeyboardSimulatorPages
 
                     // Edit button
                     GuiUtils.DoModal(
-                        $"Edit Entry##keyboardSimulatorEdit",
+                        "Edit Entry##keyboardSimulatorEdit",
                         "Edit",
                         "Apply", "Cancel",
                         universalEntry,
@@ -566,11 +598,11 @@ public static class KeyboardSimulatorPages
 
                     // Up & down buttons
                     ImGui.BeginDisabled(index == 0);
-                    if (ImGui.ArrowButton($"##keyboardSimulatorMoveUp", ImGuiDir.Up)) move(index, -1);
+                    if (ImGui.ArrowButton("##keyboardSimulatorMoveUp", ImGuiDir.Up)) move(index, -1);
                     ImGui.EndDisabled();
                     ImGui.SameLine();
                     ImGui.BeginDisabled(index == entries.Length - 1);
-                    if (ImGui.ArrowButton($"##keyboardSimulatorMoveDown", ImGuiDir.Down)) move(index, 1);
+                    if (ImGui.ArrowButton("##keyboardSimulatorMoveDown", ImGuiDir.Down)) move(index, 1);
                     ImGui.EndDisabled();
 
                     ImGui.SameLine();
@@ -579,7 +611,7 @@ public static class KeyboardSimulatorPages
 
                     // Delete button
                     GuiUtils.DoModalToConfirm(
-                        $"Remove this entry?##keyboardSimulatorDelete",
+                        "Remove this entry?##keyboardSimulatorDelete",
                         "X",
                         string.Join("\n", description),
                         "Yes",
