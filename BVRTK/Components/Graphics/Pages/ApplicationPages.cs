@@ -32,6 +32,13 @@ public static class ApplicationPages
         
         if (ImGui.TextLink("Website")) GuiUtils.OpenUrl(Constants.Url.DeveloperWebsite);
         GuiUtils.DrawTooltip(Constants.Url.DeveloperWebsite);
+        
+        GuiUtils.DrawDivider();
+
+        ImGui.Text("Application Folder:");
+        ImGui.SameLine();
+        if(ImGui.TextLink("Open")) GuiUtils.OpenUrl(AppContext.BaseDirectory);
+        GuiUtils.DrawTooltip(AppContext.BaseDirectory);
     }
 
     public static void VersionHistory()

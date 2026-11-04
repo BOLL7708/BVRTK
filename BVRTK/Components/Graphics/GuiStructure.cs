@@ -26,7 +26,7 @@ public static class GuiStructure
         new(() => GuiSidebarPrompts.PreferencesLabel, () => GuiSidebarPrompts.PreferencesTooltip, accentColor: GuiColor.Preferences, pages: [
             new Page("Options", GuiRenderers.RenderApplicationPage)
         ]),
-        new(() => GuiSidebarPrompts.ServerLabel, () => GuiSidebarPrompts.ServerTooltip, ()=>Settings.Current.Server.Enabled, accentColor: GuiColor.Server, pages: [
+        new(() => GuiSidebarPrompts.ServerLabel, () => GuiSidebarPrompts.ServerTooltip, ()=>Settings.Current.Server.Enabled, isPublic:false, accentColor: GuiColor.Server, pages: [
             new Page("Options", GuiRenderers.RenderServerPage)
         ]),
         new(() => GuiSidebarPrompts.KeyboardSimLabel, () => GuiSidebarPrompts.KeyboardSimTooltip, ()=>Settings.Current.KeyboardSimulator.Enabled, accentColor: GuiColor.KeyboardSim, pages: [

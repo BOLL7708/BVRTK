@@ -81,7 +81,13 @@ class Program
                 Session.ProgramCts.Cancel();
             }
         };
-        vr.DebugMessage += (message, level) => Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
+        vr.DebugMessage += (message, level) =>
+        {
+            if (level >= Constants.DebugLevel)
+            {
+                Console.WriteLine($"[DEBUG-{Enum.GetName(level)}] {message}");
+            }
+        };
         // vr.PumpCycle += Services.ApplicationWindow.Render;
 
         vr.Event.Register([

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using EasyOpenVR;
 
 namespace BVRTK;
 
@@ -37,8 +38,8 @@ public static class Constants
         public const float SeparatorGirth = 3f * Overlay.GuiScale;
         public const float BorderWidth = 1.5f * Overlay.GuiScale;
         public static readonly Vector2 ItemSpacing = new(8f * Overlay.GuiScale, 6f * Overlay.GuiScale);
-        public static int SkipFramesNavigation = 5;
-        public static int SkipFramesInterface = 3;
+        public const int SkipFramesNavigation = 5;
+        public const int SkipFramesInterface = 3;
     }
 
 
@@ -53,4 +54,6 @@ public static class Constants
         public const string Default = "default";
         public const string KeyboardSim = "keyboardsim";
     }
+
+    public static EasyOpenVr.EDebugLevel DebugLevel { get; set; } = EasyOpenVr.EDebugLevel.Verbose;
 }

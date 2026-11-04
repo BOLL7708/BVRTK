@@ -50,7 +50,7 @@ public sealed class WebsocketServer : AbstractServer
         }
 
         // Start
-        _server = Build(_port, _ip);
+        _server = null; // Build(_port, _ip);
         _server.Options.MaxPackageLength = 100 * 1024 * 1024;
         try
         {
@@ -204,48 +204,48 @@ public sealed class WebsocketServer : AbstractServer
 
     #region BoilerPlate
 
-    private IServer Build(int port = DefaultPort, string ip = DefaultIp)
-    {
-        var hostBuilder = WebSocketHostBuilder.Create();
-
-        hostBuilder.UseWebSocketMessageHandler((session, message) =>
-        {
-            Server_NewMessageReceived(session, message.Message);
-            return ValueTask.CompletedTask;
-        });
-
-        hostBuilder.UseSessionHandler(
-            session =>
-            {
-                Server_NewSessionConnected(session);
-                return ValueTask.CompletedTask;
-            },
-            (session, e) =>
-            {
-                Server_SessionClosed(session, e.Reason);
-                return ValueTask.CompletedTask;
-            }
-        );
-
-        hostBuilder.ConfigureSuperSocket(options =>
-        {
-            options.AddListener(new ListenOptions
-            {
-                Ip = ip,
-                Port = port
-            });
-        });
-
-        hostBuilder.ConfigureErrorHandler((session, exception) =>
-        {
-            OnServerError($"Exception from Error Handler: {exception.Message} from {session.SessionID}");
-            return ValueTask.FromResult(false);
-        });
-
-        hostBuilder.ConfigureLogging((_, loggingBuilder) => { ConsoleLoggerExtensions.AddConsole((ILoggingBuilder)loggingBuilder); });
-
-        return hostBuilder.BuildAsServer();
-    }
+    // private IServer Build(int port = DefaultPort, string ip = DefaultIp)
+    // {
+    //     var hostBuilder = WebSocketHostBuilder.Create();
+    //
+    //     hostBuilder.UseWebSocketMessageHandler((session, message) =>
+    //     {
+    //         Server_NewMessageReceived(session, message.Message);
+    //         return ValueTask.CompletedTask;
+    //     });
+    //
+    //     hostBuilder.UseSessionHandler(
+    //         session =>
+    //         {
+    //             Server_NewSessionConnected(session);
+    //             return ValueTask.CompletedTask;
+    //         },
+    //         (session, e) =>
+    //         {
+    //             Server_SessionClosed(session, e.Reason);
+    //             return ValueTask.CompletedTask;
+    //         }
+    //     );
+    //
+    //     hostBuilder.ConfigureSuperSocket(options =>
+    //     {
+    //         options.AddListener(new ListenOptions
+    //         {
+    //             Ip = ip,
+    //             Port = port
+    //         });
+    //     });
+    //
+    //     hostBuilder.ConfigureErrorHandler((session, exception) =>
+    //     {
+    //         OnServerError($"Exception from Error Handler: {exception.Message} from {session.SessionID}");
+    //         return ValueTask.FromResult(false);
+    //     });
+    //
+    //     hostBuilder.ConfigureLogging((_, loggingBuilder) => { ConsoleLoggerExtensions.AddConsole((ILoggingBuilder)loggingBuilder); });
+    //
+    //     return hostBuilder.BuildAsServer();
+    // }
 
     #endregion
 }
