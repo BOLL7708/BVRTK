@@ -62,7 +62,7 @@ class Program
             // This is done to allow the interface to settle.
             // * First it was to let sub tabs render
             // * Then to allow tables to settle
-            // * Then to allow scrolls bars to appear and settle
+            // * Then to allow scrollbars to appear and settle
             // * Etc so we do five frames in total now, to have some margin.
             // This is triggered when we change section or page.
             Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesNavigation;
@@ -193,11 +193,14 @@ class Program
             guiTask = Services.GuiBackend.Run(mainHandle);
 
             launchServicesDone = true;
+            
+            Console.WriteLine("Finished initiating application!");
         }
 
         try
         {
             // Initialization complete, so here we wait until the application should exit, that is, when the global cancellation token is canceled.
+            Console.WriteLine("Will await termination!");
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
         }
         catch (OperationCanceledException)
@@ -206,9 +209,11 @@ class Program
         }
         finally
         {
+            Console.WriteLine("Termination in progress!");
             Settings.WriteToDisk();
             await Services.Server.Stop();
             await Task.WhenAll(guiTask, vrTask); // We wait for loops and workers to finish before shutting down the SteamVR API connection.
+            Console.WriteLine("Winddown complete, terminating!");
             vr.Shutdown();
         }
     }

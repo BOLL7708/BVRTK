@@ -329,8 +329,24 @@ public class GuiBackend(CancellationToken cancellationToken)
     }
 
     #endregion
+
+    public Task Run(ulong overlayHandle)
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); // Option lets the task be awaited in the main program.
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                RunLoop(overlayHandle);
+                tcs.SetResult();
+            } catch ( Exception e) { tcs.SetException(e); }
+            
+        }) { Name = "GuiRenderThread", IsBackground = false };
+        thread.Start();
+        return tcs.Task;
+    }
     
-    public unsafe Task Run(ulong overlayHandle)
+    private unsafe void RunLoop(ulong overlayHandle)
     {
         var error = new NativeCallback<GLFWerrorfun>(static (errorCode, description) =>
         {
@@ -362,7 +378,7 @@ public class GuiBackend(CancellationToken cancellationToken)
         {
             Console.WriteLine("Failed to create GLFW window.");
             GLFW.Terminate();
-            return Task.CompletedTask;
+            return;
         }
 
         SetWindowIcon(window, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.png"]));
@@ -383,7 +399,7 @@ public class GuiBackend(CancellationToken cancellationToken)
         {
             Console.WriteLine("Failed to init ImGui Impl GLFW");
             GLFW.Terminate();
-            return Task.CompletedTask;
+            return;
         }
 
         // Replace the default window focus callback as it will disable all
@@ -400,7 +416,7 @@ public class GuiBackend(CancellationToken cancellationToken)
         {
             Console.WriteLine("Failed to init ImGui Impl OpenGL3");
             GLFW.Terminate();
-            return Task.CompletedTask;
+            return;
         }
 
         GL gl = new(new BindingsContext(window));
@@ -441,6 +457,8 @@ public class GuiBackend(CancellationToken cancellationToken)
 
             GLFW.MakeContextCurrent(window);
             RenderUiToFbo(gl, fbo);
+            if (cancellationToken.IsCancellationRequested) break; // We break here just in case, as we somehow got a crash from SubmitOverlayTexture on exit, and there might be a winddown desync problem.
+            
             SubmitOverlayTexture(overlayHandle, fboTex);
             HapticVibrationOnHover(overlayHandle);
             if (Session.GuiFlags.SkipFrames > 0) continue; // Used to allow the GUI to settle things like swapping pages, as the tab view populates and tables render.
@@ -478,7 +496,6 @@ public class GuiBackend(CancellationToken cancellationToken)
         // Clean up and terminate GLFW
         GLFW.DestroyWindow(window);
         GLFW.Terminate();
-        return Task.CompletedTask;
     }
     
     public void SetWindowVisible(bool visible)
