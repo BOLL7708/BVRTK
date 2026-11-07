@@ -555,7 +555,15 @@ public class GuiBackend(CancellationToken cancellationToken)
             image.Pixels = pixels;
 
             // Submit the pixels to GLFW that copies them, then free the resource.
-            GLFW.SetWindowIcon(window, 1, &image);
+            try
+            {
+                // Supposedly this does not always work on Linux.
+                GLFW.SetWindowIcon(window, 1, &image);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"$Overlay: GLFV cannot set SetWindowIcon: {e.Message}"); // TODO: Logging
+            }
             StbImage.ImageFree(pixels);
         }
     }

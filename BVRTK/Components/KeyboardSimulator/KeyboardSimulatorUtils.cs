@@ -1,11 +1,12 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using BVRTK.Components.Graphics;
 using BVRTK.Resources;
 using SharpHook.Data;
 
 namespace BVRTK.Components.KeyboardSimulator;
 
-public static class KeyboardSimulatorUtils
+public static partial class KeyboardSimulatorUtils
 {
     #region Keys
 
@@ -50,7 +51,7 @@ public static class KeyboardSimulatorUtils
             var reference = Enum.GetName(keycode) ?? "";
             if (reference.IsWhiteSpace()) continue;
 
-            var displayName = reference[2..];
+            var displayName = CleanDisplayName(reference);
             values.Add(reference, displayOverride.IsWhiteSpace() ? displayName : displayOverride ?? "N/A");
         }
 
@@ -58,6 +59,14 @@ public static class KeyboardSimulatorUtils
 
         static bool IsFunc(string? n) => n?.Length > 3 && n[2] == 'F' && n[3..].All(char.IsDigit); // Function keys
         static bool IsSingle(string? n) => n?.Length == 3; // Letters & digits
+    }
+
+    [GeneratedRegex(@"(?<=[a-z])(?=[A-Z])")]
+    private static partial Regex LowerUpperBoundary { get; }
+    
+    private static string CleanDisplayName(string displayName)
+    {
+        return LowerUpperBoundary.Replace(displayName[2..], " "); // Remove prefixed Vk before splitting pascal-case.
     }
 
     public static string[] GetGuiIds()

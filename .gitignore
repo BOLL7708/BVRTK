@@ -6,3 +6,4 @@ riderModule.iml
 .idea
 *.DotSettings.user
 version.txt
+dist/
