@@ -21,6 +21,9 @@ public partial class Application
     [GuiIntSlider("GUI frame rate", "If the GUI is too heavy when visible you can reduce the frame rate it renders at.", 5, 60)]
     public int GuiFrameRate { get; set; } = 60;
     
+    [GuiCheckbox("Show dashboard input warning", "For features that use input, a warning will be shown if the dashboard is blocking input registration.")]
+    public bool ShowInputWarning { get; set; } = true;
+    
     
     // [GuiCombo("Language", "Set the language of the application.", 256f, nameof(Session) + "." + nameof(Session.SupportedLanguageGuiIds))]
     public string Language { get; set; } = Constants.SystemDefaultLanguage;

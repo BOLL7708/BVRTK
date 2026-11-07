@@ -61,6 +61,7 @@ public static class Session
 
     public static string HapticPulseActionName { get; set; } = "";
     public static ulong HapticPulseActionHandle { get; set; }
+    public static bool IsVrDashboardVisible { get; set; } = false;
 
     public static void SetActionEntriesForSet(string actionSet, ActionGuiEntry[] entries)
     {

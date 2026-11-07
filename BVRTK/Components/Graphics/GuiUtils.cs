@@ -317,7 +317,7 @@ public static class GuiUtils
 
     #endregion
 
-    public static void DrawTooltip(string message)
+    public static void DrawTooltip(string message, Vector4? applyColor = null)
     {
         if (
             !Settings.Current.Application.ShowTooltips
@@ -325,6 +325,12 @@ public static class GuiUtils
             || string.IsNullOrWhiteSpace(message)
         ) return;
 
+        var pushedAccents = false;
+        if (applyColor is { } color)
+        {
+            PushColorAccents(color);
+            pushedAccents = true;
+        }
         ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, Constants.Gui.GeneralRounding);
         ImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, Constants.Gui.BorderWidth);
         ImGui.BeginTooltip();
@@ -333,6 +339,7 @@ public static class GuiUtils
         ImGui.PopTextWrapPos();
         ImGui.EndTooltip();
         ImGui.PopStyleVar(2);
+        if(pushedAccents) PopColorAccents();
     }
 
     private static readonly List<ImGuiStyleVar> RoundingVars =

@@ -109,6 +109,9 @@ class Program
             }
         );
 
+        vr.Event.Register([EVREventType.VREvent_DashboardActivated], (in _) => Session.IsVrDashboardVisible = true);
+        vr.Event.Register([EVREventType.VREvent_DashboardDeactivated], (in _) => Session.IsVrDashboardVisible = false);
+
         void UpdateGame()
         {
             Session.SteamSceneAppId = vr.System.GetRunningApplicationId();
@@ -187,6 +190,7 @@ class Program
             }
             KeyboardSim.Init();
             Session.HapticPulseActionHandle = vr.Input.GetActionHandle(Session.HapticPulseActionName).ResultULong;
+            Session.IsVrDashboardVisible = OpenVR.Overlay.IsDashboardVisible();
             // endregion
             
             Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));

@@ -15,8 +15,20 @@ public static partial class Gui
         if (section.Pages.Count == 0) return;
 
         var i = 0;
-        ImGui.BeginChild($"##Page{section.Title}", Vector2.Zero);
+        ImGui.PushID(section.Title());
+        ImGui.BeginChild($"##Page", Vector2.Zero);
+        
         ImGui.Dummy(Vector2.Zero); // Add the default spacing at the top.
+        
+        // Special warning for dashboard stopping input from reaching this application
+        if (section.UsesInput && Settings.Current.Application.ShowInputWarning && Session.IsVrDashboardVisible)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Text, GuiColor.FromHue(0));
+            GuiUtils.DrawCenteredText("SteamVR dashboard is blocking input", FontStyle.Bold);
+            GuiUtils.DrawTooltip("Controller input will not be registered by this application while the SteamVR dashboard is present in the headset.", GuiColor.FromHue(0));
+            ImGui.PopStyleColor();
+        }
+        
         ImGui.GetStyle().TabBarBorderSize = 0;
 
         ImGui.PushStyleColor(ImGuiCol.TabSelected, section.AccentColor.TabActive());
@@ -96,6 +108,7 @@ public static partial class Gui
         ImGui.EndTabBar();
         ImGui.PopStyleColor(3);
         ImGui.EndChild();
+        ImGui.PopID();
 
         var versionPos = startPos with { X = ImGui.GetWindowWidth() - ImGui.CalcTextSize(Session.Version).X - Constants.Gui.ItemSpacing.X};
         ImGui.GetWindowDrawList().AddText(versionPos, ImGui.GetColorU32(section.AccentColor.Fade(0.5f)), Session.Version);

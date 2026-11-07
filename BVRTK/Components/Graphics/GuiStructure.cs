@@ -29,13 +29,20 @@ public static class GuiStructure
         new(() => GuiSidebarPrompts.ServerLabel, () => GuiSidebarPrompts.ServerTooltip, ()=>Settings.Current.Server.Enabled, isPublic:false, accentColor: GuiColor.Server, pages: [
             new Page("Options", GuiRenderers.RenderServerPage)
         ]),
-        new(() => GuiSidebarPrompts.KeyboardSimLabel, () => GuiSidebarPrompts.KeyboardSimTooltip, ()=>Settings.Current.KeyboardSimulator.Enabled, accentColor: GuiColor.KeyboardSim, pages: [
-            new Page("Options", GuiRenderers.RenderKeyboardSimulatorPage),
-            new Page("Manual Entries", KeyboardSimulatorPages.ManualEntries),
-            new Page("Game Entries", KeyboardSimulatorPages.GameEntries),
-            new Page("Monitor", KeyboardSimulatorPages.Monitor),
-            new Page("Help", KeyboardSimulatorPages.Help)
-        ]),
+        new(
+            () => GuiSidebarPrompts.KeyboardSimLabel,
+            () => GuiSidebarPrompts.KeyboardSimTooltip,
+            () => Settings.Current.KeyboardSimulator.Enabled,
+            accentColor: GuiColor.KeyboardSim,
+            usesInput: true, pages:
+            [
+                new Page("Options", GuiRenderers.RenderKeyboardSimulatorPage),
+                new Page("Manual Entries", KeyboardSimulatorPages.ManualEntries),
+                new Page("Game Entries", KeyboardSimulatorPages.GameEntries),
+                new Page("Monitor", KeyboardSimulatorPages.Monitor),
+                new Page("Help", KeyboardSimulatorPages.Help)
+            ]
+        ),
         new(() => GuiSidebarPrompts.MouseSimLabel, () => GuiSidebarPrompts.MouseSimTooltip, isPublic: false, accentColor: GuiColor.MouseSim, pages: [PageWip]),
         new(() => GuiSidebarPrompts.OverlaysLabel, () => GuiSidebarPrompts.OverlaysTooltip, isPublic: false, accentColor: GuiColor.Overlays, pages: [PageWip]),
         new(() => GuiSidebarPrompts.ScreenshotsLabel, () => GuiSidebarPrompts.ScreenshotsTooltip, isPublic: false, accentColor: GuiColor.Screenshots, pages: [
@@ -61,7 +68,8 @@ public class Section(
     bool isPublic = true,
     FontStyle font = FontStyle.Regular,
     Vector4? accentColor = null,
-    List<Page>? pages = null
+    List<Page>? pages = null,
+    bool usesInput = false
 )
 {
     public readonly Func<string> Title = title;
@@ -71,6 +79,7 @@ public class Section(
     public readonly FontStyle Font = font;
     public readonly Vector4 AccentColor = accentColor ?? GuiColor.Gray;
     public readonly List<Page> Pages = pages ?? [];
+    public readonly bool UsesInput = usesInput;
 }
 
 public class Page(string title, Action renderer)
