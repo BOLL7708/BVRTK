@@ -12,7 +12,7 @@ public static class ApplicationPages
         ImGui.Dummy(Vector2.Zero);
         
         GuiUtils.DrawCenteredImage(Session.GuiImages.Logo);
-        GuiUtils.DrawCenteredText("BOLL's VR Toolkit", FontStyle.Bold, Constants.Gui.FontSize * 1.8f);
+        GuiUtils.DrawCenteredText("BOLL's VR Toolkit", FontStyle.Bold, Constants.Gui.FontSize * 1.7f);
         
         ImGui.Dummy(Vector2.Zero);
         

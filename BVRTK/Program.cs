@@ -172,7 +172,7 @@ class Program
                 Constants.Overlay.TextureWidth,
                 Constants.Overlay.TextureHeight,
                 Constants.Overlay.PhysicalWidth,
-                Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.png"])
+                Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.64.png"])
             );
             vr.Overlay.RegisterForOverlayEvents(mainHandle, (in vrEvent) =>
             {

@@ -109,22 +109,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="Resources\Media\bvrtk.thumbnail.png">
+        <None Update="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Include="Resources\Media\bvrtk.logo.png">
+        <None Update="Resources\Fonts\AtkinsonHyperlegible-BoldItalic.ttf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Include="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf">
+        <None Update="Resources\Fonts\AtkinsonHyperlegible-Italic.ttf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
-        <None Include="Resources\Fonts\AtkinsonHyperlegible-BoldItalic.ttf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Include="Resources\Fonts\AtkinsonHyperlegible-Italic.ttf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Include="Resources\Fonts\AtkinsonHyperlegible-Regular.ttf">
+        <None Update="Resources\Fonts\AtkinsonHyperlegible-Regular.ttf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Update="Build\version.txt">
@@ -132,6 +126,30 @@
         </None>
         <None Update="_steamvr\software.boll.bvrtk.bindings.knuckles.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.logo.png">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.logo.nobg.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.thumbnail.64.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.thumbnail.64.nobg.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.thumbnail.128.png">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.thumbnail.128.nobg.png">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.thumbnail.256.png">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\Media\bvrtk.thumbnail.256.nobg.png">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </None>
     </ItemGroup>
     

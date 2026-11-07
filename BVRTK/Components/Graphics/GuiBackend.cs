@@ -60,7 +60,7 @@ public class GuiBackend(CancellationToken cancellationToken)
 
     private static void LoadImages(GL gl)
     {
-        Session.GuiImages.Logo = LoadImageFromFile(gl, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.logo.png"]));
+        Session.GuiImages.Logo = LoadImageFromFile(gl, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.logo.nobg.png"]));
     }
 
     private static unsafe ImFontPtr LoadFontFromResource(string resourceName)
@@ -381,7 +381,7 @@ public class GuiBackend(CancellationToken cancellationToken)
             return;
         }
 
-        SetWindowIcon(window, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.png"]));
+        SetWindowIcon(window, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.64.png"]));
 
         _window = window;
         GLFW.MakeContextCurrent(window);
