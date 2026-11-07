@@ -28,7 +28,7 @@ public static class Session
 
     public static class GuiImages
     {
-        public static GlImage Logo;
+        public static GlImage? Logo { get; set; }
     }
 
     public static class GuiFlags

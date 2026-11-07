@@ -109,8 +109,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Resources\Media\bvrtk.thumbnail.png"/>
-        <EmbeddedResource Include="Resources\Media\bvrtk.logo.png"/>
+        <None Include="Resources\Media\bvrtk.thumbnail.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="Resources\Media\bvrtk.logo.png">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
         <None Include="Resources\Fonts\AtkinsonHyperlegible-Bold.ttf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>

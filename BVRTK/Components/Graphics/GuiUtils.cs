@@ -90,8 +90,10 @@ public static class GuiUtils
 
     #region Draw
 
-    public static void DrawCenteredImage(GlImage image)
+    public static void DrawCenteredImage(GlImage? image)
     {
+        if (image == null) return;
+        
         var availableSpace = ImGui.GetContentRegionAvail().X;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + (availableSpace - image.Width) / 2f);
         image.Draw();

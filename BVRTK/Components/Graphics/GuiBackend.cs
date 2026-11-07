@@ -11,6 +11,7 @@ using Hexa.NET.ImGui.Backends.OpenGL3;
 using Hexa.NET.OpenGL;
 using Hexa.NET.StbImage;
 using HexaGen.Runtime;
+using Software.Boll.EasyUtils;
 using Valve.VR;
 using GLFWwindow = Hexa.NET.GLFW.GLFWwindow;
 using HexaUtils = HexaGen.Runtime.Utils;
@@ -57,16 +58,12 @@ public class GuiBackend(CancellationToken cancellationToken)
         Session.GuiFonts.BoldItalic = io.Fonts.AddFontFromFileTTF(Utils.GetAbsoluteFilePath(["Resources", "Fonts", "AtkinsonHyperlegible-BoldItalic.ttf"]));
     }
 
-    private static unsafe void LoadEmbeds(GL gl)
+    private static void LoadImages(GL gl)
     {
-        #region Images
-
-        Session.GuiImages.Logo = LoadImage(gl, "BVRTK.Resources.Media.bvrtk.logo.png");
-
-        #endregion
+        Session.GuiImages.Logo = LoadImageFromFile(gl, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.logo.png"]));
     }
 
-    private static unsafe ImFontPtr LoadFont(string resourceName)
+    private static unsafe ImFontPtr LoadFontFromResource(string resourceName)
     {
         var io = ImGui.GetIO();
         var cfg = ImGui.ImFontConfig();
@@ -80,9 +77,23 @@ public class GuiBackend(CancellationToken cancellationToken)
         return pointer;
     }
 
-    private static unsafe GlImage LoadImage(GL gl, string resourceName)
+    private static GlImage LoadImageFromFile(GL gl, string filePath)
+    {
+        var fileResult = FileUtils.ReadBinary(filePath);
+        if(!fileResult.Success) Console.WriteLine($"File problem: {filePath}, {fileResult.Exception?.Message}, {fileResult.BytesRead}"); // TODO: Proper logging
+        var bytes = fileResult.Bytes ?? [];
+        return BytesToImage(gl, bytes);
+    }
+    
+    private static GlImage LoadImageFromResource(GL gl, string resourceName)
     {
         var bytes = Utils.LoadEmbeddedResource(resourceName);
+        return BytesToImage(gl, bytes);
+       
+    }
+
+    private static unsafe GlImage BytesToImage(GL gl, byte[] bytes)
+    {
         int width, height;
         uint tex;
         fixed (byte* pointer = bytes)
@@ -354,7 +365,7 @@ public class GuiBackend(CancellationToken cancellationToken)
             return Task.CompletedTask;
         }
 
-        SetWindowIcon(window, "BVRTK.Resources.Media.bvrtk.thumbnail.png");
+        SetWindowIcon(window, Utils.GetAbsoluteFilePath(["Resources", "Media", "bvrtk.thumbnail.png"]));
 
         _window = window;
         GLFW.MakeContextCurrent(window);
@@ -393,7 +404,7 @@ public class GuiBackend(CancellationToken cancellationToken)
         }
 
         GL gl = new(new BindingsContext(window));
-        LoadEmbeds(gl);
+        LoadImages(gl);
 
         // --- Offscreen FBO ---
         var fbo = gl.GenFramebuffer();
@@ -505,9 +516,10 @@ public class GuiBackend(CancellationToken cancellationToken)
         if (_glfwInitialized) GLFW.PostEmptyEvent();
     }
 
-    private static unsafe void SetWindowIcon(GLFWwindowPtr window, string resourceName)
+    private static unsafe void SetWindowIcon(GLFWwindowPtr window, string filePath)
     {
-        var bytes = Utils.LoadEmbeddedResource(resourceName);
+        var fileResult = FileUtils.ReadBinary(filePath);
+        var bytes = fileResult.Bytes ?? [];
         fixed (byte* bytesPointer = bytes)
         {
             int width, height, channels;
