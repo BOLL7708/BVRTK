@@ -129,11 +129,6 @@ class Program
         );
         UpdateGame();
 
-        vr.PumpCycleDeltaMs += (double ms) =>
-        {
-            Session.DebugValue = ms;
-        };
-
         #endregion
 
         #endregion

@@ -17,6 +17,7 @@ public static class Session
     public static string Version { get; set; } = "v0.0.0";
     public static bool ShowAbout = false;
     public static bool ShowMetrics = false;
+    public static bool ShowLog = false;
 
     public static unsafe class GuiFonts
     {
@@ -81,7 +82,7 @@ public static class Session
     internal static volatile string[] KeyboardSimulatorTriggerGuiIds = HardwareInputTrigger.GetTriggerGuiIds; // Full IDs
     internal static ImmutableDictionary<string, Func<string>> KeyboardSimulatorTriggerGuiTagToLabel = HardwareInputTrigger.GetTriggerGuiIdPairs.ToImmutableDictionary(); // IDs as pairs
 
-    public static double DebugValue { get; set; } = 0;
+    public static string DebugValue { get; set; } = "";
 
     #nullable enable
     public static event Action<string>? OnSteamSceneAppIdChanged;

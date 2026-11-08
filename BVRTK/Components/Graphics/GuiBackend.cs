@@ -132,7 +132,7 @@ public class GuiBackend(CancellationToken cancellationToken)
         var io = ImGui.GetIO();
         io.DisplaySize = new Vector2(Constants.Overlay.TextureWidth, Constants.Overlay.TextureHeight); // match the FBO
         io.DisplayFramebufferScale = new Vector2(1, 1);
-        if (Session.OverlayFocus)
+        if (Session.OverlayFocus && !_mouseWheelUsedThisFrame)
         {
             // This is performed so that hover effects still work when the desktop cursor has left the window.
             // A side effect is that the overlay cursor now overrides the desktop one completely if active.
@@ -162,6 +162,9 @@ public class GuiBackend(CancellationToken cancellationToken)
         OpenVR.Overlay.SetOverlayTexture(mainHandle, ref tex);
     }
 
+    private static Vector2? _pendingMousePos;
+    private static bool _mouseWheelUsedThisFrame = false;
+
     /// <summary>
     /// We read the queue of incoming Overlay events from VR and
     /// convert those to valid input events for ImGui
@@ -170,24 +173,27 @@ public class GuiBackend(CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return; // If the loop and thus contexts are terminating, we should no longer accept events.
         
+        _mouseWheelUsedThisFrame = false;
         var io = ImGui.GetIO();
+        VREvent_Scroll_t scroll = new();
         while (_overlayEvents.TryDequeue(out var vrEvent))
         {
             switch ((EVREventType)vrEvent.eventType)
             {
                 case EVREventType.VREvent_MouseMove:
+                    _pendingMousePos = new Vector2(vrEvent.data.mouse.x, vrEvent.data.mouse.y);
                     _lastOverlayMouse = vrEvent.data.mouse;
-                    io.AddMousePosEvent(vrEvent.data.mouse.x, vrEvent.data.mouse.y);
                     break;
                 case EVREventType.VREvent_MouseButtonDown:
-                    io.AddMouseButtonEvent(Utils.ConvertMouseButton(vrEvent.data.mouse.button), true);
-                    break;
                 case EVREventType.VREvent_MouseButtonUp:
-                    io.AddMouseButtonEvent(Utils.ConvertMouseButton(vrEvent.data.mouse.button), false);
+                    FlushMousePos(); // Flush here to apply the current mouse pos for any press/release.
+                    var down = vrEvent.eventType == (uint)EVREventType.VREvent_MouseButtonDown;
+                    io.AddMouseButtonEvent(Utils.ConvertMouseButton(vrEvent.data.mouse.button), down);
                     break;
                 case EVREventType.VREvent_ScrollDiscrete:
                 case EVREventType.VREvent_ScrollSmooth:
-                    io.AddMouseWheelEvent(vrEvent.data.scroll.xdelta, vrEvent.data.scroll.ydelta);
+                    scroll.xdelta += vrEvent.data.scroll.xdelta;
+                    scroll.ydelta += vrEvent.data.scroll.ydelta;
                     break;
                 case EVREventType.VREvent_KeyboardCharInput:
                     // TODO: Possibly move this big blob into a separate method.
@@ -270,6 +276,26 @@ public class GuiBackend(CancellationToken cancellationToken)
                     // Console.WriteLine($"UNHANDLED: {Enum.GetName((EVREventType)vrEvent.eventType)}");
                     break;
             }
+        }
+
+        if (scroll.xdelta != 0f || scroll.ydelta != 0f) // Only apply scroll if used.
+        {
+            _mouseWheelUsedThisFrame = true;
+            io.AddMouseWheelEvent(scroll.xdelta, scroll.ydelta);
+        }
+        else
+        {
+            FlushMousePos(); // We don't need to move the mouse while scrolling.
+        }
+        
+        return;
+        
+        void FlushMousePos()
+        {
+            if (_pendingMousePos is not { } pos) return;
+
+            io.AddMousePosEvent(pos.X, pos.Y);
+            _pendingMousePos = null;
         }
     }
 

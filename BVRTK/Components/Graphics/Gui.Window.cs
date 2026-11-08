@@ -34,7 +34,8 @@ public static partial class Gui
 
         ImGui.PushFont(Session.GuiFonts.Regular, 10f);
         if (Session.ShowAbout) ImGui.ShowAboutWindow();
-        if(Session.ShowMetrics) ImGui.ShowMetricsWindow();
+        if (Session.ShowMetrics) ImGui.ShowMetricsWindow();
+        if (Session.ShowLog) ImGui.ShowDebugLogWindow();
         ImGui.PopFont();
 
         ImGui.PopStyleColor();

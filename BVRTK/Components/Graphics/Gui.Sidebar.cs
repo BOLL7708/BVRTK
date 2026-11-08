@@ -112,7 +112,7 @@ public static partial class Gui
 
         #region Debug
 
-        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{Session.GuiFlags.ShowExitModal}");
+        // ImGui.TextColored(new Vector4(1f, 0, 0, 1f), $"{Session.DebugValue}");
 
         #endregion
 

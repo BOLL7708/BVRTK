@@ -145,6 +145,7 @@ public static class DevelopmentPages
     {
         ImGui.Checkbox("Show About Window", ref Session.ShowAbout);
         ImGui.Checkbox("Show Metrics Window", ref Session.ShowMetrics);
+        ImGui.Checkbox("Show Log Window", ref Session.ShowLog);
         
         GuiUtils.DrawTitle("Input Source Handles");
         ImGui.Text(string.Join('\n', Services.Vr.Data.InputSourceToInputSourceHandle.Select(kvp => $"{kvp.Key}\t{kvp.Value}")));
