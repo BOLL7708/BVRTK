@@ -124,6 +124,7 @@ public static partial class Gui
             ImGui.IsPopupOpen("", ImGuiPopupFlags.AnyPopup)
             || !ImGui.IsWindowHovered(ImGuiHoveredFlags.ChildWindows)
             || !ImGui.IsMouseDragging(ImGuiMouseButton.Left)
+            || Session.GuiFlags.IsDragging
         ) return;
         
         var io = ImGui.GetIO();

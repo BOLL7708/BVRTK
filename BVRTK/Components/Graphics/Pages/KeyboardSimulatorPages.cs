@@ -49,7 +49,7 @@ public static class KeyboardSimulatorPages
                 entry.Key,
                 entry.Value,
                 (currentValue, newValue) => ReplaceManualEntry(entry.Key, currentValue, newValue),
-                (index, move) => MoveManualEntry(entry.Key, index, move),
+                (index, move, isNewIndex) => MoveManualEntry(entry.Key, index, move, isNewIndex),
                 entryStr => AddManualEntry(entry.Key, entryStr),
                 newKey =>
                 {
@@ -167,10 +167,10 @@ public static class KeyboardSimulatorPages
         }
     }
 
-    private static void MoveManualEntry(string group, int index, int move)
+    private static void MoveManualEntry(string group, int index, int move, bool isNewIndex = false)
     {
         Settings.Current.KeyboardSimulator.SetEntriesManual(Utils.RearrangeDictionaryArray<ISDStrArr, string, string>(
-            Settings.Current.KeyboardSimulator.EntriesManual, group, index, index + move
+            Settings.Current.KeyboardSimulator.EntriesManual, group, index, isNewIndex ? move : index + move
         ));
     }
 
@@ -242,10 +242,10 @@ public static class KeyboardSimulatorPages
         }
     }
 
-    private static void MoveGameEntry(int index, int move)
+    private static void MoveGameEntry(int index, int move, bool isNewIndex = false)
     {
         Settings.Current.KeyboardSimulator.SetEntriesPerGame(Utils.RearrangeDictionaryArray<IDStrArr, string, string>(
-            Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, index, index + move
+            Settings.Current.KeyboardSimulator.EntriesPerGame, _previouslyMatchedGameKey, index, isNewIndex ? move :  index + move
         ));
     }
 
@@ -386,13 +386,14 @@ public static class KeyboardSimulatorPages
     }
 
     private static Vector2 _defaultCellPadding = Vector2.Zero;
+    private static Dictionary<string, int?> _dragIndices = new ();
 
     private static void RenderList(
         string tag,
         string entryKey,
         string[] entries,
         Action<string?, string?> replace,
-        Action<int, int> move,
+        Action<int, int, bool> move,
         Action<string> addEntry,
         Action<string> renameGroup,
         Action? deleteGroup = null,
@@ -568,7 +569,7 @@ public static class KeyboardSimulatorPages
             else
             {
                 var index = 0;
-                foreach (var universalEntry in entries)
+                foreach (var entry in entries)
                 {
                     ImGui.PushID(index);
                     ImGui.TableNextRow();
@@ -581,30 +582,56 @@ public static class KeyboardSimulatorPages
                         "Edit Entry##keyboardSimulatorEdit",
                         "Edit",
                         "Apply", "Cancel",
-                        universalEntry,
-                        () => ParseEntry(universalEntry),
+                        entry,
+                        () => ParseEntry(entry),
                         null,
                         RenderDialog,
-                        value => { replace(universalEntry, value); });
+                        value => { replace(entry, value); });
 
                     ImGui.TableNextColumn();
 
                     // Text with conditional tooltip
-                    var description = DisplayEntry(universalEntry);
+                    var description = DisplayEntry(entry);
                     ImGui.Text(description[0]);
                     if (description.Length == 2) GuiUtils.DrawTooltip(description[1]);
 
                     ImGui.TableNextColumn();
 
-                    // Up & down buttons
-                    ImGui.BeginDisabled(index == 0);
-                    if (ImGui.ArrowButton("##keyboardSimulatorMoveUp", ImGuiDir.Up)) move(index, -1);
-                    ImGui.EndDisabled();
-                    ImGui.SameLine();
-                    ImGui.BeginDisabled(index == entries.Length - 1);
-                    if (ImGui.ArrowButton("##keyboardSimulatorMoveDown", ImGuiDir.Down)) move(index, 1);
-                    ImGui.EndDisabled();
-
+                    // Drag button
+                    _dragIndices.TryAdd(entryKey, null); // Make sure it is set.
+                    if (_dragIndices[entryKey] != null && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
+                    {
+                        Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesInterface;
+                        _dragIndices[entryKey] = null;
+                        Session.GuiFlags.IsDragging = false;
+                    }
+                    if(_dragIndices[entryKey] == null) ImGui.Button(" = ##keyboardSimulatorDrag"); 
+                    if(ImGui.IsItemActivated())
+                    {
+                        Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesInterface;
+                        Session.GuiFlags.IsDragging = true;
+                        _dragIndices[entryKey] = index; // On press, instead of on release
+                    }
+                    
+                    if (_dragIndices[entryKey] != null && _dragIndices[entryKey] != index) // As soon as we draw a different row while dragging, this runs.
+                    {
+                        var mouseY = ImGui.GetMousePos().Y;
+                        // We check if the mouse is inside this row, then we should move the dragged row here!
+                        if (mouseY >= ImGui.GetItemRectMin().Y && mouseY <= ImGui.GetItemRectMax().Y) 
+                        {
+                            // Move the item
+                            if (_dragIndices[entryKey] is {} from)
+                            {
+                                move(from, index, true);
+                                _dragIndices[entryKey] = index;
+                            }
+                        }
+                    }
+                    if (_dragIndices[entryKey] == index)
+                    {
+                        ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(section.AccentColor.Fade(0.7f)));
+                    }
+                    
                     ImGui.SameLine();
                     ImGui.Dummy(Vector2.Zero);
                     ImGui.SameLine();
@@ -616,7 +643,7 @@ public static class KeyboardSimulatorPages
                         string.Join("\n", description),
                         "Yes",
                         "No",
-                        () => { replace(universalEntry, null); }
+                        () => { replace(entry, null); }
                     );
 
                     ImGui.SameLine();

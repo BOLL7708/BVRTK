@@ -50,6 +50,7 @@ public static class Session
         } = 2; // Starts with a few skipped frames to let the initial GUI settle by default.
 
         public static bool ShowExitModal { get; set; } = false;
+        public static bool IsDragging { get; set; } = false;
     }
 
     /// <summary>
