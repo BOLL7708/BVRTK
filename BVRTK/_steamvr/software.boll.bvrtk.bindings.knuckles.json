@@ -2,12 +2,6 @@
   "action_manifest_version": 1,
   "alias_info": {},
   "app_key": "steam.app.4231070",
-  "category": "steamvr_input",
-  "controller_type": "knuckles",
-  "description": "",
-  "name": "Default BVRTK bindings for Index Controllers",
-  "options": {},
-  "simulated_actions": [],
   "bindings": {
     "/actions/keyboardsim": {
       "poses": [],
@@ -275,5 +269,12 @@
       ],
       "skeleton": []
     }
-  }
+  },
+  "category": "steamvr_input",
+  "controller_type": "knuckles",
+  "description": "",
+  "interaction_profile": "",
+  "name": "Default BVRTK configuration for Index Controllers",
+  "options": {},
+  "simulated_actions": []
 }

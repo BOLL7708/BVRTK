@@ -39,8 +39,8 @@ public static class GuiStructure
                 new Page("Options", GuiRenderers.RenderKeyboardSimulatorPage),
                 new Page("Manual Entries", KeyboardSimulatorPages.ManualEntries),
                 new Page("Game Entries", KeyboardSimulatorPages.GameEntries),
-                new Page("Monitor", KeyboardSimulatorPages.Monitor),
-                new Page("Help", KeyboardSimulatorPages.Help)
+                // new Page("Monitor", KeyboardSimulatorPages.Monitor),
+                // new Page("Help", KeyboardSimulatorPages.Help)
             ]
         ),
         new(() => GuiSidebarPrompts.MouseSimLabel, () => GuiSidebarPrompts.MouseSimTooltip, isPublic: false, accentColor: GuiColor.MouseSim, pages: [PageWip]),

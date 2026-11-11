@@ -1,0 +1,366 @@
+{
+  "action_manifest_version": 1,
+  "alias_info": {},
+  "app_key": "steam.app.4231070",
+  "bindings": {
+    "/actions/keyboardsim": {
+      "haptics": [
+        {
+          "output": "/actions/keyboardsim/out/hapticpulse",
+          "path": "/user/hand/left/output/haptic"
+        },
+        {
+          "output": "/actions/keyboardsim/out/hapticpulse",
+          "path": "/user/hand/right/output/haptic"
+        }
+      ],
+      "poses": [],
+      "skeleton": [],
+      "sources": [
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_systembuttonsouth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/system"
+        },
+        {
+          "inputs": {
+            "grab": {
+              "output": "/actions/keyboardsim/in/otherbutton1"
+            }
+          },
+          "mode": "grab",
+          "parameters": {},
+          "path": "/user/hand/left/input/pinch"
+        },
+        {
+          "inputs": {
+            "grab": {
+              "output": "/actions/keyboardsim/in/otherbutton2"
+            }
+          },
+          "mode": "grab",
+          "parameters": {},
+          "path": "/user/hand/right/input/pinch"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_griptrigger"
+            }
+          },
+          "mode": "button",
+          "parameters": {
+            "click_activate_threshold": "0.7",
+            "click_deactivate_threshold": "0.65"
+          },
+          "path": "/user/hand/right/input/grip"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_griptrigger"
+            }
+          },
+          "mode": "button",
+          "parameters": {
+            "click_activate_threshold": "0.7",
+            "click_deactivate_threshold": "0.65"
+          },
+          "path": "/user/hand/left/input/grip"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_gripbutton"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/grip"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_gripbutton"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/grip"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_facebuttonsouth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/dpad_down"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_facebuttonwest"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/dpad_left"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_facebuttoneast"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/dpad_right"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_facebuttonnorth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/dpad_up"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_facebuttonsouth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/a"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_facebuttoneast"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/b"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_facebuttonwest"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/x"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_facebuttonnorth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/y"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_systembuttonsouth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/system"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_triggerprimary"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/trigger"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_triggersecondary"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/bumper"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_triggerprimary"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/trigger"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_triggersecondary"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/bumper"
+        },
+        {
+          "inputs": {
+            "center": {
+              "output": "/actions/keyboardsim/in/left_trackpadcenter"
+            },
+            "east": {
+              "output": "/actions/keyboardsim/in/left_trackpadeast"
+            },
+            "north": {
+              "output": "/actions/keyboardsim/in/left_trackpadnorth"
+            },
+            "south": {
+              "output": "/actions/keyboardsim/in/left_trackpadsouth"
+            },
+            "west": {
+              "output": "/actions/keyboardsim/in/left_trackpadwest"
+            }
+          },
+          "mode": "dpad",
+          "parameters": {
+            "sub_mode": "click"
+          },
+          "path": "/user/hand/left/input/trackpad"
+        },
+        {
+          "inputs": {
+            "east": {
+              "output": "/actions/keyboardsim/in/left_stickeast"
+            },
+            "north": {
+              "output": "/actions/keyboardsim/in/left_sticknorth"
+            },
+            "south": {
+              "output": "/actions/keyboardsim/in/left_sticksouth"
+            },
+            "west": {
+              "output": "/actions/keyboardsim/in/left_stickwest"
+            }
+          },
+          "mode": "dpad",
+          "parameters": {
+            "sub_mode": "touch"
+          },
+          "path": "/user/hand/left/input/thumbstick"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_stickbutton"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/thumbstick"
+        },
+        {
+          "inputs": {
+            "center": {
+              "output": "/actions/keyboardsim/in/right_trackpadcenter"
+            },
+            "east": {
+              "output": "/actions/keyboardsim/in/right_stickeast"
+            },
+            "north": {
+              "output": "/actions/keyboardsim/in/right_trackpadnorth"
+            },
+            "south": {
+              "output": "/actions/keyboardsim/in/right_trackpadsouth"
+            },
+            "west": {
+              "output": "/actions/keyboardsim/in/right_trackpadwest"
+            }
+          },
+          "mode": "dpad",
+          "parameters": {
+            "sub_mode": "click"
+          },
+          "path": "/user/hand/right/input/trackpad"
+        },
+        {
+          "inputs": {
+            "east": {
+              "output": "/actions/keyboardsim/in/right_stickeast"
+            },
+            "north": {
+              "output": "/actions/keyboardsim/in/right_sticknorth"
+            },
+            "south": {
+              "output": "/actions/keyboardsim/in/right_sticksouth"
+            },
+            "west": {
+              "output": "/actions/keyboardsim/in/right_stickwest"
+            }
+          },
+          "mode": "dpad",
+          "parameters": {
+            "sub_mode": "touch"
+          },
+          "path": "/user/hand/right/input/thumbstick"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_stickbutton"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/thumbstick"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/left_systembuttonnorth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/left/input/view"
+        },
+        {
+          "inputs": {
+            "click": {
+              "output": "/actions/keyboardsim/in/right_systembuttonnorth"
+            }
+          },
+          "mode": "button",
+          "parameters": {},
+          "path": "/user/hand/right/input/menu"
+        }
+      ]
+    }
+  },
+  "category": "steamvr_input",
+  "controller_type": "frame_controller",
+  "description": "",
+  "interaction_profile": "",
+  "name": "Default BVRTK configuration for Frame Controllers",
+  "options": {},
+  "simulated_actions": []
+}
