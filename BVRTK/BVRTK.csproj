@@ -151,6 +151,9 @@
         <None Update="Resources\Media\bvrtk.thumbnail.256.nobg.png">
           <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </None>
+        <None Update="_steamvr\software.boll.bvrtk.bindings.frame_controller.json">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     
     <Target Name="GenerateVersionFile" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true'">
