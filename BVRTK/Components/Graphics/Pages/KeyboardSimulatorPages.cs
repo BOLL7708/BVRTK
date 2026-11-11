@@ -198,7 +198,14 @@ public static class KeyboardSimulatorPages
             }
         }
 
-        if (_previouslyMatchedGameKey.Length == 0) return [];
+        if (_previouslyMatchedGameKey.Length == 0)
+        {
+            // If we don't initialize the dictionary and set the key, we add entries to an empty key, which makes it appear as if nothing happened.
+            var newGroup = new KeyboardSimulatorUtils.SimGroup(0, true, _previousSteamAppId);
+            _previouslyMatchedGameKey = KeyboardSimulatorUtils.EncodeGroup(newGroup, 0);
+            Settings.Current.KeyboardSimulator.SetInEntriesPerGame(_previouslyMatchedGameKey, []);
+            return [];
+        }
 
         Settings.Current.KeyboardSimulator.EntriesPerGame.TryGetValue(_previouslyMatchedGameKey, out var entries);
         return entries ?? [];
@@ -386,7 +393,7 @@ public static class KeyboardSimulatorPages
     }
 
     private static Vector2 _defaultCellPadding = Vector2.Zero;
-    private static Dictionary<string, int?> _dragIndices = new ();
+    private static readonly Dictionary<string, int?> DragIndices = new ();
 
     private static void RenderList(
         string tag,
@@ -476,7 +483,7 @@ public static class KeyboardSimulatorPages
 
                 ImGui.SameLine();
                 // EDIT Rename
-                GuiUtils.DoModal<string>(
+                GuiUtils.DoModal(
                     "Rename Manual Group##ManualGroupRename",
                     "Rename",
                     "Rename", "Cancel",
@@ -598,36 +605,36 @@ public static class KeyboardSimulatorPages
                     ImGui.TableNextColumn();
 
                     // Drag button
-                    _dragIndices.TryAdd(entryKey, null); // Make sure it is set.
-                    if (_dragIndices[entryKey] != null && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
+                    DragIndices.TryAdd(entryKey, null); // Make sure it is set.
+                    if (DragIndices[entryKey] != null && !ImGui.IsMouseDown(ImGuiMouseButton.Left))
                     {
                         Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesInterface;
-                        _dragIndices[entryKey] = null;
+                        DragIndices[entryKey] = null;
                         Session.GuiFlags.IsDragging = false;
                     }
-                    if(_dragIndices[entryKey] == null) ImGui.Button(" = ##keyboardSimulatorDrag"); 
+                    if(DragIndices[entryKey] == null) ImGui.Button(" = ##keyboardSimulatorDrag"); 
                     if(ImGui.IsItemActivated())
                     {
                         Session.GuiFlags.SkipFrames = Constants.Gui.SkipFramesInterface;
                         Session.GuiFlags.IsDragging = true;
-                        _dragIndices[entryKey] = index; // On press, instead of on release
+                        DragIndices[entryKey] = index; // On press, instead of on release
                     }
                     
-                    if (_dragIndices[entryKey] != null && _dragIndices[entryKey] != index) // As soon as we draw a different row while dragging, this runs.
+                    if (DragIndices[entryKey] != null && DragIndices[entryKey] != index) // As soon as we draw a different row while dragging, this runs.
                     {
                         var mouseY = ImGui.GetMousePos().Y;
                         // We check if the mouse is inside this row, then we should move the dragged row here!
                         if (mouseY >= ImGui.GetItemRectMin().Y && mouseY <= ImGui.GetItemRectMax().Y) 
                         {
                             // Move the item
-                            if (_dragIndices[entryKey] is {} from)
+                            if (DragIndices[entryKey] is {} from)
                             {
                                 move(from, index, true);
-                                _dragIndices[entryKey] = index;
+                                DragIndices[entryKey] = index;
                             }
                         }
                     }
-                    if (_dragIndices[entryKey] == index)
+                    if (DragIndices[entryKey] == index)
                     {
                         ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, ImGui.GetColorU32(section.AccentColor.Fade(0.7f)));
                     }

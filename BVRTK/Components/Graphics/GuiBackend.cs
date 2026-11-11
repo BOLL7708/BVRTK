@@ -390,7 +390,8 @@ public class GuiBackend(CancellationToken cancellationToken)
         GLFW.WindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
 
         // Handle monitor scaling, scale the window but not the frame buffer, to avoid affecting VR overlay.
-        GLFW.WindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_TRUE);
+        // TODO: The monitor scaling screwed up desktop input mapping. We need to fix that if we use it. Move to setting that can be toggled on/off?
+        GLFW.WindowHint(GLFW.GLFW_SCALE_TO_MONITOR, GLFW.GLFW_FALSE);
         GLFW.WindowHint(GLFW.GLFW_SCALE_FRAMEBUFFER, GLFW.GLFW_FALSE);
 
         GLFW.WindowHint(GLFW.GLFW_VISIBLE, Settings.Current.Application.ShowDesktopWindowOnLaunch ? GLFW.GLFW_TRUE : GLFW.GLFW_FALSE);

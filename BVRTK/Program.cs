@@ -127,7 +127,6 @@ class Program
                 UpdateGame();
             }
         );
-        UpdateGame();
 
         #endregion
 
@@ -186,6 +185,7 @@ class Program
             KeyboardSim.Init();
             Session.HapticPulseActionHandle = vr.Input.GetActionHandle(Session.HapticPulseActionName).ResultULong;
             Session.IsVrDashboardVisible = OpenVR.Overlay.IsDashboardVisible();
+            UpdateGame();
             // endregion
             
             Services.GuiBackend.SetOverlayVisible(OpenVR.Overlay.IsOverlayVisible(mainHandle));
